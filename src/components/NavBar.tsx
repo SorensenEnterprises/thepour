@@ -3,15 +3,15 @@ import React from 'react';
 interface Props {
   activePage: 'recipes' | 'inventory';
   onNavigate: (page: 'recipes' | 'inventory') => void;
+  onHome: () => void;
 }
 
-export function NavBar({ activePage, onNavigate }: Props) {
+export function NavBar({ activePage, onNavigate, onHome }: Props) {
   return (
     <nav className="navbar">
-      <div className="navbar-brand">
-        <span className="brand-icon">🍸</span>
-        <span className="brand-name">thepour.</span>
-      </div>
+      <button className="navbar-brand navbar-home" onClick={onHome}>
+        <span className="brand-name">thepour<span className="brand-period">.</span></span>
+      </button>
       <div className="navbar-links">
         <button
           className={`nav-link ${activePage === 'recipes' ? 'active' : ''}`}

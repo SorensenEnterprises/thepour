@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { RecipeCard } from '../components/RecipeCard';
 import { RecipeMatch } from '../utils/recipeUtils';
 
-type ReadyFilter = 'all' | 'ready';
+type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda';
+type ReadyFilter  = 'all' | 'ready';
 type SpiritFilter = 'all' | 'whiskey' | 'gin' | 'tequila' | 'vodka' | 'rum' | 'other';
 
 const SPIRIT_FILTERS: { value: SpiritFilter; label: string }[] = [
@@ -28,17 +29,33 @@ interface Props {
   matches: RecipeMatch[];
 }
 
+const CATEGORY_TAG: Record<DrinkCategory, string> = {
+  cocktail:    '',
+  mocktail:    'mocktail',
+  'dirty-soda': 'dirty-soda',
+};
+
 export function RecipesPage({ matches }: Props) {
+  const [category, setCategory]       = useState<DrinkCategory>('cocktail');
   const [readyFilter, setReadyFilter] = useState<ReadyFilter>('all');
   const [spiritFilter, setSpiritFilter] = useState<SpiritFilter>('all');
   const [search, setSearch] = useState('');
 
+  const categoryMatches = useMemo(() => {
+    if (category === 'cocktail') {
+      return matches.filter(({ recipe }) =>
+        !recipe.tags.includes('mocktail') && !recipe.tags.includes('dirty-soda'));
+    }
+    const tag = CATEGORY_TAG[category];
+    return matches.filter(({ recipe }) => recipe.tags.includes(tag));
+  }, [matches, category]);
+
   const displayed = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return matches.filter(({ recipe, canMake }) => {
+    return categoryMatches.filter(({ recipe, canMake }) => {
       if (readyFilter === 'ready' && !canMake) return false;
 
-      if (spiritFilter !== 'all') {
+      if (category === 'cocktail' && spiritFilter !== 'all') {
         const tags = recipe.tags;
         if (spiritFilter === 'other') {
           const allSpiritTags = Object.values(SPIRIT_TAG_MAP).flat();
@@ -50,19 +67,36 @@ export function RecipesPage({ matches }: Props) {
       }
 
       if (q && !recipe.name.toLowerCase().includes(q)) return false;
-
       return true;
     });
-  }, [matches, readyFilter, spiritFilter, search]);
+  }, [categoryMatches, category, readyFilter, spiritFilter, search]);
 
-  const readyCount = matches.filter(m => m.canMake).length;
+  const readyCount = categoryMatches.filter(m => m.canMake).length;
+
+  const PAGE_TITLES: Record<DrinkCategory, string> = {
+    cocktail:    'Recipe Suggestions',
+    mocktail:    'Mocktail Recipes',
+    'dirty-soda': 'Dirty Soda Recipes',
+  };
 
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Recipe Suggestions</h2>
+        <div className="category-toggle">
+          {(['cocktail', 'mocktail', 'dirty-soda'] as DrinkCategory[]).map(cat => (
+            <button
+              key={cat}
+              className={`category-toggle-btn${category === cat ? ' active' : ''}`}
+              onClick={() => { setCategory(cat); setSpiritFilter('all'); setReadyFilter('all'); }}
+            >
+              {cat === 'cocktail' ? '🍸 Cocktails' : cat === 'mocktail' ? '🧃 Mocktails' : '🥤 Dirty Sodas'}
+            </button>
+          ))}
+        </div>
+
+        <h2>{PAGE_TITLES[category]}</h2>
         <p className="page-subtitle">
-          {readyCount} of {matches.length} recipes ready with your current bar
+          {readyCount} of {categoryMatches.length} recipes ready with your current bar
         </p>
 
         <div className="recipes-search-row">
@@ -87,17 +121,19 @@ export function RecipesPage({ matches }: Props) {
         </div>
 
         <div className="filter-row">
-          <div className="filter-tabs spirit-filters">
-            {SPIRIT_FILTERS.map(({ value, label }) => (
-              <button
-                key={value}
-                className={`filter-tab ${spiritFilter === value ? 'active' : ''}`}
-                onClick={() => setSpiritFilter(value)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          {category === 'cocktail' && (
+            <div className="filter-tabs spirit-filters">
+              {SPIRIT_FILTERS.map(({ value, label }) => (
+                <button
+                  key={value}
+                  className={`filter-tab ${spiritFilter === value ? 'active' : ''}`}
+                  onClick={() => setSpiritFilter(value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="filter-tabs ready-filter">
             <button
               className={`filter-tab ${readyFilter === 'all' ? 'active' : ''}`}

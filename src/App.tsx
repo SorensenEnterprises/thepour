@@ -2,16 +2,17 @@ import React, { useState, useMemo } from 'react';
 import { NavBar } from './components/NavBar';
 import { RecipesPage } from './pages/RecipesPage';
 import { InventoryPage } from './pages/InventoryPage';
+import { LandingPage } from './pages/LandingPage';
 import { useInventory } from './hooks/useInventory';
 import { sampleRecipes } from './data/sampleRecipes';
 import { matchRecipesToInventory } from './utils/recipeUtils';
 import { QuantityLevel } from './types';
 import './App.css';
 
-type Page = 'recipes' | 'inventory';
+type View = 'landing' | 'recipes' | 'inventory';
 
 function App() {
-  const [activePage, setActivePage] = useState<Page>('recipes');
+  const [view, setView] = useState<View>('landing');
   const { inventory, inStockIds, splashIds, setQuantity, addItem } = useInventory();
 
   const matches = useMemo(
@@ -19,11 +20,19 @@ function App() {
     [inStockIds, splashIds]
   );
 
+  if (view === 'landing') {
+    return <LandingPage onEnter={() => setView('recipes')} />;
+  }
+
   return (
     <div className="app">
-      <NavBar activePage={activePage} onNavigate={setActivePage} />
+      <NavBar
+        activePage={view as 'recipes' | 'inventory'}
+        onNavigate={setView}
+        onHome={() => setView('landing')}
+      />
       <main className="main-content">
-        {activePage === 'recipes' ? (
+        {view === 'recipes' ? (
           <RecipesPage matches={matches} />
         ) : (
           <InventoryPage
