@@ -8,7 +8,7 @@ type Spirit        = 'brown' | 'clear' | 'agave'  | 'any';
 type Style         = 'classic' | 'adventurous';
 type Method        = 'stirred' | 'shaken' | 'either';
 type Strength      = 'light'   | 'balanced' | 'bold';
-type Phase         = 'category-pick' | 'question' | 'shaking' | 'reveal';
+type Phase         = 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda';
 type MocktailVibe  = 'fruity' | 'citrus' | 'herbal' | 'fizzy';
 type MocktailBase  = 'sparkling' | 'still' | 'tea';
@@ -27,8 +27,10 @@ interface Answers {
 
 interface CocktailRec {
   name:        string;
+  description: string;
   voice:       string;
   ingredients: string[];
+  steps:       string[];
   moods:       Mood[];
   spirits:     Spirit[];
   styles:      Style[];
@@ -38,8 +40,10 @@ interface CocktailRec {
 
 interface MocktailRec {
   name:        string;
+  description: string;
   voice:       string;
   ingredients: string[];
+  steps:       string[];
   vibes:       MocktailVibe[];
   bases:       MocktailBase[];
   sweets:      MocktailSweet[];
@@ -47,127 +51,241 @@ interface MocktailRec {
 
 interface DirtySodaRec {
   name:        string;
+  description: string;
   voice:       string;
   ingredients: string[];
+  steps:       string[];
   bases:       SodaBase[];
   flavors:     SodaFlavor[];
   creams:      SodaCream[];
 }
 
-type DrinkRec = { name: string; voice: string; ingredients: string[] };
+type DrinkRec = { name: string; description: string; voice: string; ingredients: string[]; steps: string[] };
 
 // ── Cocktail Library ─────────────────────────────────────────────────────────
 
 const COCKTAILS: CocktailRec[] = [
   {
     name: 'Old Fashioned',
+    description: 'A timeless whiskey cocktail — just bourbon, bitters, and a touch of sweetness. The one that started everything.',
     voice: "Whiskey dressed just enough to make an impression. There's a reason this one never goes out of style.",
     ingredients: ['2 oz Bourbon', '¼ oz Simple Syrup', '2 dashes Angostura Bitters', 'Orange peel'],
+    steps: [
+      'Add simple syrup and bitters to a rocks glass.',
+      'Pour in the bourbon and stir gently to combine.',
+      'Add a large ice cube.',
+      'Express orange peel over the glass, run it around the rim, and drop it in.',
+    ],
     moods: ['bitter', 'sweet'], spirits: ['brown'], styles: ['classic'],
     methods: ['stirred'], strengths: ['bold'],
   },
   {
     name: 'Manhattan',
+    description: 'Rye whiskey, sweet vermouth, and bitters — stirred cold and served straight up. Serious and sophisticated.',
     voice: "Serious, sophisticated, a little dangerous. The kind of drink you order when you've already decided you're staying.",
     ingredients: ['2 oz Rye Whiskey', '1 oz Sweet Vermouth', '2 dashes Angostura Bitters', 'Maraschino cherry'],
+    steps: [
+      'Combine rye, sweet vermouth, and bitters in a mixing glass with ice.',
+      'Stir for 30 seconds until well chilled.',
+      'Strain into a chilled coupe or Nick & Nora glass.',
+      'Garnish with a maraschino cherry.',
+    ],
     moods: ['bitter', 'sweet'], spirits: ['brown'], styles: ['classic'],
     methods: ['stirred'], strengths: ['balanced', 'bold'],
   },
   {
     name: 'Whiskey Sour',
+    description: 'Bourbon shaken with fresh lemon and simple syrup — warming and bright in equal measure.',
     voice: "All the warmth of whiskey with a citrus wake-up call. Comfort food for your glass.",
     ingredients: ['2 oz Bourbon', '¾ oz Fresh Lemon Juice', '¾ oz Simple Syrup', 'Egg white (optional)'],
+    steps: [
+      'Add all ingredients to a shaker. If using egg white, dry-shake first (no ice) for 10 seconds.',
+      'Add ice and shake vigorously for 15 seconds.',
+      'Strain into a rocks glass over fresh ice.',
+      'Garnish with a cherry or orange wheel.',
+    ],
     moods: ['sour'], spirits: ['brown'], styles: ['classic'],
     methods: ['shaken'], strengths: ['balanced'],
   },
   {
     name: 'Paper Plane',
+    description: 'Equal parts bourbon, Aperol, Amaro Nonino, and lemon juice. Modern, bitter-sweet, completely balanced.',
     voice: "Equal parts everything — it shouldn't work this well, but it does. Every single time.",
     ingredients: ['¾ oz Bourbon', '¾ oz Aperol', '¾ oz Amaro Nonino', '¾ oz Fresh Lemon Juice'],
+    steps: [
+      'Measure all four ingredients in equal parts into a shaker.',
+      'Add ice and shake hard for 12 seconds.',
+      'Double-strain into a chilled coupe.',
+      'Serve immediately — no garnish needed.',
+    ],
     moods: ['sour', 'bitter'], spirits: ['brown'], styles: ['adventurous'],
     methods: ['shaken'], strengths: ['balanced'],
   },
   {
     name: 'Penicillin',
+    description: 'Blended scotch shaken with lemon, honey-ginger syrup, and floated with smoky Islay scotch. Complex and warming.',
     voice: "Honey and ginger chase the smoke around the glass. Complex, warming, utterly unforgettable.",
     ingredients: ['2 oz Blended Scotch', '¾ oz Fresh Lemon Juice', '¾ oz Honey-Ginger Syrup', '¼ oz Islay Scotch float'],
+    steps: [
+      'Shake blended scotch, lemon juice, and honey-ginger syrup with ice.',
+      'Strain into a rocks glass over a large ice cube.',
+      'Float the Islay scotch on top by pouring slowly over the back of a spoon.',
+      'Garnish with candied ginger on a pick.',
+    ],
     moods: ['sour', 'savory'], spirits: ['brown'], styles: ['adventurous'],
     methods: ['shaken'], strengths: ['bold'],
   },
   {
     name: 'Negroni',
+    description: 'Equal parts gin, Campari, and sweet vermouth — stirred, strained, and unapologetically bitter.',
     voice: "Bitter, bold, beautiful. You asked for something that pushes back — here it is.",
     ingredients: ['1 oz Gin', '1 oz Campari', '1 oz Sweet Vermouth', 'Orange peel'],
+    steps: [
+      'Combine gin, Campari, and sweet vermouth in a mixing glass with ice.',
+      'Stir for 30 seconds until well chilled.',
+      'Strain into a rocks glass over a large ice cube.',
+      'Express orange peel over the glass and use as garnish.',
+    ],
     moods: ['bitter'], spirits: ['clear'], styles: ['classic'],
     methods: ['stirred'], strengths: ['bold'],
   },
   {
     name: 'Gin & Tonic',
+    description: 'Two ingredients done right — good gin over ice, topped with cold tonic. Simple never gets old.',
     voice: "Simple. Honest. Exactly as refreshing as you need it to be right now.",
     ingredients: ['2 oz Gin', '4 oz Tonic Water', 'Lime wedge'],
+    steps: [
+      'Fill a highball glass with ice.',
+      'Pour gin over the ice.',
+      'Top with cold tonic water, pouring gently down the side to preserve carbonation.',
+      'Squeeze lime wedge over the drink and drop it in.',
+    ],
     moods: ['bitter', 'sweet'], spirits: ['clear'], styles: ['classic'],
     methods: ['stirred', 'either'], strengths: ['light'],
   },
   {
     name: 'Last Word',
+    description: 'A Prohibition-era equal-parts classic — gin, Chartreuse, maraschino, and lime. Herbal, sharp, and addictive.',
     voice: "Four spirits walk into a bar and somehow agree on everything. A Prohibition-era miracle.",
     ingredients: ['¾ oz Gin', '¾ oz Green Chartreuse', '¾ oz Maraschino Liqueur', '¾ oz Fresh Lime Juice'],
+    steps: [
+      'Measure all four ingredients in equal parts into a shaker.',
+      'Add ice and shake well for 12 seconds.',
+      'Double-strain into a chilled coupe.',
+      'Serve immediately with no garnish.',
+    ],
     moods: ['sour', 'bitter'], spirits: ['clear'], styles: ['adventurous'],
     methods: ['shaken'], strengths: ['balanced'],
   },
   {
     name: 'Espresso Martini',
+    description: 'Vodka, coffee liqueur, and fresh espresso — shaken cold until frothy. The drink that keeps you going.',
     voice: "Stay sharp, stay social. This one hits like a good conversation — caffeinated and a little dangerous.",
     ingredients: ['1½ oz Vodka', '1 oz Coffee Liqueur', '1 oz Fresh Espresso', '3 coffee beans'],
+    steps: [
+      'Brew espresso and let it cool for 2 minutes.',
+      'Add vodka, coffee liqueur, and espresso to a shaker with ice.',
+      'Shake very hard for 15 seconds to build a thick foam.',
+      'Double-strain into a chilled coupe and garnish with 3 coffee beans.',
+    ],
     moods: ['sweet', 'savory'], spirits: ['clear'], styles: ['adventurous'],
     methods: ['shaken'], strengths: ['bold'],
   },
   {
     name: 'Gimlet',
+    description: 'Gin and fresh lime juice, sweetened just enough. Clean, tart, and utterly no-nonsense.',
     voice: "Gin and lime at their most honest — clean, tart, and utterly no-nonsense.",
     ingredients: ['2 oz Gin', '¾ oz Fresh Lime Juice', '¾ oz Simple Syrup', 'Lime wheel'],
+    steps: [
+      'Add gin, fresh lime juice, and simple syrup to a shaker with ice.',
+      'Shake well for 12 seconds.',
+      'Strain into a chilled coupe or rocks glass.',
+      'Garnish with a lime wheel.',
+    ],
     moods: ['sour'], spirits: ['clear'], styles: ['classic'],
     methods: ['shaken'], strengths: ['balanced'],
   },
   {
     name: 'Margarita',
+    description: 'Tequila blanco, triple sec, and fresh lime — with a salt rim. The holy trinity.',
     voice: "Agave, acid, salt. The holy trinity. You can't go wrong, and you never will.",
     ingredients: ['2 oz Tequila Blanco', '1 oz Triple Sec', '¾ oz Fresh Lime Juice', 'Salt rim'],
+    steps: [
+      'Salt-rim a chilled coupe or rocks glass.',
+      'Add tequila, triple sec, and lime juice to a shaker with ice.',
+      'Shake vigorously for 12 seconds.',
+      'Strain into the prepared glass and garnish with a lime wheel.',
+    ],
     moods: ['sour', 'sweet'], spirits: ['agave'], styles: ['classic'],
     methods: ['shaken'], strengths: ['balanced'],
   },
   {
     name: 'Paloma',
+    description: 'Tequila, fresh grapefruit, and soda. The drink Mexico actually orders — bright and criminally underrated.',
     voice: "The drink Mexico actually drinks. Grapefruit and tequila — bright, alive, and criminally underrated.",
     ingredients: ['2 oz Tequila Blanco', '2 oz Fresh Grapefruit Juice', '½ oz Lime Juice', '½ oz Simple Syrup', 'Soda water'],
+    steps: [
+      'Add tequila, grapefruit juice, lime juice, and simple syrup to a shaker with ice.',
+      'Shake briefly — 8 seconds.',
+      'Strain into a salt-rimmed highball glass over ice.',
+      'Top with soda water and garnish with a grapefruit wedge.',
+    ],
     moods: ['sweet', 'sour'], spirits: ['agave'], styles: ['classic'],
     methods: ['shaken', 'either'], strengths: ['light'],
   },
   {
     name: 'Mezcal Negroni',
+    description: 'The classic Negroni built with smoky mezcal instead of gin. Everything you love, with fire underneath.',
     voice: "The classic's smokier alter ego. Everything you love about a Negroni, with fire underneath.",
     ingredients: ['1 oz Mezcal', '1 oz Campari', '1 oz Sweet Vermouth', 'Orange peel'],
+    steps: [
+      'Combine mezcal, Campari, and sweet vermouth in a mixing glass with ice.',
+      'Stir for 30 seconds until well chilled.',
+      'Strain into a rocks glass over a large ice cube.',
+      'Express orange peel over the glass and use as garnish.',
+    ],
     moods: ['bitter', 'savory'], spirits: ['agave'], styles: ['adventurous'],
     methods: ['stirred'], strengths: ['bold'],
   },
   {
     name: "Tommy's Margarita",
+    description: 'Two-ingredient margarita with agave syrup instead of triple sec — pure tequila and lime, nothing in the way.',
     voice: "Pure agave, nothing in the way. This is what tequila tastes like when it's allowed to speak.",
     ingredients: ['2 oz Tequila Blanco', '1 oz Fresh Lime Juice', '½ oz Agave Syrup', 'Lime wheel'],
+    steps: [
+      'Add tequila, fresh lime juice, and agave syrup to a shaker with ice.',
+      'Shake well for 12 seconds.',
+      'Strain into a chilled rocks glass over ice.',
+      'Garnish with a lime wheel.',
+    ],
     moods: ['sour'], spirits: ['agave'], styles: ['classic', 'adventurous'],
     methods: ['shaken'], strengths: ['balanced'],
   },
   {
     name: 'Daiquiri',
+    description: 'White rum, fresh lime, and simple syrup — shaken cold and served straight up. Three ingredients, zero compromises.',
     voice: "Three ingredients, zero compromises. Rum and lime have been doing this together since Havana had secrets.",
     ingredients: ['2 oz White Rum', '¾ oz Fresh Lime Juice', '¾ oz Simple Syrup'],
+    steps: [
+      'Add rum, lime juice, and simple syrup to a shaker with ice.',
+      'Shake vigorously for 15 seconds.',
+      'Double-strain into a chilled coupe.',
+      'Serve immediately with no garnish, or add a lime wheel.',
+    ],
     moods: ['sour'], spirits: ['any'], styles: ['classic'],
     methods: ['shaken'], strengths: ['balanced'],
   },
   {
     name: 'Dark & Stormy',
+    description: 'Dark rum and spicy ginger beer over ice with a squeeze of lime. Bold, stormy, and deeply satisfying.',
     voice: "Dark rum and spicy ginger — you wanted bold and we're delivering atmospheric. This one has weather.",
     ingredients: ['2 oz Dark Rum', '4 oz Ginger Beer', '½ oz Lime Juice', 'Lime wedge'],
+    steps: [
+      'Fill a highball glass with ice.',
+      'Add dark rum.',
+      'Top with cold ginger beer, pouring gently.',
+      'Squeeze lime juice over the top and drop in a lime wedge.',
+    ],
     moods: ['sweet', 'savory'], spirits: ['any'], styles: ['classic'],
     methods: ['either'], strengths: ['bold'],
   },
@@ -192,30 +310,110 @@ function getRecommendation(answers: Required<Answers>): CocktailRec {
 // ── Mocktail Library ─────────────────────────────────────────────────────────
 
 const MOCKTAILS: MocktailRec[] = [
-  { name: 'Virgin Mojito',       voice: "Fresh mint, lime, and bubbles. Proof you don't need the rum.",
+  {
+    name: 'Virgin Mojito',
+    description: 'Fresh mint, lime, and soda over crushed ice. All the refreshment, none of the rum.',
+    voice: "Fresh mint, lime, and bubbles. Proof you don't need the rum.",
     ingredients: ['8 Mint Leaves', '1 oz Fresh Lime Juice', '¾ oz Simple Syrup', '4 oz Soda Water'],
-    vibes: ['herbal', 'citrus'], bases: ['sparkling'], sweets: ['light'] },
-  { name: 'Shirley Temple',      voice: "The original crowd-pleaser. Ginger ale, grenadine, and absolutely no apologies.",
-    ingredients: ['4 oz Ginger Ale', '1 oz OJ', '½ oz Grenadine', 'Maraschino Cherry'],
-    vibes: ['fruity', 'fizzy'], bases: ['sparkling'], sweets: ['sweet'] },
-  { name: 'Arnold Palmer',       voice: "Half iced tea, half lemonade. The greatest accidental invention in beverage history.",
+    steps: [
+      'Muddle mint leaves with lime juice and simple syrup in the bottom of a glass.',
+      'Fill with crushed ice.',
+      'Top with soda water and stir gently.',
+      'Garnish with a fresh mint sprig and lime wheel.',
+    ],
+    vibes: ['herbal', 'citrus'], bases: ['sparkling'], sweets: ['light'],
+  },
+  {
+    name: 'Shirley Temple',
+    description: 'Ginger ale, orange juice, and grenadine — the original crowd-pleaser. No apologies.',
+    voice: "The original crowd-pleaser. Ginger ale, grenadine, and absolutely no apologies.",
+    ingredients: ['4 oz Ginger Ale', '1 oz Orange Juice', '½ oz Grenadine', 'Maraschino Cherry'],
+    steps: [
+      'Fill a highball glass with ice.',
+      'Add ginger ale and orange juice.',
+      'Drizzle grenadine over the top — it will sink and swirl beautifully.',
+      'Garnish with a maraschino cherry.',
+    ],
+    vibes: ['fruity', 'fizzy'], bases: ['sparkling'], sweets: ['sweet'],
+  },
+  {
+    name: 'Arnold Palmer',
+    description: 'Half iced tea, half fresh lemonade. The greatest accidental invention in beverage history.',
+    voice: "Half iced tea, half lemonade. The greatest accidental invention in beverage history.",
     ingredients: ['4 oz Iced Tea', '4 oz Fresh Lemonade', 'Lemon Wheel'],
-    vibes: ['citrus'], bases: ['tea'], sweets: ['light', 'medium'] },
-  { name: 'Cucumber Cooler',     voice: "Crisp, clean, impossibly refreshing. The drink that makes you feel like a wellness person.",
+    steps: [
+      'Brew iced tea and let it chill completely.',
+      'Make or pour fresh lemonade.',
+      'Fill a glass with ice and pour equal parts of each.',
+      'Stir gently and garnish with a lemon wheel.',
+    ],
+    vibes: ['citrus'], bases: ['tea'], sweets: ['light', 'medium'],
+  },
+  {
+    name: 'Cucumber Cooler',
+    description: 'Cucumber, mint, lime, and soda — crisp, clean, and impossibly refreshing.',
+    voice: "Crisp, clean, impossibly refreshing. The drink that makes you feel like a wellness person.",
     ingredients: ['4 Cucumber Slices', '¾ oz Fresh Lime Juice', '½ oz Simple Syrup', '4 oz Soda Water', '4 Mint Leaves'],
-    vibes: ['herbal', 'citrus'], bases: ['sparkling'], sweets: ['light'] },
-  { name: 'Watermelon Lemonade', voice: "Summer in a glass. No further explanation needed.",
+    steps: [
+      'Muddle cucumber slices and mint with lime juice and simple syrup in a shaker.',
+      'Add ice and shake briefly — 8 seconds.',
+      'Strain into a glass over fresh ice.',
+      'Top with soda water and garnish with a cucumber ribbon.',
+    ],
+    vibes: ['herbal', 'citrus'], bases: ['sparkling'], sweets: ['light'],
+  },
+  {
+    name: 'Watermelon Lemonade',
+    description: 'Fresh watermelon juice, lemon, and a splash of soda. Summer in a glass, no further explanation needed.',
+    voice: "Summer in a glass. No further explanation needed.",
     ingredients: ['4 oz Fresh Watermelon Juice', '¾ oz Lemon Juice', '½ oz Simple Syrup', 'Splash of Soda Water'],
-    vibes: ['fruity', 'citrus'], bases: ['still'], sweets: ['medium'] },
-  { name: 'Spicy Ginger Mule',   voice: "Ginger beer and lime with a chili kick. The mocktail that bites back.",
+    steps: [
+      'Blend or juice fresh watermelon and strain out the pulp.',
+      'Combine watermelon juice, lemon juice, and simple syrup in a glass over ice.',
+      'Stir well to combine.',
+      'Top with a splash of soda water and garnish with a watermelon wedge.',
+    ],
+    vibes: ['fruity', 'citrus'], bases: ['still'], sweets: ['medium'],
+  },
+  {
+    name: 'Spicy Ginger Mule',
+    description: 'Ginger beer and lime with an optional jalapeño kick. The mocktail that bites back.',
+    voice: "Ginger beer and lime with a chili kick. The mocktail that bites back.",
     ingredients: ['6 oz Ginger Beer', '¾ oz Fresh Lime Juice', '¼ oz Simple Syrup', '2 Jalapeño Slices (optional)'],
-    vibes: ['citrus', 'fizzy'], bases: ['sparkling'], sweets: ['light'] },
-  { name: 'Berry Smash',         voice: "Muddled berries, honey, and lemon — messy, beautiful, and worth every drop.",
+    steps: [
+      'If using jalapeño, muddle the slices with simple syrup at the bottom of a copper mug or glass.',
+      'Fill with ice.',
+      'Add lime juice and pour ginger beer over gently.',
+      'Stir and garnish with a lime wedge and extra jalapeño slice.',
+    ],
+    vibes: ['citrus', 'fizzy'], bases: ['sparkling'], sweets: ['light'],
+  },
+  {
+    name: 'Berry Smash',
+    description: 'Muddled mixed berries, honey, and lemon juice topped with soda. Messy, beautiful, and worth every drop.',
+    voice: "Muddled berries, honey, and lemon — messy, beautiful, and worth every drop.",
     ingredients: ['6 Mixed Berries', '¾ oz Fresh Lemon Juice', '¾ oz Honey Syrup', '3 oz Soda Water'],
-    vibes: ['fruity'], bases: ['sparkling', 'still'], sweets: ['medium', 'sweet'] },
-  { name: 'Seedlip Garden Spritz', voice: "A serious non-alcoholic spirit with elderflower tonic. Sophisticated and completely grown-up.",
+    steps: [
+      'Muddle mixed berries with lemon juice and honey syrup in a shaker.',
+      'Add ice and shake well for 12 seconds.',
+      'Strain into a glass over fresh ice.',
+      'Top with soda water and garnish with a few whole berries.',
+    ],
+    vibes: ['fruity'], bases: ['sparkling', 'still'], sweets: ['medium', 'sweet'],
+  },
+  {
+    name: 'Seedlip Garden Spritz',
+    description: 'Seedlip Garden 108 with elderflower tonic and cucumber — sophisticated, botanical, and completely grown-up.',
+    voice: "A serious non-alcoholic spirit with elderflower tonic. Sophisticated and completely grown-up.",
     ingredients: ['1½ oz Seedlip Garden 108', '4 oz Elderflower Tonic', '3 Cucumber Slices', 'Thyme Sprig'],
-    vibes: ['herbal', 'fizzy'], bases: ['sparkling'], sweets: ['light'] },
+    steps: [
+      'Add cucumber slices to a wine glass or large copa.',
+      'Fill with ice.',
+      'Pour Seedlip Garden 108 over the ice.',
+      'Top gently with elderflower tonic and garnish with a thyme sprig.',
+    ],
+    vibes: ['herbal', 'fizzy'], bases: ['sparkling'], sweets: ['light'],
+  },
 ];
 
 function getMocktailRec(answers: Record<string, string>): MocktailRec {
@@ -233,30 +431,110 @@ function getMocktailRec(answers: Record<string, string>): MocktailRec {
 // ── Dirty Soda Library ───────────────────────────────────────────────────────
 
 const DIRTY_SODAS: DirtySodaRec[] = [
-  { name: 'Dirty Dr Pepper',         voice: "Dr Pepper, coconut syrup, lime, and a cream float. The one that started it all.",
+  {
+    name: 'Dirty Dr Pepper',
+    description: 'Dr Pepper with coconut syrup and lime, finished with a heavy cream float. The one that started it all.',
+    voice: "Dr Pepper, coconut syrup, lime, and a cream float. The one that started it all.",
     ingredients: ['12 oz Dr Pepper', '1 oz Coconut Syrup', '½ oz Fresh Lime Juice', 'Heavy Cream Float'],
-    bases: ['drpepper'], flavors: ['coconut'], creams: ['yes', 'no'] },
-  { name: 'Utah Swirl',              voice: "Sprite and raspberry with a cream pour. The soda shop in Utah invented something great.",
+    steps: [
+      'Fill a large cup with ice.',
+      'Add coconut syrup and lime juice, stir briefly.',
+      'Pour Dr Pepper over the ice gently to preserve the fizz.',
+      'Float heavy cream on top by pouring slowly over the back of a spoon.',
+    ],
+    bases: ['drpepper'], flavors: ['coconut'], creams: ['yes', 'no'],
+  },
+  {
+    name: 'Utah Swirl',
+    description: 'Sprite with raspberry syrup and lime, crowned with a dreamy cream pour. A soda shop original.',
+    voice: "Sprite and raspberry with a cream pour. The soda shop in Utah invented something great.",
     ingredients: ['12 oz Sprite', '1 oz Raspberry Syrup', '½ oz Fresh Lime Juice', 'Heavy Cream Float'],
-    bases: ['sprite'], flavors: ['berry'], creams: ['yes'] },
-  { name: 'Tropical Dirty Sprite',   voice: "Sprite and mango syrup with a coconut cream float. The beach in a cup.",
+    steps: [
+      'Fill a large cup with ice.',
+      'Add raspberry syrup and lime juice.',
+      'Pour Sprite gently over the ice.',
+      'Float heavy cream on top by pouring slowly over the back of a spoon.',
+    ],
+    bases: ['sprite'], flavors: ['berry'], creams: ['yes'],
+  },
+  {
+    name: 'Tropical Dirty Sprite',
+    description: 'Sprite, mango syrup, and a coconut cream float. Beach vibes in a 32-ounce cup.',
+    voice: "Sprite and mango syrup with a coconut cream float. The beach in a cup.",
     ingredients: ['12 oz Sprite', '1 oz Mango Syrup', '¼ oz Fresh Lime Juice', 'Coconut Cream Float'],
-    bases: ['sprite'], flavors: ['coconut'], creams: ['yes', 'no'] },
-  { name: 'Cowboy Crush',            voice: "Orange Fanta, peach syrup, cream float. Sweet, peachy, completely irresistible.",
+    steps: [
+      'Fill a large cup with ice.',
+      'Add mango syrup and lime juice.',
+      'Pour Sprite gently over the ice.',
+      'Float coconut cream on top and garnish with a lime wedge.',
+    ],
+    bases: ['sprite'], flavors: ['coconut'], creams: ['yes', 'no'],
+  },
+  {
+    name: 'Cowboy Crush',
+    description: 'Orange Fanta with peach syrup and a heavy cream float. Sweet, peachy, completely irresistible.',
+    voice: "Orange Fanta, peach syrup, cream float. Sweet, peachy, completely irresistible.",
     ingredients: ['12 oz Orange Fanta', '1 oz Peach Syrup', 'Heavy Cream Float', 'Peach Slice'],
-    bases: ['orange'], flavors: ['peach'], creams: ['yes'] },
-  { name: 'Cherry Coke Float',       voice: "Cherry syrup in Coke with a cream pour. Diner nostalgia in a 32-ounce cup.",
+    steps: [
+      'Fill a large cup with ice.',
+      'Add peach syrup and stir briefly.',
+      'Pour Orange Fanta over the ice gently.',
+      'Float heavy cream on top and garnish with a peach slice.',
+    ],
+    bases: ['orange'], flavors: ['peach'], creams: ['yes'],
+  },
+  {
+    name: 'Cherry Coke Float',
+    description: 'Cherry syrup in classic Coca-Cola with a cream pour. Diner nostalgia in a 32-ounce cup.',
+    voice: "Cherry syrup in Coke with a cream pour. Diner nostalgia in a 32-ounce cup.",
     ingredients: ['12 oz Coca-Cola', '1 oz Cherry Syrup', 'Heavy Cream Float', 'Maraschino Cherry'],
-    bases: ['coke'], flavors: ['berry'], creams: ['yes'] },
-  { name: 'Mango Chili Sprite',      voice: "Sprite with mango syrup and a chili-lime rim. Sweet heat on every sip.",
+    steps: [
+      'Fill a large cup with ice.',
+      'Add cherry syrup to the glass.',
+      'Pour Coca-Cola gently over the ice, stirring just slightly.',
+      'Float heavy cream on top and garnish with a maraschino cherry.',
+    ],
+    bases: ['coke'], flavors: ['berry'], creams: ['yes'],
+  },
+  {
+    name: 'Mango Chili Sprite',
+    description: 'Sprite with mango syrup and a chili-lime rim. Sweet heat that builds with every sip.',
+    voice: "Sprite with mango syrup and a chili-lime rim. Sweet heat on every sip.",
     ingredients: ['12 oz Sprite', '1 oz Mango Syrup', '½ oz Fresh Lime Juice', 'Chili-Lime Rim'],
-    bases: ['sprite'], flavors: ['citrus'], creams: ['no'] },
-  { name: 'Peach Cream Dream',       voice: "Dr Pepper and peach with a generous cream pour. Southern comfort in soda form.",
+    steps: [
+      'Rim a glass with chili-lime salt — wet the rim with lime juice first, then press into the salt.',
+      'Fill with ice.',
+      'Add mango syrup and lime juice.',
+      'Pour Sprite gently over the ice and stir softly.',
+    ],
+    bases: ['sprite'], flavors: ['citrus'], creams: ['no'],
+  },
+  {
+    name: 'Peach Cream Dream',
+    description: 'Dr Pepper with peach syrup and a generous cream pour — Southern comfort in soda form.',
+    voice: "Dr Pepper and peach with a generous cream pour. Southern comfort in soda form.",
     ingredients: ['12 oz Dr Pepper', '1 oz Peach Syrup', '1½ oz Heavy Cream', '¼ oz Vanilla Syrup (optional)'],
-    bases: ['drpepper'], flavors: ['peach'], creams: ['yes'] },
-  { name: 'Raspberry Limeade Smash', voice: "Sprite, raspberry syrup, fresh lime, muddled raspberries. Bright and beautiful.",
+    steps: [
+      'Fill a large cup with ice.',
+      'Add peach syrup and vanilla syrup if using.',
+      'Pour Dr Pepper gently over the ice.',
+      'Pour heavy cream slowly over the back of a spoon to float it on top.',
+    ],
+    bases: ['drpepper'], flavors: ['peach'], creams: ['yes'],
+  },
+  {
+    name: 'Raspberry Limeade Smash',
+    description: 'Sprite with raspberry syrup, fresh lime, and muddled raspberries. Bright, beautiful, and built for a hot day.',
+    voice: "Sprite, raspberry syrup, fresh lime, muddled raspberries. Bright and beautiful.",
     ingredients: ['12 oz Sprite', '1 oz Raspberry Syrup', '¾ oz Fresh Lime Juice', '4 Fresh Raspberries'],
-    bases: ['sprite'], flavors: ['berry'], creams: ['no', 'yes'] },
+    steps: [
+      'Lightly muddle raspberries at the bottom of a large cup.',
+      'Fill with ice.',
+      'Add raspberry syrup and lime juice.',
+      'Pour Sprite over the ice gently and garnish with extra raspberries.',
+    ],
+    bases: ['sprite'], flavors: ['berry'], creams: ['no', 'yes'],
+  },
 ];
 
 function getDirtySodaRec(answers: Record<string, string>): DirtySodaRec {
@@ -479,13 +757,11 @@ export function BartenderModal({ onClose }: Props) {
   const audioRef          = useRef<HTMLAudioElement | null>(null);
   const fadeFnRef         = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Stop all speech and pending timers
   function stopSpeech() {
     if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
     window.speechSynthesis?.cancel();
   }
 
-  // Fade music out over ~600 ms then call callback
   function fadeOutMusic(cb: () => void) {
     const audio = audioRef.current;
     if (!audio || audio.paused) { cb(); return; }
@@ -503,27 +779,25 @@ export function BartenderModal({ onClose }: Props) {
     }, 600 / steps);
   }
 
-  // Combined close: stop speech → fade music → close overlay
   function handleClose() {
     stopSpeech();
     fadeOutMusic(onClose);
   }
 
-  // Background jazz on mount
+  // Background jazz — only plays while overlay is mounted
   useEffect(() => {
     const audio = new Audio('/music/bartender-jazz.mp3');
     audio.loop   = true;
     audio.volume = 0.3;
     audioRef.current = audio;
-    audio.play().catch(() => {});
+    const playPromise = audio.play().catch(() => {});
     return () => {
       if (fadeFnRef.current) clearInterval(fadeFnRef.current);
-      audio.pause();
-      audio.src = '';
+      playPromise.then(() => { audio.pause(); audio.src = ''; }).catch(() => {});
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Opening line on mount — no Q1 chain, category pick comes first
+  // Opening line on mount
   useEffect(() => {
     const synth = window.speechSynthesis;
     if (!synth) return;
@@ -531,7 +805,7 @@ export function BartenderModal({ onClose }: Props) {
     return stopSpeech;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Each question (fires when animKey changes — set by handleCategoryPick and step advance)
+  // Each question (fires when animKey changes)
   useEffect(() => {
     if (skipFirstRef.current) { skipFirstRef.current = false; return; }
     const synth = window.speechSynthesis;
@@ -540,7 +814,7 @@ export function BartenderModal({ onClose }: Props) {
     synth.speak(makeUtter(getSpeakQuestions(category)[step]));
   }, [animKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reveal: "I know just the thing." → 1 s pause → cocktail name
+  // Reveal speech
   useEffect(() => {
     if (phase !== 'reveal' || !rec) return;
     const synth = window.speechSynthesis;
@@ -727,7 +1001,7 @@ export function BartenderModal({ onClose }: Props) {
 
       </div>
 
-      <div className="bm-shell">
+      <div className={`bm-shell${phase === 'recipe' ? ' bm-shell--recipe' : ''}`}>
 
         {/* ── Shaker transition ── */}
         {phase === 'shaking' && (
@@ -757,32 +1031,17 @@ export function BartenderModal({ onClose }: Props) {
                   <stop offset="100%" stopColor="#526068" />
                 </linearGradient>
               </defs>
-
-              {/* Body */}
               <rect x="13" y="78" width="54" height="136" rx="6" ry="6" fill="url(#bm-chrome-body)" />
-
-              {/* Shoulder (trapezoid) */}
               <polygon points="13,78 67,78 58,56 22,56" fill="url(#bm-chrome-cap)" />
-
-              {/* Cap */}
               <rect x="22" y="18" width="36" height="38" rx="3" ry="3" fill="url(#bm-chrome-cap)" />
-
-              {/* Knob */}
               <polygon points="30,18 50,18 46,1 34,1" fill="url(#bm-chrome-knob)" />
-
-              {/* Rim lines */}
               <line x1="13" y1="78" x2="67" y2="78" stroke="rgba(255,255,255,0.55)" strokeWidth="1.2" />
               <line x1="22" y1="56" x2="58" y2="56" stroke="rgba(255,255,255,0.45)" strokeWidth="1" />
               <line x1="22" y1="18" x2="58" y2="18" stroke="rgba(255,255,255,0.4)"  strokeWidth="0.8" />
-
-              {/* Etched band on body */}
               <rect x="13" y="108" width="54" height="6" fill="rgba(0,0,0,0.12)" />
               <line x1="13" y1="108" x2="67" y2="108" stroke="rgba(255,255,255,0.25)" strokeWidth="0.7" />
               <line x1="13" y1="114" x2="67" y2="114" stroke="rgba(255,255,255,0.25)" strokeWidth="0.7" />
-
-              {/* Left highlight stripe — body */}
               <rect x="16" y="82"  width="4" height="126" rx="2" fill="rgba(255,255,255,0.38)" />
-              {/* Left highlight stripe — cap */}
               <rect x="25" y="21"  width="3" height="32"  rx="1.5" fill="rgba(255,255,255,0.32)" />
             </svg>
             <p className="bm-shaker-line">"{shakerLine}"</p>
@@ -853,12 +1112,56 @@ export function BartenderModal({ onClose }: Props) {
                 <span key={ing} className="bm-ingredient-chip">{ing}</span>
               ))}
             </div>
-            <button className="bm-reveal-cta" onClick={handleClose}>
+            <button className="bm-reveal-cta" onClick={() => setPhase('recipe')}>
               Make this tonight →
             </button>
             <button className="bm-reveal-restart" onClick={handleRestart}>
               Ask again
             </button>
+          </div>
+        )}
+
+        {/* ── Recipe ── */}
+        {phase === 'recipe' && rec && (
+          <div className="bm-recipe">
+            <p className="bm-recipe-eyebrow">How to make it</p>
+            <h2 className="bm-recipe-name">{rec.name}</h2>
+            <p className="bm-recipe-desc">{rec.description}</p>
+
+            <div className="bm-recipe-divider" />
+
+            <div className="bm-recipe-section">
+              <h3 className="bm-recipe-section-title">Ingredients</h3>
+              <ul className="bm-recipe-ingredients">
+                {rec.ingredients.map(ing => (
+                  <li key={ing} className="bm-recipe-ingredient">
+                    <span className="bm-recipe-ingredient-dot" />
+                    {ing}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="bm-recipe-section">
+              <h3 className="bm-recipe-section-title">Instructions</h3>
+              <ol className="bm-recipe-steps">
+                {rec.steps.map((step, i) => (
+                  <li key={i} className="bm-recipe-step">
+                    <span className="bm-recipe-step-num">{i + 1}</span>
+                    <span className="bm-recipe-step-text">{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="bm-recipe-actions">
+              <button className="bm-recipe-restart" onClick={handleRestart}>
+                Ask again
+              </button>
+              <button className="bm-recipe-close" onClick={handleClose}>
+                Close
+              </button>
+            </div>
           </div>
         )}
 
