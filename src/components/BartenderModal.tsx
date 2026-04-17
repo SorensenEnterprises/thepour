@@ -687,56 +687,6 @@ const SHAKER_LINES = [
   "One more second…",
 ];
 
-const SPEAK_COCKTAIL_QUESTIONS = [
-  "What's your mood tonight?",
-  "And your spirit of choice?",
-  "How do you like it?",
-  "Stirred or shaken?",
-  "How strong are we talking?",
-];
-
-const SPEAK_MOCKTAIL_QUESTIONS = [
-  "What are you after tonight?",
-  "Sparkling, still, or tea-based?",
-  "How sweet do you want it?",
-];
-
-const SPEAK_DIRTY_SODA_QUESTIONS = [
-  "What's your base soda?",
-  "What direction are we going?",
-  "Add cream to the top?",
-];
-
-function getSpeakQuestions(cat: DrinkCategory | null): string[] {
-  if (cat === 'mocktail')   return SPEAK_MOCKTAIL_QUESTIONS;
-  if (cat === 'dirty-soda') return SPEAK_DIRTY_SODA_QUESTIONS;
-  return SPEAK_COCKTAIL_QUESTIONS;
-}
-
-// ── Speech helpers ────────────────────────────────────────────────────────────
-
-function pickVoice(): SpeechSynthesisVoice | null {
-  if (!window.speechSynthesis) return null;
-  const voices = window.speechSynthesis.getVoices();
-  const english = voices.filter(v => v.lang.startsWith('en'));
-  const maleHints = ['alex', 'daniel', 'tom', 'james', 'david', 'george', 'fred', 'albert', 'rock', 'junior', 'bad news'];
-  return (
-    english.find(v => maleHints.some(h => v.name.toLowerCase().includes(h))) ??
-    english[0] ??
-    null
-  );
-}
-
-function makeUtter(text: string): SpeechSynthesisUtterance {
-  const u = new SpeechSynthesisUtterance(text);
-  u.pitch  = 0.85;
-  u.rate   = 0.9;
-  u.volume = 1;
-  const v = pickVoice();
-  if (v) u.voice = v;
-  return u;
-}
-
 // ── Component ────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -753,13 +703,11 @@ export function BartenderModal({ onClose }: Props) {
   const [shakerLine, setShakerLine] = useState('');
 
   const revealTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const skipFirstRef      = useRef(true);
   const audioRef          = useRef<HTMLAudioElement | null>(null);
   const fadeFnRef         = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  function stopSpeech() {
+  function cancelPendingTimer() {
     if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
-    window.speechSynthesis?.cancel();
   }
 
   function fadeOutMusic(cb: () => void) {
@@ -780,7 +728,7 @@ export function BartenderModal({ onClose }: Props) {
   }
 
   function handleClose() {
-    stopSpeech();
+    cancelPendingTimer();
     fadeOutMusic(onClose);
   }
 
@@ -796,39 +744,6 @@ export function BartenderModal({ onClose }: Props) {
       playPromise.then(() => { audio.pause(); audio.src = ''; }).catch(() => {});
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Opening line on mount
-  useEffect(() => {
-    const synth = window.speechSynthesis;
-    if (!synth) return;
-    synth.speak(makeUtter("Welcome. Tell me what you're after tonight."));
-    return stopSpeech;
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Each question (fires when animKey changes)
-  useEffect(() => {
-    if (skipFirstRef.current) { skipFirstRef.current = false; return; }
-    const synth = window.speechSynthesis;
-    if (!synth || phase !== 'question') return;
-    synth.cancel();
-    synth.speak(makeUtter(getSpeakQuestions(category)[step]));
-  }, [animKey]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Reveal speech
-  useEffect(() => {
-    if (phase !== 'reveal' || !rec) return;
-    const synth = window.speechSynthesis;
-    if (!synth) return;
-    synth.cancel();
-    const intro = makeUtter("I know just the thing.");
-    intro.onend = () => {
-      revealTimerRef.current = setTimeout(
-        () => synth.speak(makeUtter(rec.name)),
-        1000,
-      );
-    };
-    synth.speak(intro);
-  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleCategoryPick(cat: DrinkCategory) {
     setCategory(cat);
@@ -868,7 +783,7 @@ export function BartenderModal({ onClose }: Props) {
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleRestart() {
-    stopSpeech();
+    cancelPendingTimer();
     if (fadeFnRef.current) clearInterval(fadeFnRef.current);
     const audio = audioRef.current;
     if (audio) { audio.volume = 0.3; if (audio.paused) audio.play().catch(() => {}); }
