@@ -71,7 +71,7 @@ export function LandingPage({ onEnter }: Props) {
             <span className="lp-bartender-hint">Not sure what to make? Let us decide.</span>
           </div>
           <p className="lp-hero-meta">
-            <a onClick={onEnter}>Or try the app now →</a>
+            <button onClick={onEnter}>Or try the app now →</button>
           </p>
         </div>
 
