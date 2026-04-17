@@ -1,21 +1,22 @@
 /* ── Tokens ── */
 :root {
-  --accent:        #F5E6C8;
-  --accent-dim:    #D9C8A0;
-  --accent-glow:   rgba(245, 230, 200, 0.18);
-  --green-deep:    #0A140A;
-  --green-mid:     #1B3A1B;
-  --green-light:   #4A6A4A;
-  --surface-0:     #0F1F0F;
-  --surface-1:     #1B3A1B;
-  --surface-2:     #224422;
-  --surface-3:     #2A5230;
-  --border:        rgba(245, 230, 200, 0.12);
-  --border-light:  rgba(245, 230, 200, 0.22);
-  --border-green:  #3A5A3A;
-  --text-primary:  #F5E6C8;
-  --text-secondary:#CCBA90;
-  --text-muted:    #7A9A7A;
+  --accent:        #f5ead8;
+  --accent-dim:    #c8b898;
+  --accent-glow:   rgba(74, 187, 196, 0.12);
+  --teal:          #4abbc4;
+  --teal-dim:      #37909a;
+  --gold:          #c9a84c;
+  --gold-dim:      #a88a38;
+  --surface-0:     #091a1c;
+  --surface-1:     #0d2b2e;
+  --surface-2:     #102f32;
+  --surface-3:     #1a3a3e;
+  --border:        rgba(74, 187, 196, 0.18);
+  --border-light:  rgba(74, 187, 196, 0.30);
+  --border-teal:   rgba(74, 187, 196, 0.22);
+  --text-primary:  #f5ead8;
+  --text-secondary:#c8b898;
+  --text-muted:    #6a8a8c;
 }
 
 /* ── Reset & Base ── */
@@ -45,8 +46,8 @@ body {
   justify-content: space-between;
   padding: 0 28px;
   height: 62px;
-  background: var(--green-deep);
-  border-bottom: 1px solid var(--border-green);
+  background: var(--surface-0);
+  border-bottom: 1px solid var(--border-teal);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -96,7 +97,7 @@ body {
 }
 
 .nav-link:hover { background: var(--surface-3); color: var(--text-primary); }
-.nav-link.active { background: var(--accent-glow); color: var(--accent); }
+.nav-link.active { background: rgba(74,187,196,0.12); color: var(--teal); }
 
 /* ── Category Toggle ── */
 .category-toggle {
@@ -225,11 +226,11 @@ body {
   white-space: nowrap;
 }
 
-.filter-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+.filter-tab:hover { border-color: var(--teal); color: var(--text-primary); }
 .filter-tab.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #1B2F1B;
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #091a1c;
   font-weight: 600;
 }
 
@@ -247,9 +248,9 @@ body {
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.recipe-card.can-make     { border-left: 3px solid var(--accent); }
-.recipe-card.can-make-low { border-left: 3px solid var(--accent-dim); }
-.recipe-card.missing      { border-left: 3px solid var(--border-green); }
+.recipe-card.can-make     { border-left: 3px solid var(--teal); }
+.recipe-card.can-make-low { border-left: 3px solid var(--gold); }
+.recipe-card.missing      { border-left: 3px solid var(--border-teal); }
 
 .recipe-card:hover {
   border-color: var(--border-light);
@@ -293,9 +294,9 @@ body {
   letter-spacing: 0.2px;
 }
 
-.badge-green  { background: var(--accent-glow); color: var(--accent);     border: 1px solid rgba(245,230,200,0.30); }
-.badge-orange { background: rgba(100,60,40,0.25); color: var(--text-secondary); border: 1px solid rgba(100,80,60,0.35); }
-.badge-warn   { background: rgba(200,180,100,0.12); color: var(--accent-dim); border: 1px solid rgba(200,180,100,0.28); }
+.badge-green  { background: rgba(74,187,196,0.12); color: var(--teal);      border: 1px solid rgba(74,187,196,0.30); }
+.badge-orange { background: rgba(201,168,76,0.12); color: var(--gold);      border: 1px solid rgba(201,168,76,0.28); }
+.badge-warn   { background: rgba(201,168,76,0.10); color: var(--accent-dim); border: 1px solid rgba(201,168,76,0.25); }
 
 .tag {
   font-size: 11px;
@@ -411,7 +412,7 @@ body {
   color: var(--text-muted);
   margin-bottom: 14px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-green);
+  border-bottom: 1px solid var(--border);
 }
 
 .category-count {
@@ -520,10 +521,10 @@ body {
 }
 
 .add-bottle-btn {
-  background: var(--accent);
+  background: var(--teal);
   border: none;
   border-radius: 10px;
-  color: #1B2F1B;
+  color: #091a1c;
   font-size: 14px;
   font-weight: 700;
   padding: 9px 18px;
@@ -533,7 +534,7 @@ body {
   transition: background 0.15s, transform 0.1s;
 }
 
-.add-bottle-btn:hover  { background: var(--accent-dim); }
+.add-bottle-btn:hover  { background: var(--teal-dim); }
 .add-bottle-btn:active { transform: scale(0.97); }
 
 /* ── Add Bottle Modal ── */
@@ -614,7 +615,7 @@ body {
 }
 
 .form-input::placeholder { color: var(--text-muted); }
-.form-input:focus { border-color: var(--accent); }
+.form-input:focus { border-color: var(--teal); }
 .form-input--error { border-color: #c85050; }
 
 .form-error {
@@ -633,21 +634,21 @@ body {
   cursor: pointer;
   transition: border-color 0.15s;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A9A7A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234abbc4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 13px center;
   padding-right: 36px;
 }
 
-.form-select:focus { border-color: var(--accent); }
-.form-select option { background: #224422; }
+.form-select:focus { border-color: var(--teal); }
+.form-select option { background: #0d2b2e; }
 
 .add-bottle-submit {
   width: 100%;
-  background: var(--accent);
+  background: var(--teal);
   border: none;
   border-radius: 10px;
-  color: #1B2F1B;
+  color: #091a1c;
   font-size: 15px;
   font-weight: 700;
   padding: 12px;
@@ -656,7 +657,7 @@ body {
   transition: background 0.15s, transform 0.1s;
 }
 
-.add-bottle-submit:hover  { background: var(--accent-dim); }
+.add-bottle-submit:hover  { background: var(--teal-dim); }
 .add-bottle-submit:active { transform: scale(0.98); }
 
 /* ── Empty State ── */
