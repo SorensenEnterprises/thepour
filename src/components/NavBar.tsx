@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function NavBar({ activePage, onNavigate, onHome, onSignIn, onSignOut }: Props) {
-  const { user, isGuest, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
