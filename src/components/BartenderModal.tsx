@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { DrinkSurvey } from './DrinkSurvey';
 import './BartenderModal.css';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -694,14 +696,17 @@ interface Props {
 }
 
 export function BartenderModal({ onClose }: Props) {
-  const [phase, setPhase]         = useState<Phase>('category-pick');
-  const [category, setCategory]   = useState<DrinkCategory | null>(null);
-  const [step, setStep]           = useState(0);
-  const [answers, setAnswers]     = useState<Record<string, string>>({});
-  const [recs, setRecs]           = useState<DrinkRec[]>([]);
-  const [rec, setRec]             = useState<DrinkRec | null>(null);
-  const [animKey, setAnimKey]     = useState(0);
+  const { user } = useAuth();
+  const [phase, setPhase]           = useState<Phase>('category-pick');
+  const [category, setCategory]     = useState<DrinkCategory | null>(null);
+  const [step, setStep]             = useState(0);
+  const [answers, setAnswers]       = useState<Record<string, string>>({});
+  const [recs, setRecs]             = useState<DrinkRec[]>([]);
+  const [rec, setRec]               = useState<DrinkRec | null>(null);
+  const [animKey, setAnimKey]       = useState(0);
   const [shakerLine, setShakerLine] = useState('');
+  const [showSurvey, setShowSurvey] = useState(false);
+  const [surveyDone, setSurveyDone] = useState(false);
 
   const revealTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const audioRef          = useRef<HTMLAudioElement | null>(null);
@@ -749,6 +754,14 @@ export function BartenderModal({ onClose }: Props) {
       audio.src = '';
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 60-second survey timer — fires once per recipe view, only if not already dismissed
+  useEffect(() => {
+    if (phase !== 'recipe' || !rec || surveyDone) return;
+    setShowSurvey(false);
+    const t = setTimeout(() => setShowSurvey(true), 60_000);
+    return () => clearTimeout(t);
+  }, [phase, rec]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleCategoryPick(cat: DrinkCategory) {
     setCategory(cat);
@@ -799,6 +812,8 @@ export function BartenderModal({ onClose }: Props) {
     setRecs([]);
     setRec(null);
     setShakerLine('');
+    setShowSurvey(false);
+    setSurveyDone(false);
     setPhase('category-pick');
   }
 
@@ -1092,6 +1107,14 @@ export function BartenderModal({ onClose }: Props) {
         )}
 
       </div>
+
+      {showSurvey && rec && (
+        <DrinkSurvey
+          recipeName={rec.name}
+          userId={user?.id ?? null}
+          onDismiss={() => { setShowSurvey(false); setSurveyDone(true); }}
+        />
+      )}
     </div>
   );
 }
