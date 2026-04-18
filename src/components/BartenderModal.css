@@ -1,7 +1,7 @@
 /* ── Overlay ── */
 .bm-overlay {
   position: fixed;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   background: rgba(5, 14, 15, 0.97);
   backdrop-filter: blur(10px);
   z-index: 200;
@@ -20,7 +20,7 @@
 /* ── Background glass art ── */
 .bm-bg-art {
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   pointer-events: none;
   overflow: hidden;
 }
@@ -131,7 +131,7 @@
 .bm-option::after {
   content: '';
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   background: linear-gradient(135deg, rgba(74,187,196,0.07) 0%, transparent 60%);
   opacity: 0;
   transition: opacity 0.18s;

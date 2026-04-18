@@ -738,10 +738,14 @@ export function BartenderModal({ onClose }: Props) {
     audio.loop   = true;
     audio.volume = 0.3;
     audioRef.current = audio;
-    const playPromise = audio.play().catch(() => {});
+    // Safari requires a user gesture before play() — the catch silences the
+    // NotAllowedError. We never store the Promise because resolving it in
+    // cleanup (after unmount) causes async DOM operations in Safari.
+    audio.play().catch(() => {});
     return () => {
       if (fadeFnRef.current) clearInterval(fadeFnRef.current);
-      playPromise.then(() => { audio.pause(); audio.src = ''; }).catch(() => {});
+      if (!audio.paused) audio.pause();
+      audio.src = '';
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

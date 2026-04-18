@@ -1,8 +1,19 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseConfigured } from '../lib/supabase';
 
 const GUEST_KEY = 'thepour_guest';
+
+// Safari private mode throws on any localStorage access — guard every call.
+function lsGet(key: string): string | null {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+function lsSet(key: string, value: string): void {
+  try { localStorage.setItem(key, value); } catch { /* private mode */ }
+}
+function lsRemove(key: string): void {
+  try { localStorage.removeItem(key); } catch { /* private mode */ }
+}
 
 interface AuthContextType {
   user: User | null;
@@ -18,20 +29,33 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser]       = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (!session) {
-        setIsGuest(localStorage.getItem(GUEST_KEY) === 'true');
-      }
+    if (!supabaseConfigured) {
+      // No Supabase — work in guest-only mode immediately
+      setIsGuest(lsGet(GUEST_KEY) === 'true');
       setLoading(false);
-    });
+      return;
+    }
+
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (!session) {
+          setIsGuest(lsGet(GUEST_KEY) === 'true');
+        }
+      })
+      .catch(() => {
+        // Network error or misconfigured project — fall back to guest mode
+        setIsGuest(lsGet(GUEST_KEY) === 'true');
+      })
+      .finally(() => setLoading(false));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
@@ -42,28 +66,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
+    if (!supabaseConfigured) return { error: 'Supabase is not configured.' };
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: error.message };
     setIsGuest(false);
-    localStorage.removeItem(GUEST_KEY);
+    lsRemove(GUEST_KEY);
     return { error: null };
   };
 
   const signUp = async (email: string, password: string): Promise<{ error: string | null }> => {
+    if (!supabaseConfigured) return { error: 'Supabase is not configured.' };
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) return { error: error.message };
     return { error: null };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    if (supabaseConfigured) await supabase.auth.signOut();
     setIsGuest(false);
-    localStorage.removeItem(GUEST_KEY);
+    lsRemove(GUEST_KEY);
   };
 
   const continueAsGuest = () => {
     setIsGuest(true);
-    localStorage.setItem(GUEST_KEY, 'true');
+    lsSet(GUEST_KEY, 'true');
   };
 
   return (

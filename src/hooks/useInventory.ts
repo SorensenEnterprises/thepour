@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { InventoryItem, QuantityLevel } from '../types';
 import { sampleInventory } from '../data/sampleInventory';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseConfigured } from '../lib/supabase';
 
 const LS_KEY = 'thepour_inventory';
 
@@ -37,6 +37,8 @@ type SupabaseRow = { ingredient_id: string; quantity_level: string };
 async function loadFromSupabase(userId: string): Promise<InventoryItem[]> {
   const base = loadFromLocalStorage();
 
+  if (!supabaseConfigured) return base;
+
   const { data, error } = await supabase
     .from('inventory')
     .select('ingredient_id, quantity_level')
@@ -56,6 +58,7 @@ async function loadFromSupabase(userId: string): Promise<InventoryItem[]> {
 }
 
 function upsertToSupabase(userId: string, ingredientId: string, quantity: QuantityLevel) {
+  if (!supabaseConfigured) return;
   supabase
     .from('inventory')
     .upsert(
