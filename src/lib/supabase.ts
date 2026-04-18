@@ -1,3 +1,4 @@
+// Env vars are baked in at build time by CRA — trigger a fresh Vercel build to pick them up.
 import { createClient } from '@supabase/supabase-js';
 
 const url = process.env.REACT_APP_SUPABASE_URL;
