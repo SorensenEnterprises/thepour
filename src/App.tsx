@@ -20,7 +20,7 @@ function AppContent() {
   const [pendingView, setPendingView] = useState<'recipes' | 'inventory'>('recipes');
   const [bartenderOpen, setBartenderOpen] = useState(false);
 
-  const { inventory, inStockIds, splashIds, setQuantity, addItem } = useInventory(user?.id);
+  const { inventory, inStockIds, splashIds, setQuantity, addItem, editItem, removeItem } = useInventory(user?.id);
 
   const matches = useMemo(
     () => matchRecipesToInventory(sampleRecipes, inStockIds, splashIds),
@@ -73,6 +73,8 @@ function AppContent() {
             inventory={inventory}
             onSetQuantity={(id: string, qty: QuantityLevel) => setQuantity(id, qty)}
             onAddItem={addItem}
+            onEditItem={editItem}
+            onDeleteItem={removeItem}
           />
         )}
       </main>

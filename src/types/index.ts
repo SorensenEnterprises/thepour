@@ -39,10 +39,21 @@ export interface Recipe {
   difficulty: 'easy' | 'medium' | 'hard';
 }
 
+export type BottleSize = 50 | 375 | 750 | 1000 | 1750;
+
+export const BOTTLE_SIZES: { value: BottleSize; label: string }[] = [
+  { value: 50,   label: '50ml (mini)' },
+  { value: 375,  label: '375ml (half bottle)' },
+  { value: 750,  label: '750ml (standard)' },
+  { value: 1000, label: '1L' },
+  { value: 1750, label: '1.75L (handle)' },
+];
+
 export interface InventoryItem {
   ingredientId: string;
   name: string;
   category: Ingredient['category'];
   quantity: QuantityLevel;
+  size?: BottleSize;
   notes?: string;
 }

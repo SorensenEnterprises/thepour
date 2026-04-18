@@ -9,20 +9,30 @@ interface Props {
   inventory: InventoryItem[];
   onSetQuantity: (id: string, qty: QuantityLevel) => void;
   onAddItem: (item: InventoryItem) => void;
+  onEditItem: (item: InventoryItem) => void;
+  onDeleteItem: (id: string) => void;
 }
 
-type Overlay = 'none' | 'scan' | 'add';
+type Overlay = 'none' | 'scan' | 'add' | 'edit';
 
-export function InventoryPage({ inventory, onSetQuantity, onAddItem }: Props) {
-  const [overlay, setOverlay] = useState<Overlay>('none');
-  const [prefillName, setPrefillName] = useState('');
+export function InventoryPage({ inventory, onSetQuantity, onAddItem, onEditItem, onDeleteItem }: Props) {
+  const [overlay, setOverlay]           = useState<Overlay>('none');
+  const [prefillName, setPrefillName]   = useState('');
   const [prefillCategory, setPrefillCategory] = useState<Ingredient['category']>('spirit');
+  const [editingItem, setEditingItem]   = useState<InventoryItem | null>(null);
+
   const inStockCount = inventory.filter(i => i.quantity !== 'out').length;
 
   function openAdd(name = '', category: Ingredient['category'] = 'spirit') {
     setPrefillName(name);
     setPrefillCategory(category);
+    setEditingItem(null);
     setOverlay('add');
+  }
+
+  function openEdit(item: InventoryItem) {
+    setEditingItem(item);
+    setOverlay('edit');
   }
 
   return (
@@ -44,7 +54,12 @@ export function InventoryPage({ inventory, onSetQuantity, onAddItem }: Props) {
         </div>
       </div>
 
-      <InventoryList inventory={inventory} onSetQuantity={onSetQuantity} />
+      <InventoryList
+        inventory={inventory}
+        onSetQuantity={onSetQuantity}
+        onEdit={openEdit}
+        onDelete={onDeleteItem}
+      />
       <ResponsibleFooter />
 
       {overlay === 'scan' && (
@@ -59,7 +74,19 @@ export function InventoryPage({ inventory, onSetQuantity, onAddItem }: Props) {
         <AddBottleForm
           prefillName={prefillName}
           prefillCategory={prefillCategory}
-          onAdd={item => { onAddItem(item); setOverlay('none'); }}
+          onSave={item => { onAddItem(item); setOverlay('none'); }}
+          onClose={() => setOverlay('none')}
+        />
+      )}
+
+      {overlay === 'edit' && editingItem && (
+        <AddBottleForm
+          existingId={editingItem.ingredientId}
+          prefillName={editingItem.name}
+          prefillCategory={editingItem.category}
+          prefillQuantity={editingItem.quantity}
+          prefillSize={editingItem.size}
+          onSave={item => { onEditItem(item); setOverlay('none'); }}
           onClose={() => setOverlay('none')}
         />
       )}

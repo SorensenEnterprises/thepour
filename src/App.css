@@ -561,19 +561,87 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 8px;
+  min-width: 0;
+}
+
+.inventory-item-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  flex: 1;
 }
 
 .inventory-item-name {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .inventory-item-name--out {
   color: var(--text-muted);
   text-decoration: line-through;
+}
+
+.inventory-size-tag {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.inventory-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.inv-icon-btn {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.inventory-item:hover .inv-icon-btn { opacity: 1; }
+
+.inv-edit-btn {
+  color: var(--text-muted);
+}
+
+.inv-edit-btn:hover {
+  background: var(--surface-3);
+  border-color: var(--border-light);
+  color: var(--teal);
+}
+
+.inv-delete-btn {
+  color: var(--text-muted);
+}
+
+.inv-delete-btn:hover {
+  background: rgba(180, 60, 60, 0.12);
+  border-color: rgba(180, 60, 60, 0.3);
+  color: #d08080;
 }
 
 /* ── Quantity Badge ── */

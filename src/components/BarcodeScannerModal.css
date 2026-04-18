@@ -128,3 +128,74 @@
 }
 
 .bs-manual-btn:hover { background: #dbb95e; }
+
+/* ── Confirmation screen ── */
+.bs-confirm {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bs-confirm-sub {
+  font-size: 13px;
+  color: #6a8a8c;
+  margin-bottom: 10px;
+}
+
+.bs-field-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #4abbc4;
+  margin-top: 8px;
+}
+
+.bs-field-input,
+.bs-field-select {
+  background: #102f32;
+  border: 1px solid rgba(74,187,196,0.22);
+  border-radius: 9px;
+  color: #f5ead8;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  padding: 10px 13px;
+  outline: none;
+  transition: border-color 0.15s;
+  margin-bottom: 6px;
+}
+
+.bs-field-input:focus,
+.bs-field-select:focus { border-color: #4abbc4; }
+.bs-field-input::placeholder { color: #6a8a8c; }
+
+.bs-field-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234abbc4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 34px;
+  cursor: pointer;
+}
+
+.bs-field-select option { background: #0d2b2e; }
+
+.bs-confirm-btn {
+  background: #4abbc4;
+  border: none;
+  border-radius: 10px;
+  color: #091a1c;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.15s;
+}
+
+.bs-confirm-btn:not(:disabled):hover { background: #5dcdd6; }
+.bs-confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.bs-confirm .bs-manual-btn { margin-top: 6px; }

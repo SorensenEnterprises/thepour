@@ -1,11 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { InventoryItem, Ingredient, QuantityLevel, QUANTITY_LABELS } from '../types';
+import { InventoryItem, Ingredient, QuantityLevel, BottleSize, QUANTITY_LABELS, BOTTLE_SIZES } from '../types';
 
 interface Props {
-  onAdd: (item: InventoryItem) => void;
+  onSave: (item: InventoryItem) => void;
   onClose: () => void;
+  existingId?: string;
   prefillName?: string;
   prefillCategory?: Ingredient['category'];
+  prefillQuantity?: QuantityLevel;
+  prefillSize?: BottleSize;
 }
 
 const CATEGORIES: { value: Ingredient['category']; label: string }[] = [
@@ -18,38 +21,46 @@ const CATEGORIES: { value: Ingredient['category']; label: string }[] = [
   { value: 'other',   label: 'Other' },
 ];
 
-// Quantity levels available when adding — "out" excluded since you're adding something you have
 const ADD_LEVELS: QuantityLevel[] = ['full', 'three-quarters', 'half', 'quarter', 'splash'];
 
-export function AddBottleForm({ onAdd, onClose, prefillName = '', prefillCategory = 'spirit' }: Props) {
-  const [name, setName] = useState(prefillName);
+export function AddBottleForm({
+  onSave,
+  onClose,
+  existingId,
+  prefillName    = '',
+  prefillCategory = 'spirit',
+  prefillQuantity = 'full',
+  prefillSize     = 750,
+}: Props) {
+  const [name,     setName]     = useState(prefillName);
   const [category, setCategory] = useState<Ingredient['category']>(prefillCategory);
-  const [quantity, setQuantity] = useState<QuantityLevel>('full');
-  const [error, setError] = useState('');
+  const [quantity, setQuantity] = useState<QuantityLevel>(prefillQuantity);
+  const [size,     setSize]     = useState<BottleSize>(prefillSize);
+  const [error,    setError]    = useState('');
   const nameRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    nameRef.current?.focus();
-  }, []);
+  const isEdit = Boolean(existingId);
+
+  useEffect(() => { nameRef.current?.focus(); }, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = name.trim();
-    if (!trimmed) {
-      setError('Please enter a bottle name.');
-      nameRef.current?.focus();
-      return;
-    }
-    const id = trimmed.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now();
-    onAdd({ ingredientId: id, name: trimmed, category, quantity });
+    if (!trimmed) { setError('Please enter a bottle name.'); nameRef.current?.focus(); return; }
+
+    const ingredientId = isEdit
+      ? existingId!
+      : trimmed.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now();
+
+    onSave({ ingredientId, name: trimmed, category, quantity, size });
     onClose();
   }
 
   return (
     <div className="add-bottle-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="add-bottle-modal" role="dialog" aria-modal="true" aria-label="Add a bottle">
+      <div className="add-bottle-modal" role="dialog" aria-modal="true" aria-label={isEdit ? 'Edit bottle' : 'Add a bottle'}>
         <div className="add-bottle-header">
-          <h3>Add a Bottle</h3>
+          <h3>{isEdit ? 'Edit Bottle' : 'Add a Bottle'}</h3>
           <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
         </div>
 
@@ -83,6 +94,20 @@ export function AddBottleForm({ onAdd, onClose, prefillName = '', prefillCategor
           </div>
 
           <div className="form-field">
+            <label className="form-label" htmlFor="bottle-size">Bottle size</label>
+            <select
+              id="bottle-size"
+              className="form-select"
+              value={size}
+              onChange={e => setSize(Number(e.target.value) as BottleSize)}
+            >
+              {BOTTLE_SIZES.map(s => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-field">
             <label className="form-label">How much do you have?</label>
             <div className="qty-selector">
               {ADD_LEVELS.map(level => (
@@ -100,7 +125,7 @@ export function AddBottleForm({ onAdd, onClose, prefillName = '', prefillCategor
           </div>
 
           <button type="submit" className="add-bottle-submit">
-            Add to My Bar
+            {isEdit ? 'Save Changes' : 'Add to My Bar'}
           </button>
         </form>
       </div>
