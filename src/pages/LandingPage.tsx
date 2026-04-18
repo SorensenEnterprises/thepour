@@ -29,14 +29,12 @@ async function submitToKlaviyo(email: string, zip: string): Promise<void> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'revision': '2023-10-15',
+        'revision': '2023-12-15',
       },
       body: JSON.stringify({
         data: {
           type: 'subscription',
           attributes: {
-            list_id: KLAVIYO_LIST_ID,
-            custom_source: 'thepour.app landing page',
             profile: {
               data: {
                 type: 'profile',
@@ -46,6 +44,7 @@ async function submitToKlaviyo(email: string, zip: string): Promise<void> {
                 },
               },
             },
+            list_id: KLAVIYO_LIST_ID,
           },
         },
       }),
