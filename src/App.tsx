@@ -48,8 +48,8 @@ function AppContent() {
     );
   }
 
-  // Auth gate — shown when user clicks "try the app" without being signed in
-  if (view === 'auth' && !user && !isGuest) {
+  // Auth gate — shown when not signed in (including guests who want to sign in)
+  if (view === 'auth' && !user) {
     return <AuthPage onEntered={() => setView('recipes')} />;
   }
 
@@ -63,7 +63,7 @@ function AppContent() {
         onSignIn={() => setView('auth')}
       />
       <main className="main-content">
-        {view === 'recipes' || view === 'auth' ? (
+        {view === 'recipes' ? (
           <RecipesPage matches={matches} />
         ) : (
           <InventoryPage
