@@ -1,6 +1,10 @@
 import { Recipe } from '../types';
 import { shotRecipes } from './shotRecipes';
 import { extendedRecipes } from './extendedRecipes';
+import { cocktailsVol2 } from './cocktailsVol2';
+import { mocktailsVol2 } from './mocktailsVol2';
+import { dirtySodasVol2 } from './dirtySodasVol2';
+import { shotsVol2 } from './shotsVol2';
 
 export const sampleRecipes: Recipe[] = [
   // ── Existing 5 ──────────────────────────────────────────────────────────────
@@ -829,4 +833,8 @@ export const sampleRecipes: Recipe[] = [
   },
   ...shotRecipes,
   ...extendedRecipes,
+  ...cocktailsVol2,
+  ...mocktailsVol2,
+  ...dirtySodasVol2,
+  ...shotsVol2,
 ];
