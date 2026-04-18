@@ -44,7 +44,14 @@ async function submitToKlaviyo(email: string, zip: string): Promise<void> {
                 },
               },
             },
-            list_id: KLAVIYO_LIST_ID,
+          },
+          relationships: {
+            list: {
+              data: {
+                type: 'list',
+                id: KLAVIYO_LIST_ID,
+              },
+            },
           },
         },
       }),
