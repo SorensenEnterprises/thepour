@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { InventoryItem, QuantityLevel } from '../types';
+import { InventoryItem, QuantityLevel, SPIRIT_TYPE_CANONICAL } from '../types';
 import { sampleInventory } from '../data/sampleInventory';
 import { supabase, supabaseConfigured } from '../lib/supabase';
 import { getCanonicalIds } from '../utils/brandMap';
@@ -53,7 +53,7 @@ function saveToLocalStorage(inventory: InventoryItem[]) {
 
 // ── Supabase helpers ──────────────────────────────────────────────────────────
 
-type SupabaseRow = { ingredient_id: string; quantity_level: string };
+type SupabaseRow = { ingredient_id: string; quantity_level: string; spirit_type: string | null };
 
 async function loadFromSupabase(userId: string): Promise<InventoryItem[]> {
   const base = loadFromLocalStorage();
@@ -61,28 +61,37 @@ async function loadFromSupabase(userId: string): Promise<InventoryItem[]> {
 
   const { data, error } = await supabase
     .from('inventory')
-    .select('ingredient_id, quantity_level')
+    .select('ingredient_id, quantity_level, spirit_type')
     .eq('user_id', userId);
 
   if (error || !data || data.length === 0) return base;
 
-  const remote = new Map<string, QuantityLevel>(
-    (data as SupabaseRow[]).map(r => [r.ingredient_id, r.quantity_level as QuantityLevel])
+  const remote = new Map<string, { quantity: QuantityLevel; spiritType?: string }>(
+    (data as SupabaseRow[]).map(r => [
+      r.ingredient_id,
+      { quantity: r.quantity_level as QuantityLevel, spiritType: r.spirit_type ?? undefined },
+    ])
   );
 
-  return base.map(item =>
-    remote.has(item.ingredientId)
-      ? { ...item, quantity: remote.get(item.ingredientId)! }
-      : item
-  );
+  return base.map(item => {
+    const r = remote.get(item.ingredientId);
+    if (!r) return item;
+    return { ...item, quantity: r.quantity, spiritType: r.spiritType ?? item.spiritType };
+  });
 }
 
-function upsertToSupabase(userId: string, ingredientId: string, quantity: QuantityLevel) {
+function upsertToSupabase(userId: string, ingredientId: string, quantity: QuantityLevel, spiritType?: string) {
   if (!supabaseConfigured) return;
   supabase
     .from('inventory')
     .upsert(
-      { user_id: userId, ingredient_id: ingredientId, quantity_level: quantity, updated_at: new Date().toISOString() },
+      {
+        user_id:       userId,
+        ingredient_id: ingredientId,
+        quantity_level: quantity,
+        spirit_type:   spiritType ?? null,
+        updated_at:    new Date().toISOString(),
+      },
       { onConflict: 'user_id,ingredient_id' }
     )
     .then(({ error }) => {
@@ -107,8 +116,10 @@ function deleteFromSupabase(userId: string, ingredientId: string) {
 export function useInventory(userId?: string) {
   const [inventory, setInventory] = useState<InventoryItem[]>(sampleInventory);
   const [ready, setReady] = useState(false);
-  const userIdRef = useRef(userId);
-  userIdRef.current = userId;
+  const userIdRef   = useRef(userId);
+  const inventoryRef = useRef(inventory);
+  userIdRef.current   = userId;
+  inventoryRef.current = inventory;
 
   useEffect(() => {
     setReady(false);
@@ -129,18 +140,22 @@ export function useInventory(userId?: string) {
     setInventory(prev => prev.map(item =>
       item.ingredientId === ingredientId ? { ...item, quantity } : item
     ));
-    if (userIdRef.current) upsertToSupabase(userIdRef.current, ingredientId, quantity);
+    if (userIdRef.current) {
+      const item = inventoryRef.current.find(i => i.ingredientId === ingredientId);
+      upsertToSupabase(userIdRef.current, ingredientId, quantity, item?.spiritType);
+    }
   }, []);
 
   const addItem = useCallback((item: InventoryItem) => {
     setInventory(prev => [...prev, item]);
+    if (userIdRef.current) upsertToSupabase(userIdRef.current, item.ingredientId, item.quantity, item.spiritType);
   }, []);
 
   const editItem = useCallback((updated: InventoryItem) => {
     setInventory(prev => prev.map(item =>
       item.ingredientId === updated.ingredientId ? updated : item
     ));
-    if (userIdRef.current) upsertToSupabase(userIdRef.current, updated.ingredientId, updated.quantity);
+    if (userIdRef.current) upsertToSupabase(userIdRef.current, updated.ingredientId, updated.quantity, updated.spiritType);
   }, []);
 
   const removeItem = useCallback((ingredientId: string) => {
@@ -153,19 +168,26 @@ export function useInventory(userId?: string) {
     inventory.forEach(item => {
       if (item.quantity === 'out') return;
       ids.add(item.ingredientId);
-      // Expand brand/keyword matches to canonical ingredient IDs
+      // Brand/keyword name expansion
       getCanonicalIds(item.name).forEach(id => ids.add(id));
+      // Explicit spiritType expansion (most precise — user-selected or form-derived)
+      if (item.spiritType) {
+        (SPIRIT_TYPE_CANONICAL[item.spiritType] ?? []).forEach(id => ids.add(id));
+      }
     });
     return ids;
   }, [inventory]);
 
-  // splashIds = "low stock" — factors in bottle size, also expands via brand map
+  // splashIds = "low stock" — factors in bottle size, also expands via brand map + spiritType
   const splashIds = useMemo(() => {
     const ids = new Set<string>();
     inventory.forEach(item => {
       if (!isLowStock(item)) return;
       ids.add(item.ingredientId);
       getCanonicalIds(item.name).forEach(id => ids.add(id));
+      if (item.spiritType) {
+        (SPIRIT_TYPE_CANONICAL[item.spiritType] ?? []).forEach(id => ids.add(id));
+      }
     });
     return ids;
   }, [inventory]);

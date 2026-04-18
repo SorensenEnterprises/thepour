@@ -1,5 +1,64 @@
 export type QuantityLevel = 'full' | 'three-quarters' | 'half' | 'quarter' | 'splash' | 'out';
 
+// ── Spirit / Liqueur type metadata ────────────────────────────────────────────
+
+export interface SpiritTypeOption {
+  value: string;
+  label: string;
+  canonicalIds: string[]; // ingredient IDs this type satisfies in recipes
+}
+
+export const SPIRIT_TYPES: SpiritTypeOption[] = [
+  { value: 'bourbon',          label: 'Bourbon',               canonicalIds: ['bourbon'] },
+  { value: 'rye-whiskey',      label: 'Rye Whiskey',           canonicalIds: ['rye-whiskey'] },
+  { value: 'irish-whiskey',    label: 'Irish Whiskey',         canonicalIds: ['irish-whiskey'] },
+  { value: 'scotch-blended',   label: 'Scotch (Blended)',      canonicalIds: ['scotch'] },
+  { value: 'scotch-peated',    label: 'Scotch (Peated/Islay)', canonicalIds: ['islay-scotch', 'scotch'] },
+  { value: 'japanese-whisky',  label: 'Japanese Whisky',       canonicalIds: ['japanese-whisky'] },
+  { value: 'tequila-blanco',   label: 'Blanco Tequila',        canonicalIds: ['tequila'] },
+  { value: 'tequila-reposado', label: 'Reposado Tequila',      canonicalIds: ['tequila-reposado', 'tequila'] },
+  { value: 'tequila-anejo',    label: 'Añejo Tequila',         canonicalIds: ['tequila-anejo', 'tequila'] },
+  { value: 'mezcal',           label: 'Mezcal',                canonicalIds: ['mezcal'] },
+  { value: 'gin-london-dry',   label: 'London Dry Gin',        canonicalIds: ['gin'] },
+  { value: 'gin-old-tom',      label: 'Old Tom Gin',           canonicalIds: ['gin'] },
+  { value: 'gin-navy',         label: 'Navy Strength Gin',     canonicalIds: ['gin'] },
+  { value: 'rum-white',        label: 'White Rum',             canonicalIds: ['rum-white'] },
+  { value: 'rum-dark',         label: 'Dark Rum',              canonicalIds: ['rum-dark'] },
+  { value: 'rum-aged',         label: 'Aged Rum',              canonicalIds: ['rum-aged', 'rum-dark'] },
+  { value: 'rum-spiced',       label: 'Spiced Rum',            canonicalIds: ['rum-spiced', 'rum-dark'] },
+  { value: 'vodka',            label: 'Vodka',                 canonicalIds: ['vodka'] },
+  { value: 'cognac-brandy',    label: 'Cognac/Brandy',         canonicalIds: ['cognac', 'brandy'] },
+  { value: 'other-spirit',     label: 'Other Spirit',          canonicalIds: [] },
+];
+
+export const LIQUEUR_TYPES: SpiritTypeOption[] = [
+  { value: 'triple-sec',      label: 'Triple Sec/Cointreau', canonicalIds: ['triple-sec'] },
+  { value: 'coffee-liqueur',  label: 'Coffee Liqueur',       canonicalIds: ['coffee-liqueur'] },
+  { value: 'irish-cream',     label: 'Irish Cream',          canonicalIds: ['irish-cream', 'coffee-liqueur'] },
+  { value: 'amaretto',        label: 'Amaretto',             canonicalIds: ['amaretto'] },
+  { value: 'elderflower',     label: 'Elderflower',          canonicalIds: ['elderflower-liqueur'] },
+  { value: 'peach-schnapps',  label: 'Peach Schnapps',       canonicalIds: ['peach-schnapps'] },
+  { value: 'campari-l',       label: 'Campari',              canonicalIds: ['campari'] },
+  { value: 'aperol-l',        label: 'Aperol',               canonicalIds: ['aperol'] },
+  { value: 'chambord',        label: 'Chambord',             canonicalIds: ['chambord'] },
+  { value: 'other-liqueur',   label: 'Other Liqueur',        canonicalIds: [] },
+];
+
+export const FORTIFIED_TYPES: SpiritTypeOption[] = [
+  { value: 'sweet-vermouth',   label: 'Sweet Vermouth',              canonicalIds: ['sweet-vermouth'] },
+  { value: 'dry-vermouth',     label: 'Dry Vermouth',                canonicalIds: ['dry-vermouth'] },
+  { value: 'blanc-vermouth',   label: 'Blanc/Bianco Vermouth',       canonicalIds: ['dry-vermouth', 'sweet-vermouth'] },
+  { value: 'dry-sherry',       label: 'Dry Sherry (Fino/Manzanilla)',canonicalIds: ['dry-sherry', 'amontillado-sherry'] },
+  { value: 'cream-sherry',     label: 'Cream Sherry',                canonicalIds: ['dry-sherry'] },
+  { value: 'port',             label: 'Port',                        canonicalIds: ['port'] },
+  { value: 'other-fortified',  label: 'Other Fortified Wine',        canonicalIds: [] },
+];
+
+// Flat lookup: spiritType value → canonical ingredient IDs
+export const SPIRIT_TYPE_CANONICAL: Record<string, string[]> = Object.fromEntries(
+  [...SPIRIT_TYPES, ...LIQUEUR_TYPES, ...FORTIFIED_TYPES].map(({ value, canonicalIds }) => [value, canonicalIds])
+);
+
 export const QUANTITY_LEVELS: QuantityLevel[] = [
   'full', 'three-quarters', 'half', 'quarter', 'splash', 'out',
 ];
@@ -56,4 +115,5 @@ export interface InventoryItem {
   quantity: QuantityLevel;
   size?: BottleSize;
   notes?: string;
+  spiritType?: string; // value from SPIRIT_TYPES | LIQUEUR_TYPES | FORTIFIED_TYPES
 }

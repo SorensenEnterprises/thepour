@@ -839,6 +839,12 @@ body {
   color: #d08080;
 }
 
+.form-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
 .form-select {
   background: var(--surface-3);
   border: 1px solid var(--border);

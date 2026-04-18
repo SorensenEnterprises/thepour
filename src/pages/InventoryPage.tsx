@@ -86,6 +86,7 @@ export function InventoryPage({ inventory, onSetQuantity, onAddItem, onEditItem,
           prefillCategory={editingItem.category}
           prefillQuantity={editingItem.quantity}
           prefillSize={editingItem.size}
+          prefillSpiritType={editingItem.spiritType}
           onSave={item => { onEditItem(item); setOverlay('none'); }}
           onClose={() => setOverlay('none')}
         />

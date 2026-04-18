@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { InventoryItem, Ingredient, QuantityLevel, BottleSize, QUANTITY_LABELS, BOTTLE_SIZES } from '../types';
+import {
+  InventoryItem, Ingredient, QuantityLevel, BottleSize,
+  QUANTITY_LABELS, BOTTLE_SIZES,
+  SPIRIT_TYPES, LIQUEUR_TYPES, FORTIFIED_TYPES,
+} from '../types';
 
 interface Props {
   onSave: (item: InventoryItem) => void;
@@ -9,6 +13,7 @@ interface Props {
   prefillCategory?: Ingredient['category'];
   prefillQuantity?: QuantityLevel;
   prefillSize?: BottleSize;
+  prefillSpiritType?: string;
 }
 
 const CATEGORIES: { value: Ingredient['category']; label: string }[] = [
@@ -27,21 +32,29 @@ export function AddBottleForm({
   onSave,
   onClose,
   existingId,
-  prefillName    = '',
-  prefillCategory = 'spirit',
-  prefillQuantity = 'full',
-  prefillSize     = 750,
+  prefillName       = '',
+  prefillCategory   = 'spirit',
+  prefillQuantity   = 'full',
+  prefillSize       = 750,
+  prefillSpiritType = '',
 }: Props) {
-  const [name,     setName]     = useState(prefillName);
-  const [category, setCategory] = useState<Ingredient['category']>(prefillCategory);
-  const [quantity, setQuantity] = useState<QuantityLevel>(prefillQuantity);
-  const [size,     setSize]     = useState<BottleSize>(prefillSize);
-  const [error,    setError]    = useState('');
+  const [name,       setName]       = useState(prefillName);
+  const [category,   setCategory]   = useState<Ingredient['category']>(prefillCategory);
+  const [spiritType, setSpiritType] = useState(prefillSpiritType);
+  const [quantity,   setQuantity]   = useState<QuantityLevel>(prefillQuantity);
+  const [size,       setSize]       = useState<BottleSize>(prefillSize);
+  const [error,      setError]      = useState('');
   const nameRef = useRef<HTMLInputElement>(null);
 
   const isEdit = Boolean(existingId);
 
   useEffect(() => { nameRef.current?.focus(); }, []);
+
+  // Reset spirit type when category changes
+  function handleCategoryChange(val: Ingredient['category']) {
+    setCategory(val);
+    setSpiritType('');
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,9 +65,18 @@ export function AddBottleForm({
       ? existingId!
       : trimmed.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now();
 
-    onSave({ ingredientId, name: trimmed, category, quantity, size });
+    onSave({
+      ingredientId,
+      name: trimmed,
+      category,
+      quantity,
+      size,
+      spiritType: spiritType || undefined,
+    });
     onClose();
   }
+
+  const showTypeDropdown = category === 'spirit' || category === 'liqueur';
 
   return (
     <div className="add-bottle-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -85,13 +107,47 @@ export function AddBottleForm({
               id="bottle-category"
               className="form-select"
               value={category}
-              onChange={e => setCategory(e.target.value as Ingredient['category'])}
+              onChange={e => handleCategoryChange(e.target.value as Ingredient['category'])}
             >
               {CATEGORIES.map(c => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
             </select>
           </div>
+
+          {showTypeDropdown && (
+            <div className="form-field">
+              <label className="form-label" htmlFor="bottle-spirit-type">Type</label>
+              <select
+                id="bottle-spirit-type"
+                className="form-select"
+                value={spiritType}
+                onChange={e => setSpiritType(e.target.value)}
+              >
+                <option value="">— Select type (optional) —</option>
+                {category === 'spirit' && (
+                  SPIRIT_TYPES.map(t => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))
+                )}
+                {category === 'liqueur' && (
+                  <>
+                    <optgroup label="Liqueurs">
+                      {LIQUEUR_TYPES.map(t => (
+                        <option key={t.value} value={t.value}>{t.label}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Fortified Wine">
+                      {FORTIFIED_TYPES.map(t => (
+                        <option key={t.value} value={t.value}>{t.label}</option>
+                      ))}
+                    </optgroup>
+                  </>
+                )}
+              </select>
+              <span className="form-hint">Helps match your bottle to recipes</span>
+            </div>
+          )}
 
           <div className="form-field">
             <label className="form-label" htmlFor="bottle-size">Bottle size</label>
