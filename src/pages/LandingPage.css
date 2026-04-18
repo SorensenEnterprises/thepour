@@ -145,8 +145,14 @@
 
 .lp-signup {
   display: flex;
+  flex-direction: column;
   gap: 10px;
   margin-bottom: 16px;
+}
+
+.lp-signup-fields {
+  display: flex;
+  gap: 10px;
 }
 
 .lp-signup-input {
@@ -166,6 +172,11 @@
 .lp-signup-input::placeholder { color: var(--cream-muted); }
 .lp-signup-input:focus { border-color: var(--teal); }
 
+.lp-signup-zip {
+  flex: 0 0 110px !important;
+  min-width: 0;
+}
+
 .lp-signup-btn {
   background: var(--teal);
   border: none;
@@ -180,8 +191,33 @@
   transition: background 0.15s, transform 0.1s;
 }
 
-.lp-signup-btn:hover  { background: #5ccbd4; }
-.lp-signup-btn:active { transform: scale(0.97); }
+.lp-signup-btn:hover    { background: #5ccbd4; }
+.lp-signup-btn:active   { transform: scale(0.97); }
+.lp-signup-btn:disabled { opacity: 0.6; cursor: default; }
+
+.lp-signup-success {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--teal);
+  padding: 14px 0;
+}
+
+.lp-signup-success-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--teal);
+  flex-shrink: 0;
+}
+
+.lp-signup-error {
+  font-size: 13px;
+  color: #c87070;
+  margin: 0;
+}
 
 .lp-bartender-row {
   display: flex;
@@ -572,9 +608,7 @@
 }
 
 .lp-cta-signup {
-  display: flex;
-  gap: 10px;
-  max-width: 440px;
+  max-width: 480px;
   margin: 0 auto 16px;
 }
 
@@ -653,7 +687,8 @@
 
   .lp-cta { padding: 60px 24px; }
 
-  .lp-cta-signup { flex-direction: column; }
+  .lp-signup-fields { flex-direction: column; }
+  .lp-signup-zip    { flex: 1 !important; }
 
   .lp-footer { flex-direction: column; gap: 16px; text-align: center; padding: 28px 24px; }
 }

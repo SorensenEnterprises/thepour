@@ -19,9 +19,114 @@ const INVENTORY_PREVIEW = [
   { name: 'Angostura Bitters',  badge: 'Splash', cls: 'splash' },
 ];
 
+const KLAVIYO_PUBLIC_KEY = 'XXQwsC';
+const KLAVIYO_LIST_ID    = 'TQut8s';
+
+async function submitToKlaviyo(email: string, zip: string): Promise<void> {
+  const res = await fetch(
+    `https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_PUBLIC_KEY}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'revision': '2023-10-15',
+      },
+      body: JSON.stringify({
+        data: {
+          type: 'subscription',
+          attributes: {
+            list_id: KLAVIYO_LIST_ID,
+            custom_source: 'thepour.app landing page',
+            profile: {
+              data: {
+                type: 'profile',
+                attributes: {
+                  email,
+                  properties: { zip_code: zip },
+                },
+              },
+            },
+          },
+        },
+      }),
+    },
+  );
+  if (!res.ok) throw new Error(`Klaviyo error ${res.status}`);
+}
+
+type SignupStatus = 'idle' | 'loading' | 'success' | 'error';
+
+interface SignupFormProps {
+  btnLabel: string;
+  id: string;
+}
+
+function SignupForm({ btnLabel, id }: SignupFormProps) {
+  const [email,  setEmail]  = useState('');
+  const [zip,    setZip]    = useState('');
+  const [status, setStatus] = useState<SignupStatus>('idle');
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email || !zip) return;
+    setStatus('loading');
+    try {
+      await submitToKlaviyo(email.trim(), zip.trim());
+      setStatus('success');
+      setEmail('');
+      setZip('');
+    } catch {
+      setStatus('error');
+    }
+  }
+
+  if (status === 'success') {
+    return (
+      <div className="lp-signup-success">
+        <span className="lp-signup-success-dot" />
+        You're on the list!
+      </div>
+    );
+  }
+
+  return (
+    <form className="lp-signup" onSubmit={handleSubmit} id={id}>
+      <div className="lp-signup-fields">
+        <input
+          className="lp-signup-input"
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          disabled={status === 'loading'}
+        />
+        <input
+          className="lp-signup-input lp-signup-zip"
+          type="text"
+          placeholder="ZIP code"
+          value={zip}
+          onChange={e => setZip(e.target.value.replace(/\D/g, '').slice(0, 5))}
+          maxLength={5}
+          required
+          disabled={status === 'loading'}
+        />
+      </div>
+      <button
+        className="lp-signup-btn"
+        type="submit"
+        disabled={status === 'loading'}
+      >
+        {status === 'loading' ? 'Sending…' : btnLabel}
+      </button>
+      {status === 'error' && (
+        <p className="lp-signup-error">Something went wrong. Please try again.</p>
+      )}
+    </form>
+  );
+}
+
 export function LandingPage({ onEnter }: Props) {
-  const [heroEmail, setHeroEmail]       = useState('');
-  const [ctaEmail, setCtaEmail]         = useState('');
   const [bartenderOpen, setBartenderOpen] = useState(false);
 
   return (
@@ -54,16 +159,7 @@ export function LandingPage({ onEnter }: Props) {
           <p className="lp-hero-tagline">
             Cocktails. Mocktails. Dirty Sodas. Every drink, one app.
           </p>
-          <div className="lp-signup">
-            <input
-              className="lp-signup-input"
-              type="email"
-              placeholder="Enter your email"
-              value={heroEmail}
-              onChange={e => setHeroEmail(e.target.value)}
-            />
-            <button className="lp-signup-btn">Get Early Access</button>
-          </div>
+          <SignupForm btnLabel="Get Early Access" id="hero-signup" />
           <div className="lp-bartender-row">
             <button className="lp-bartender-btn" onClick={() => setBartenderOpen(true)}>
               🍸 Ask Your Bartender
@@ -225,14 +321,7 @@ export function LandingPage({ onEnter }: Props) {
             Join the waitlist and be the first to know when thepour. launches. Free during beta.
           </p>
           <div className="lp-cta-signup">
-            <input
-              className="lp-signup-input"
-              type="email"
-              placeholder="Enter your email"
-              value={ctaEmail}
-              onChange={e => setCtaEmail(e.target.value)}
-            />
-            <button className="lp-signup-btn">Join Waitlist</button>
+            <SignupForm btnLabel="Join the list" id="cta-signup" />
           </div>
           <p className="lp-cta-meta">No spam. Unsubscribe any time.</p>
         </div>
