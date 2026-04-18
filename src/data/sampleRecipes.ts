@@ -1,4 +1,6 @@
 import { Recipe } from '../types';
+import { shotRecipes } from './shotRecipes';
+import { extendedRecipes } from './extendedRecipes';
 
 export const sampleRecipes: Recipe[] = [
   // ── Existing 5 ──────────────────────────────────────────────────────────────
@@ -825,4 +827,6 @@ export const sampleRecipes: Recipe[] = [
     glassType: 'Large Cup', garnish: 'Fresh raspberries, lime wheel',
     tags: ['dirty-soda', 'fruity', 'citrus'], difficulty: 'easy',
   },
+  ...shotRecipes,
+  ...extendedRecipes,
 ];

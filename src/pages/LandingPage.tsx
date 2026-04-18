@@ -285,7 +285,7 @@ export function LandingPage({ onEnter }: Props) {
             <span className="lp-bento-icon">🍹</span>
             <div className="lp-bento-title">Cocktails, Mocktails & Dirty Sodas</div>
             <p className="lp-bento-desc">
-              46 recipes across three categories — classic cocktails, zero-proof mocktails, and viral dirty sodas. Something for everyone.
+              200+ recipes across four categories — classic cocktails, shots, zero-proof mocktails, and viral dirty sodas. Something for everyone.
             </p>
             <div className="lp-bento-glow" />
           </div>

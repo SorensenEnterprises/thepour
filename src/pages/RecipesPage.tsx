@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { RecipeCard } from '../components/RecipeCard';
 import { RecipeMatch } from '../utils/recipeUtils';
 
-type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda';
+type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
 type ReadyFilter  = 'all' | 'ready';
 type SpiritFilter = 'all' | 'whiskey' | 'gin' | 'tequila' | 'vodka' | 'rum' | 'other';
 
@@ -33,6 +33,7 @@ const CATEGORY_TAG: Record<DrinkCategory, string> = {
   cocktail:    '',
   mocktail:    'mocktail',
   'dirty-soda': 'dirty-soda',
+  shot:        'shot',
 };
 
 export function RecipesPage({ matches }: Props) {
@@ -44,7 +45,9 @@ export function RecipesPage({ matches }: Props) {
   const categoryMatches = useMemo(() => {
     if (category === 'cocktail') {
       return matches.filter(({ recipe }) =>
-        !recipe.tags.includes('mocktail') && !recipe.tags.includes('dirty-soda'));
+        !recipe.tags.includes('mocktail') &&
+        !recipe.tags.includes('dirty-soda') &&
+        !recipe.tags.includes('shot'));
     }
     const tag = CATEGORY_TAG[category];
     return matches.filter(({ recipe }) => recipe.tags.includes(tag));
@@ -77,19 +80,20 @@ export function RecipesPage({ matches }: Props) {
     cocktail:    'Recipe Suggestions',
     mocktail:    'Mocktail Recipes',
     'dirty-soda': 'Dirty Soda Recipes',
+    shot:        'Shot Recipes',
   };
 
   return (
     <div className="page">
       <div className="page-header">
         <div className="category-toggle">
-          {(['cocktail', 'mocktail', 'dirty-soda'] as DrinkCategory[]).map(cat => (
+          {(['cocktail', 'mocktail', 'dirty-soda', 'shot'] as DrinkCategory[]).map(cat => (
             <button
               key={cat}
               className={`category-toggle-btn${category === cat ? ' active' : ''}`}
               onClick={() => { setCategory(cat); setSpiritFilter('all'); setReadyFilter('all'); }}
             >
-              {cat === 'cocktail' ? '🍸 Cocktails' : cat === 'mocktail' ? '🧃 Mocktails' : '🥤 Dirty Sodas'}
+              {cat === 'cocktail' ? '🍸 Cocktails' : cat === 'mocktail' ? '🧃 Mocktails' : cat === 'dirty-soda' ? '🥤 Dirty Sodas' : '🥃 Shots'}
             </button>
           ))}
         </div>
@@ -121,7 +125,7 @@ export function RecipesPage({ matches }: Props) {
         </div>
 
         <div className="filter-row">
-          {category === 'cocktail' && (
+          {(category === 'cocktail') && (
             <div className="filter-tabs spirit-filters">
               {SPIRIT_FILTERS.map(({ value, label }) => (
                 <button
