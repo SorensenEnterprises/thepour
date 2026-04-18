@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { ResponsibleFooter } from '../components/ResponsibleFooter';
 import './AuthPage.css';
 
 interface Props {
@@ -70,6 +71,7 @@ export function AuthPage({ onEntered }: Props) {
             Back to Sign In
           </button>
         </div>
+        <ResponsibleFooter />
       </div>
     );
   }
@@ -153,6 +155,7 @@ export function AuthPage({ onEntered }: Props) {
           </button>
         </p>
       </div>
+      <ResponsibleFooter />
     </div>
   );
 }

@@ -295,6 +295,91 @@
 
 .bm-reveal-restart:hover { color: #4abbc4; }
 
+/* ── 3-Card Recommendations ── */
+.bm-rec-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.bm-rec-card {
+  background: #0d2b2e;
+  border: 1px solid rgba(74,187,196,0.18);
+  border-radius: 14px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.bm-rec-card--top {
+  border-color: rgba(201,168,76,0.45);
+  box-shadow: 0 0 0 1px rgba(201,168,76,0.15);
+}
+
+.bm-rec-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #c9a84c;
+  color: #091a1c;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.bm-rec-name {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 700;
+  font-style: italic;
+  color: #f5ead8;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+}
+
+.bm-rec-desc {
+  font-size: 12px;
+  color: #6a8a8c;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.bm-rec-pick {
+  background: rgba(74,187,196,0.12);
+  border: 1px solid rgba(74,187,196,0.28);
+  border-radius: 8px;
+  color: #4abbc4;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  text-align: center;
+}
+
+.bm-rec-card--top .bm-rec-pick {
+  background: #c9a84c;
+  border-color: #c9a84c;
+  color: #091a1c;
+}
+
+.bm-rec-pick:hover { filter: brightness(1.12); }
+
+@media (max-width: 540px) {
+  .bm-rec-cards { grid-template-columns: 1fr; }
+  .bm-rec-card--top { margin-top: 14px; }
+}
+
 /* ── Category Pick ── */
 .bm-category-options {
   display: flex;

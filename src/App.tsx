@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NavBar } from './components/NavBar';
+import { BartenderModal } from './components/BartenderModal';
 import { RecipesPage } from './pages/RecipesPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { LandingPage } from './pages/LandingPage';
@@ -16,6 +17,7 @@ type View = 'landing' | 'auth' | 'recipes' | 'inventory';
 function AppContent() {
   const { user, isGuest, loading } = useAuth();
   const [view, setView] = useState<View>('landing');
+  const [bartenderOpen, setBartenderOpen] = useState(false);
 
   const { inventory, inStockIds, splashIds, setQuantity, addItem } = useInventory(user?.id);
 
@@ -74,6 +76,14 @@ function AppContent() {
           />
         )}
       </main>
+
+      <button className="bartender-fab" onClick={() => setBartenderOpen(true)}>
+        🍸 Ask Bartender
+      </button>
+
+      {bartenderOpen && (
+        <BartenderModal onClose={() => setBartenderOpen(false)} />
+      )}
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { InventoryItem, Ingredient, QuantityLevel, QUANTITY_LABELS } from '../ty
 interface Props {
   onAdd: (item: InventoryItem) => void;
   onClose: () => void;
+  prefillName?: string;
+  prefillCategory?: Ingredient['category'];
 }
 
 const CATEGORIES: { value: Ingredient['category']; label: string }[] = [
@@ -19,9 +21,9 @@ const CATEGORIES: { value: Ingredient['category']; label: string }[] = [
 // Quantity levels available when adding — "out" excluded since you're adding something you have
 const ADD_LEVELS: QuantityLevel[] = ['full', 'three-quarters', 'half', 'quarter', 'splash'];
 
-export function AddBottleForm({ onAdd, onClose }: Props) {
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState<Ingredient['category']>('spirit');
+export function AddBottleForm({ onAdd, onClose, prefillName = '', prefillCategory = 'spirit' }: Props) {
+  const [name, setName] = useState(prefillName);
+  const [category, setCategory] = useState<Ingredient['category']>(prefillCategory);
   const [quantity, setQuantity] = useState<QuantityLevel>('full');
   const [error, setError] = useState('');
   const nameRef = useRef<HTMLInputElement>(null);

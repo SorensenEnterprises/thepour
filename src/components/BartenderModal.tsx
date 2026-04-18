@@ -293,7 +293,7 @@ const COCKTAILS: CocktailRec[] = [
 
 // ── Scoring ──────────────────────────────────────────────────────────────────
 
-function getRecommendation(answers: Required<Answers>): CocktailRec {
+function getTopCocktails(answers: Required<Answers>, n = 3): CocktailRec[] {
   const scored = COCKTAILS.map(c => {
     let score = 0;
     if (c.moods.includes(answers.mood))                                                         score += 3;
@@ -304,7 +304,7 @@ function getRecommendation(answers: Required<Answers>): CocktailRec {
     return { c, score };
   });
   scored.sort((a, b) => b.score - a.score);
-  return scored[0].c;
+  return scored.slice(0, n).map(s => s.c);
 }
 
 // ── Mocktail Library ─────────────────────────────────────────────────────────
@@ -416,7 +416,7 @@ const MOCKTAILS: MocktailRec[] = [
   },
 ];
 
-function getMocktailRec(answers: Record<string, string>): MocktailRec {
+function getTopMocktails(answers: Record<string, string>, n = 3): MocktailRec[] {
   const scored = MOCKTAILS.map(m => {
     let score = 0;
     if (m.vibes.includes(answers.vibe as MocktailVibe))   score += 3;
@@ -425,7 +425,7 @@ function getMocktailRec(answers: Record<string, string>): MocktailRec {
     return { m, score };
   });
   scored.sort((a, b) => b.score - a.score);
-  return scored[0].m;
+  return scored.slice(0, n).map(s => s.m);
 }
 
 // ── Dirty Soda Library ───────────────────────────────────────────────────────
@@ -537,7 +537,7 @@ const DIRTY_SODAS: DirtySodaRec[] = [
   },
 ];
 
-function getDirtySodaRec(answers: Record<string, string>): DirtySodaRec {
+function getTopDirtySodas(answers: Record<string, string>, n = 3): DirtySodaRec[] {
   const scored = DIRTY_SODAS.map(d => {
     let score = 0;
     if (d.bases.includes(answers.sodaBase as SodaBase))     score += 3;
@@ -546,7 +546,7 @@ function getDirtySodaRec(answers: Record<string, string>): DirtySodaRec {
     return { d, score };
   });
   scored.sort((a, b) => b.score - a.score);
-  return scored[0].d;
+  return scored.slice(0, n).map(s => s.d);
 }
 
 // ── Questions ────────────────────────────────────────────────────────────────
@@ -698,6 +698,7 @@ export function BartenderModal({ onClose }: Props) {
   const [category, setCategory]   = useState<DrinkCategory | null>(null);
   const [step, setStep]           = useState(0);
   const [answers, setAnswers]     = useState<Record<string, string>>({});
+  const [recs, setRecs]           = useState<DrinkRec[]>([]);
   const [rec, setRec]             = useState<DrinkRec | null>(null);
   const [animKey, setAnimKey]     = useState(0);
   const [shakerLine, setShakerLine] = useState('');
@@ -775,11 +776,12 @@ export function BartenderModal({ onClose }: Props) {
         setAnimKey(k => k + 1);
         setPhase('question');
       } else {
-        let result: DrinkRec;
-        if (category === 'mocktail')   result = getMocktailRec(next);
-        else if (category === 'dirty-soda') result = getDirtySodaRec(next);
-        else result = getRecommendation(next as Required<Answers>);
-        setRec(result);
+        let results: DrinkRec[];
+        if (category === 'mocktail')        results = getTopMocktails(next);
+        else if (category === 'dirty-soda') results = getTopDirtySodas(next);
+        else                                results = getTopCocktails(next as Required<Answers>);
+        setRecs(results);
+        setRec(null);
         setPhase('reveal');
       }
     }, 820);
@@ -794,6 +796,7 @@ export function BartenderModal({ onClose }: Props) {
     setCategory(null);
     setStep(0);
     setAnswers({});
+    setRecs([]);
     setRec(null);
     setShakerLine('');
     setPhase('category-pick');
@@ -920,7 +923,7 @@ export function BartenderModal({ onClose }: Props) {
 
       </div>
 
-      <div className={`bm-shell${phase === 'recipe' ? ' bm-shell--recipe' : ''}`}>
+      <div className={`bm-shell${(phase === 'recipe' || phase === 'reveal') ? ' bm-shell--recipe' : ''}`}>
 
         {/* ── Shaker transition ── */}
         {phase === 'shaking' && (
@@ -1019,21 +1022,25 @@ export function BartenderModal({ onClose }: Props) {
           </div>
         )}
 
-        {/* ── Reveal ── */}
-        {phase === 'reveal' && rec && (
+        {/* ── Reveal — 3 options ── */}
+        {phase === 'reveal' && recs.length > 0 && (
           <div className="bm-reveal">
-            <p className="bm-reveal-label">Tonight's recommendation</p>
-            <h2 className="bm-reveal-name">{rec.name}</h2>
-            <p className="bm-reveal-line">"{rec.voice}"</p>
-            <div className="bm-reveal-divider" />
-            <div className="bm-reveal-ingredients">
-              {rec.ingredients.map(ing => (
-                <span key={ing} className="bm-ingredient-chip">{ing}</span>
+            <p className="bm-reveal-label">Your top picks tonight</p>
+            <div className="bm-rec-cards">
+              {recs.map((r, i) => (
+                <div key={r.name} className={`bm-rec-card${i === 0 ? ' bm-rec-card--top' : ''}`}>
+                  {i === 0 && <span className="bm-rec-badge">Best match</span>}
+                  <h3 className="bm-rec-name">{r.name}</h3>
+                  <p className="bm-rec-desc">{r.description}</p>
+                  <button
+                    className="bm-rec-pick"
+                    onClick={() => { setRec(r); setPhase('recipe'); }}
+                  >
+                    Make this →
+                  </button>
+                </div>
               ))}
             </div>
-            <button className="bm-reveal-cta" onClick={() => setPhase('recipe')}>
-              Make this tonight →
-            </button>
             <button className="bm-reveal-restart" onClick={handleRestart}>
               Ask again
             </button>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BartenderModal } from '../components/BartenderModal';
+import { ResponsibleFooter } from '../components/ResponsibleFooter';
 import './LandingPage.css';
 
 interface Props {
@@ -341,6 +342,8 @@ export function LandingPage({ onEnter }: Props) {
           Open the app →
         </button>
       </footer>
+
+      <ResponsibleFooter />
 
       {bartenderOpen && (
         <BartenderModal onClose={() => setBartenderOpen(false)} />

@@ -779,3 +779,61 @@ body {
   padding: 48px;
   font-size: 15px;
 }
+
+/* ── Inventory header buttons ── */
+.inventory-header-btns {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.scan-bottle-btn {
+  background: var(--surface-3);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.scan-bottle-btn:hover {
+  background: var(--surface-2);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ── Floating Bartender FAB ── */
+.bartender-fab {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 50;
+  background: var(--gold);
+  border: none;
+  border-radius: 50px;
+  color: #091a1c;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 13px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 6px 28px rgba(201,168,76,0.35), 0 2px 8px rgba(0,0,0,0.4);
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+}
+
+.bartender-fab:hover {
+  background: #dbb95e;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 36px rgba(201,168,76,0.45), 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.bartender-fab:active { transform: translateY(0); }

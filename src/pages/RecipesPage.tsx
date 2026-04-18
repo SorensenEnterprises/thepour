@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { RecipeCard } from '../components/RecipeCard';
 import { RecipeMatch } from '../utils/recipeUtils';
+import { ResponsibleFooter } from '../components/ResponsibleFooter';
 
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
 type ReadyFilter  = 'all' | 'ready';
@@ -171,6 +172,7 @@ export function RecipesPage({ matches }: Props) {
           </p>
         )}
       </div>
+      <ResponsibleFooter />
     </div>
   );
 }
