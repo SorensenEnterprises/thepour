@@ -144,7 +144,7 @@ export function LandingPage({ onEnter }: Props) {
           <span className="lp-nav-icon">🍸</span>
           <span className="lp-nav-name">thepour.</span>
         </div>
-        <button className="lp-nav-btn">Get Early Access</button>
+        <button className="lp-nav-btn" onClick={onEnter}>Get Early Access</button>
       </nav>
 
       {/* ── Hero ── */}

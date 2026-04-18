@@ -61,6 +61,7 @@ function AppContent() {
         onNavigate={setView}
         onHome={() => setView('landing')}
         onSignIn={() => setView('auth')}
+        onSignOut={() => setView('auth')}
       />
       <main className="main-content">
         {view === 'recipes' ? (

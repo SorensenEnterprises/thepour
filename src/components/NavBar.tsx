@@ -6,9 +6,10 @@ interface Props {
   onNavigate: (page: 'recipes' | 'inventory') => void;
   onHome: () => void;
   onSignIn?: () => void;
+  onSignOut?: () => void;
 }
 
-export function NavBar({ activePage, onNavigate, onHome, onSignIn }: Props) {
+export function NavBar({ activePage, onNavigate, onHome, onSignIn, onSignOut }: Props) {
   const { user, isGuest, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -62,14 +63,14 @@ export function NavBar({ activePage, onNavigate, onHome, onSignIn }: Props) {
                 <p className="nav-menu-email">{user.email}</p>
                 <button
                   className="nav-menu-signout"
-                  onClick={async () => { setMenuOpen(false); await signOut(); }}
+                  onClick={async () => { setMenuOpen(false); await signOut(); onSignOut?.(); }}
                 >
                   Sign out
                 </button>
               </div>
             )}
           </div>
-        ) : isGuest && onSignIn ? (
+        ) : !user && onSignIn ? (
           <button className="nav-signin-link" onClick={onSignIn}>
             Sign in
           </button>
