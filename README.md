@@ -1,3 +1,37 @@
+# thepour.
+
+A smart home bar app — track your inventory, discover what you can make, and get recipe suggestions that match your bottles.
+
+## Environment setup
+
+Create a `.env.local` file in the project root before running the app:
+
+```
+REACT_APP_SUPABASE_URL=https://your-project.supabase.co
+REACT_APP_SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+Both values are found in your Supabase project dashboard under **Settings → API**.
+
+Without these variables the app runs in guest-only mode (inventory saves to localStorage only).
+
+### Supabase table
+
+Create a table called `inventory` in your Supabase project with the following columns:
+
+| Column | Type | Notes |
+|---|---|---|
+| `user_id` | `uuid` | references `auth.users(id)` on delete cascade |
+| `ingredient_id` | `text` | |
+| `quantity_level` | `text` | one of: `full`, `three-quarters`, `half`, `quarter`, `splash`, `out` |
+| `updated_at` | `timestamptz` | |
+
+Add a unique constraint on `(user_id, ingredient_id)` so upserts work correctly.
+
+Enable Row Level Security and add a policy that allows users to select/insert/update/delete only their own rows (`auth.uid() = user_id`).
+
+---
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

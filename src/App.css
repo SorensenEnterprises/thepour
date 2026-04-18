@@ -99,6 +99,118 @@ body {
 .nav-link:hover { background: var(--surface-3); color: var(--text-primary); }
 .nav-link.active { background: rgba(74,187,196,0.12); color: var(--teal); }
 
+/* ── NavBar Account ── */
+.navbar-links { align-items: center; }
+
+.nav-account {
+  position: relative;
+  margin-left: 4px;
+}
+
+.nav-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(74,187,196,0.15);
+  border: 1px solid rgba(74,187,196,0.35);
+  color: var(--teal);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.nav-avatar:hover {
+  background: rgba(74,187,196,0.25);
+  border-color: var(--teal);
+}
+
+.nav-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--border-teal);
+  border-radius: 12px;
+  padding: 12px;
+  min-width: 200px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+  z-index: 100;
+  animation: nav-menu-in 0.15s ease;
+}
+
+@keyframes nav-menu-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.nav-menu-email {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 0 4px 10px;
+  border-bottom: 1px solid var(--border);
+  word-break: break-all;
+}
+
+.nav-menu-signout {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 4px 2px;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.nav-menu-signout:hover { color: #c87070; }
+
+.nav-signin-link {
+  background: none;
+  border: 1px solid var(--border-teal);
+  border-radius: 8px;
+  color: var(--teal);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 14px;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.nav-signin-link:hover {
+  background: rgba(74,187,196,0.1);
+  border-color: var(--teal);
+}
+
+/* ── App loading ── */
+.app-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-0);
+}
+
+.app-loading-brand {
+  font-size: 32px;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -1.5px;
+  color: var(--accent);
+  animation: app-loading-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes app-loading-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
 /* ── Category Toggle ── */
 .category-toggle {
   display: flex;
