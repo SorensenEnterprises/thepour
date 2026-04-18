@@ -6,25 +6,42 @@ interface Props {
   canMake: boolean;
   missingIngredients: string[];
   splashWarnings: string[];
+  haveCount?: number;
+  totalCount?: number;
+  exploreMode?: boolean;
 }
 
-export function RecipeCard({ recipe, canMake, missingIngredients, splashWarnings }: Props) {
+export function RecipeCard({ recipe, canMake, missingIngredients, splashWarnings, haveCount = 0, totalCount = 0, exploreMode = false }: Props) {
   const [expanded, setExpanded] = useState(false);
 
-  const headerClass = canMake
-    ? splashWarnings.length > 0 ? 'can-make-low' : 'can-make'
-    : 'missing';
+  const headerClass = exploreMode
+    ? haveCount === totalCount ? 'can-make' : haveCount > 0 ? 'explore-partial' : 'explore-none'
+    : canMake
+      ? splashWarnings.length > 0 ? 'can-make-low' : 'can-make'
+      : 'missing';
+
+  function getBadge() {
+    if (exploreMode) {
+      if (haveCount === totalCount) return { cls: 'badge-green', text: 'Have everything' };
+      if (haveCount === 0) return { cls: 'badge-muted', text: `0 of ${totalCount} ingredients` };
+      return { cls: 'badge-explore', text: `${haveCount} of ${totalCount} ingredients` };
+    }
+    if (canMake) {
+      return splashWarnings.length > 0
+        ? { cls: 'badge-warn', text: 'Low on stock' }
+        : { cls: 'badge-green', text: 'Ready to make' };
+    }
+    return { cls: 'badge-orange', text: `Missing ${missingIngredients.length}` };
+  }
+
+  const badge = getBadge();
 
   return (
     <div className={`recipe-card ${headerClass}`}>
       <div className="recipe-card-header" onClick={() => setExpanded(!expanded)}>
         <div className="recipe-title-row">
           <h3>{recipe.name}</h3>
-          <span className={`badge ${canMake ? (splashWarnings.length > 0 ? 'badge-warn' : 'badge-green') : 'badge-orange'}`}>
-            {canMake
-              ? splashWarnings.length > 0 ? 'Low on stock' : 'Ready to make'
-              : `Missing ${missingIngredients.length}`}
-          </span>
+          <span className={`badge ${badge.cls}`}>{badge.text}</span>
         </div>
         <p className="recipe-description">{recipe.description}</p>
         <div className="recipe-meta">
@@ -61,14 +78,14 @@ export function RecipeCard({ recipe, canMake, missingIngredients, splashWarnings
           {recipe.garnish && (
             <p className="garnish-note">Garnish: {recipe.garnish}</p>
           )}
-          {splashWarnings.length > 0 && (
+          {!exploreMode && splashWarnings.length > 0 && (
             <div className="splash-alert">
               <strong>Running low:</strong> {splashWarnings.join(', ')} — you may not have enough
             </div>
           )}
           {missingIngredients.length > 0 && (
-            <div className="missing-alert">
-              <strong>You're missing:</strong> {missingIngredients.join(', ')}
+            <div className={exploreMode ? 'missing-alert missing-alert--explore' : 'missing-alert'}>
+              <strong>{exploreMode ? 'Still need:' : "You're missing:"}</strong> {missingIngredients.join(', ')}
             </div>
           )}
         </div>

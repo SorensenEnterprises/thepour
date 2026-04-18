@@ -5,7 +5,9 @@ export type RecipeMatch = {
   canMake: boolean;
   missingIngredients: string[];
   missingCount: number;
-  splashWarnings: string[];   // required ingredients that are at Splash level
+  splashWarnings: string[];
+  haveCount: number;   // required ingredients currently in stock
+  totalCount: number;  // total required ingredients
 };
 
 export function matchRecipesToInventory(
@@ -26,6 +28,8 @@ export function matchRecipesToInventory(
         missingIngredients: missing.map(i => i.name),
         missingCount: missing.length,
         splashWarnings,
+        haveCount: required.length - missing.length,
+        totalCount: required.length,
       };
     })
     .sort((a, b) => a.missingCount - b.missingCount);

@@ -6,6 +6,7 @@ import { ResponsibleFooter } from '../components/ResponsibleFooter';
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
 type ReadyFilter  = 'all' | 'ready';
 type SpiritFilter = 'all' | 'whiskey' | 'gin' | 'tequila' | 'vodka' | 'rum' | 'other';
+type ViewMode     = 'my-bar' | 'explore';
 
 const SPIRIT_FILTERS: { value: SpiritFilter; label: string }[] = [
   { value: 'all',     label: 'All' },
@@ -38,6 +39,7 @@ const CATEGORY_TAG: Record<DrinkCategory, string> = {
 };
 
 export function RecipesPage({ matches }: Props) {
+  const [mode, setMode]               = useState<ViewMode>('my-bar');
   const [category, setCategory]       = useState<DrinkCategory>('cocktail');
   const [readyFilter, setReadyFilter] = useState<ReadyFilter>('all');
   const [spiritFilter, setSpiritFilter] = useState<SpiritFilter>('all');
@@ -57,7 +59,8 @@ export function RecipesPage({ matches }: Props) {
   const displayed = useMemo(() => {
     const q = search.trim().toLowerCase();
     return categoryMatches.filter(({ recipe, canMake }) => {
-      if (readyFilter === 'ready' && !canMake) return false;
+      // In Explore mode show everything — no ready filter
+      if (mode === 'my-bar' && readyFilter === 'ready' && !canMake) return false;
 
       if (category === 'cocktail' && spiritFilter !== 'all') {
         const tags = recipe.tags;
@@ -73,7 +76,7 @@ export function RecipesPage({ matches }: Props) {
       if (q && !recipe.name.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [categoryMatches, category, readyFilter, spiritFilter, search]);
+  }, [categoryMatches, category, mode, readyFilter, spiritFilter, search]);
 
   const readyCount = categoryMatches.filter(m => m.canMake).length;
 
@@ -87,6 +90,30 @@ export function RecipesPage({ matches }: Props) {
   return (
     <div className="page">
       <div className="page-header">
+
+        {/* ── Mode toggle ── */}
+        <div className="view-mode-toggle">
+          <button
+            className={`view-mode-btn${mode === 'my-bar' ? ' active' : ''}`}
+            onClick={() => setMode('my-bar')}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            My Bar
+          </button>
+          <button
+            className={`view-mode-btn${mode === 'explore' ? ' active' : ''}`}
+            onClick={() => setMode('explore')}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            Explore
+          </button>
+        </div>
+
         <div className="category-toggle">
           {(['cocktail', 'mocktail', 'dirty-soda', 'shot'] as DrinkCategory[]).map(cat => (
             <button
@@ -101,7 +128,9 @@ export function RecipesPage({ matches }: Props) {
 
         <h2>{PAGE_TITLES[category]}</h2>
         <p className="page-subtitle">
-          {readyCount} of {categoryMatches.length} recipes ready with your current bar
+          {mode === 'explore'
+            ? `${categoryMatches.length} recipes — tap any to see what you need`
+            : `${readyCount} of ${categoryMatches.length} recipes ready with your current bar`}
         </p>
 
         <div className="recipes-search-row">
@@ -139,31 +168,36 @@ export function RecipesPage({ matches }: Props) {
               ))}
             </div>
           )}
-          <div className="filter-tabs ready-filter">
-            <button
-              className={`filter-tab ${readyFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setReadyFilter('all')}
-            >
-              All
-            </button>
-            <button
-              className={`filter-tab filter-tab--ready ${readyFilter === 'ready' ? 'active' : ''}`}
-              onClick={() => setReadyFilter('ready')}
-            >
-              Ready ({readyCount})
-            </button>
-          </div>
+          {mode === 'my-bar' && (
+            <div className="filter-tabs ready-filter">
+              <button
+                className={`filter-tab ${readyFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setReadyFilter('all')}
+              >
+                All
+              </button>
+              <button
+                className={`filter-tab filter-tab--ready ${readyFilter === 'ready' ? 'active' : ''}`}
+                onClick={() => setReadyFilter('ready')}
+              >
+                Ready ({readyCount})
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="recipe-list">
-        {displayed.map(({ recipe, canMake, missingIngredients, splashWarnings }) => (
+        {displayed.map(({ recipe, canMake, missingIngredients, splashWarnings, haveCount, totalCount }) => (
           <RecipeCard
             key={recipe.id}
             recipe={recipe}
             canMake={canMake}
             missingIngredients={missingIngredients}
             splashWarnings={splashWarnings}
+            haveCount={haveCount}
+            totalCount={totalCount}
+            exploreMode={mode === 'explore'}
           />
         ))}
         {displayed.length === 0 && (

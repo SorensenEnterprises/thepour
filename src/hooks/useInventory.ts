@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { InventoryItem, QuantityLevel } from '../types';
 import { sampleInventory } from '../data/sampleInventory';
 import { supabase, supabaseConfigured } from '../lib/supabase';
+import { getCanonicalIds } from '../utils/brandMap';
 
 const LS_KEY = 'thepour_inventory';
 
@@ -147,16 +148,27 @@ export function useInventory(userId?: string) {
     if (userIdRef.current) deleteFromSupabase(userIdRef.current, ingredientId);
   }, []);
 
-  const inStockIds = useMemo(
-    () => new Set(inventory.filter(i => i.quantity !== 'out').map(i => i.ingredientId)),
-    [inventory]
-  );
+  const inStockIds = useMemo(() => {
+    const ids = new Set<string>();
+    inventory.forEach(item => {
+      if (item.quantity === 'out') return;
+      ids.add(item.ingredientId);
+      // Expand brand/keyword matches to canonical ingredient IDs
+      getCanonicalIds(item.name).forEach(id => ids.add(id));
+    });
+    return ids;
+  }, [inventory]);
 
-  // splashIds now means "low stock" — factors in bottle size
-  const splashIds = useMemo(
-    () => new Set(inventory.filter(isLowStock).map(i => i.ingredientId)),
-    [inventory]
-  );
+  // splashIds = "low stock" — factors in bottle size, also expands via brand map
+  const splashIds = useMemo(() => {
+    const ids = new Set<string>();
+    inventory.forEach(item => {
+      if (!isLowStock(item)) return;
+      ids.add(item.ingredientId);
+      getCanonicalIds(item.name).forEach(id => ids.add(id));
+    });
+    return ids;
+  }, [inventory]);
 
   return { inventory, inStockIds, splashIds, setQuantity, addItem, editItem, removeItem, ready };
 }
