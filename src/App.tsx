@@ -17,6 +17,7 @@ type View = 'landing' | 'auth' | 'recipes' | 'inventory';
 function AppContent() {
   const { user, isGuest, loading } = useAuth();
   const [view, setView] = useState<View>('landing');
+  const [pendingView, setPendingView] = useState<'recipes' | 'inventory'>('recipes');
   const [bartenderOpen, setBartenderOpen] = useState(false);
 
   const { inventory, inStockIds, splashIds, setQuantity, addItem } = useInventory(user?.id);
@@ -36,23 +37,22 @@ function AppContent() {
 
   // Landing page — always show first
   if (view === 'landing') {
+    const handleEnterView = (target: 'recipes' | 'inventory') => {
+      setPendingView(target);
+      if (user || isGuest) setView(target);
+      else setView('auth');
+    };
     return (
       <LandingPage
-        onEnter={() => {
-          // If already authed or guest, go straight to app
-          if (user || isGuest) {
-            setView('recipes');
-          } else {
-            setView('auth');
-          }
-        }}
+        onEnter={() => handleEnterView('recipes')}
+        onEnterView={handleEnterView}
       />
     );
   }
 
   // Auth gate — shown when not signed in (including guests who want to sign in)
   if (view === 'auth' && !user) {
-    return <AuthPage onEntered={() => setView('recipes')} />;
+    return <AuthPage onEntered={() => setView(pendingView)} />;
   }
 
   // Main app shell

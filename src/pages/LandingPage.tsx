@@ -5,6 +5,7 @@ import './LandingPage.css';
 
 interface Props {
   onEnter: () => void;
+  onEnterView: (view: 'inventory' | 'recipes') => void;
 }
 
 const MOCK_CARDS = [
@@ -133,7 +134,7 @@ function SignupForm({ btnLabel, id }: SignupFormProps) {
   );
 }
 
-export function LandingPage({ onEnter }: Props) {
+export function LandingPage({ onEnter, onEnterView }: Props) {
   const [bartenderOpen, setBartenderOpen] = useState(false);
 
   return (
@@ -213,29 +214,32 @@ export function LandingPage({ onEnter }: Props) {
           Set up your bar in minutes. thepour. does the rest — matching recipes to exactly what you have.
         </p>
         <div className="lp-steps">
-          <div className="lp-step">
+          <button className="lp-step lp-step--btn" onClick={() => onEnterView('inventory')}>
             <div className="lp-step-num">01</div>
             <div className="lp-step-title">Stock your bar</div>
             <p className="lp-step-desc">
               Browse our library of spirits, liqueurs, and mixers. Mark each bottle with how much you have — Full, Half, Splash, or Out.
             </p>
+            <span className="lp-step-cta">Open My Bar →</span>
             <div className="lp-step-connector" />
-          </div>
-          <div className="lp-step">
+          </button>
+          <button className="lp-step lp-step--btn" onClick={() => onEnterView('recipes')}>
             <div className="lp-step-num">02</div>
             <div className="lp-step-title">Get matched recipes</div>
             <p className="lp-step-desc">
               Instantly see which cocktails you can make right now, which ones are one bottle away, and get a heads up when you're running low.
             </p>
+            <span className="lp-step-cta">Browse Recipes →</span>
             <div className="lp-step-connector" />
-          </div>
-          <div className="lp-step">
+          </button>
+          <button className="lp-step lp-step--btn" onClick={() => onEnterView('recipes')}>
             <div className="lp-step-num">03</div>
             <div className="lp-step-title">Pour with confidence</div>
             <p className="lp-step-desc">
               Tap any recipe for accurate measurements, step-by-step instructions, and glassware recommendations from classic to modern.
             </p>
-          </div>
+            <span className="lp-step-cta">See what's ready →</span>
+          </button>
         </div>
       </section>
 

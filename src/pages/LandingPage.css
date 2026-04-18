@@ -228,26 +228,30 @@
 }
 
 .lp-bartender-btn {
-  background: transparent;
-  border: 1.5px solid var(--gold);
-  border-radius: 10px;
-  color: var(--gold);
+  background: #c9a84c;
+  border: none;
+  border-radius: 50px;
+  color: #091a1c;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  padding: 12px 22px;
+  padding: 13px 20px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, color 0.15s, transform 0.1s, box-shadow 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 6px 28px rgba(201,168,76,0.35), 0 2px 8px rgba(0,0,0,0.4);
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
 .lp-bartender-btn:hover {
-  background: var(--gold);
-  color: #091a1c;
-  box-shadow: 0 4px 20px rgba(201,168,76,0.30);
+  background: #dbb95e;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 36px rgba(201,168,76,0.45), 0 4px 12px rgba(0,0,0,0.5);
 }
 
-.lp-bartender-btn:active { transform: scale(0.97); }
+.lp-bartender-btn:active { transform: translateY(0); }
 
 .lp-bartender-hint {
   font-size: 13px;
@@ -425,13 +429,23 @@
   border-radius: 16px;
   padding: 28px 24px;
   position: relative;
-  transition: border-color 0.2s, transform 0.2s;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.lp-step--btn {
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  font-family: inherit;
 }
 
 .lp-step:hover {
   border-color: rgba(74,187,196,0.65);
   transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
 }
+
+.lp-step:active { transform: translateY(-1px); }
 
 .lp-step-num {
   font-family: 'Fraunces', serif;
@@ -457,7 +471,19 @@
   font-size: 14px;
   color: var(--cream-dim);
   line-height: 1.65;
+  margin-bottom: 16px;
 }
+
+.lp-step-cta {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4abbc4;
+  letter-spacing: 0.1px;
+  transition: color 0.15s;
+}
+
+.lp-step:hover .lp-step-cta { color: #7dd4db; }
 
 .lp-step-connector {
   position: absolute;
