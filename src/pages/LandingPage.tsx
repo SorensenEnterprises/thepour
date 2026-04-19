@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BartenderModal } from '../components/BartenderModal';
 import { ResponsibleFooter } from '../components/ResponsibleFooter';
+import { ThePourLogo } from '../components/ThePourLogo';
 import './LandingPage.css';
 
 interface Props {
@@ -143,8 +144,7 @@ export function LandingPage({ onEnter, onEnterView }: Props) {
       {/* ── Nav ── */}
       <nav className="lp-nav">
         <div className="lp-nav-brand">
-          <span className="lp-nav-icon">🍸</span>
-          <span className="lp-nav-name">thepour.</span>
+          <ThePourLogo glassSize={24} fontSize={20} />
         </div>
         <button className="lp-nav-btn" onClick={onEnter}>Sign In</button>
       </nav>
@@ -340,7 +340,7 @@ export function LandingPage({ onEnter, onEnterView }: Props) {
 
       {/* ── Footer ── */}
       <footer className="lp-footer">
-        <span className="lp-footer-brand">thepour.</span>
+        <ThePourLogo glassSize={18} fontSize={16} className="lp-footer-brand" />
         <span className="lp-footer-copy">© {new Date().getFullYear()} thepour. All rights reserved.</span>
         <button className="lp-footer-enter" onClick={onEnter}>
           Open the app →

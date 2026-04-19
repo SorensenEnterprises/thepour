@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { ThePourLogo } from './ThePourLogo';
 
 interface Props {
   activePage: 'recipes' | 'inventory';
@@ -30,7 +31,7 @@ export function NavBar({ activePage, onNavigate, onHome, onSignIn, onSignOut }: 
   return (
     <nav className="navbar">
       <button className="navbar-brand navbar-home" onClick={onHome}>
-        <span className="brand-name">thepour<span className="brand-period">.</span></span>
+        <ThePourLogo glassSize={22} fontSize={17} />
       </button>
 
       <div className="navbar-links">

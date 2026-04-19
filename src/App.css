@@ -71,15 +71,6 @@ body {
 
 .navbar-home:hover { background: var(--surface-3); }
 
-.brand-name {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -1px;
-  color: var(--accent);
-  font-style: italic;
-}
-
-.brand-period { color: #4abbc4; }
 
 .navbar-links { display: flex; gap: 4px; }
 

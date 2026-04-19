@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { ResponsibleFooter } from '../components/ResponsibleFooter';
+import { ThePourLogo } from '../components/ThePourLogo';
 import './AuthPage.css';
 
 interface Props {
@@ -81,7 +82,7 @@ export function AuthPage({ onEntered }: Props) {
       <div className="auth-card">
         {/* Brand */}
         <div className="auth-brand">
-          thepour<span className="auth-brand-dot">.</span>
+          <ThePourLogo glassSize={36} fontSize={24} />
         </div>
 
         <h2 className="auth-title">

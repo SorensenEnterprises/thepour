@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { DrinkSurvey } from './DrinkSurvey';
+import { ThePourLogo } from './ThePourLogo';
 import './BartenderModal.css';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -822,6 +823,9 @@ export function BartenderModal({ onClose }: Props) {
 
   return (
     <div className="bm-overlay" onClick={e => { if (e.target === e.currentTarget) handleClose(); }}>
+      <div className="bm-topbar-logo" aria-label="thepour.">
+        <ThePourLogo glassSize={20} fontSize={15} />
+      </div>
       <button className="bm-close" onClick={handleClose} aria-label="Close">×</button>
 
       {/* ── Background glass illustrations ── */}
