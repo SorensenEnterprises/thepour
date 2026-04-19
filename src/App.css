@@ -660,6 +660,10 @@ body {
 
 .inventory-item:hover .inv-icon-btn { opacity: 1; }
 
+@media (max-width: 767px) {
+  .inv-icon-btn { opacity: 1; }
+}
+
 .inv-edit-btn {
   color: var(--text-muted);
 }

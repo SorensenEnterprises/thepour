@@ -108,6 +108,7 @@
 }
 
 .auth-submit {
+  width: 100%;
   background: var(--gold);
   border: none;
   border-radius: 12px;
@@ -217,6 +218,22 @@
 
 /* ── Mobile ── */
 @media (max-width: 480px) {
-  .auth-card { padding: 36px 24px 28px; }
+  .auth-wrap {
+    padding: 12px;
+    align-items: flex-start;
+    padding-top: 24px;
+  }
+  .auth-card {
+    padding: 28px 16px 24px;
+    border-radius: 16px;
+    box-sizing: border-box;
+    width: 100%;
+  }
   .auth-title { font-size: 22px; }
+  .auth-input,
+  .auth-submit,
+  .auth-guest-btn {
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
