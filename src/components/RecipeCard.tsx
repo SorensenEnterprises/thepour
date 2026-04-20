@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Recipe } from '../types';
 import { calculateCalories } from '../utils/calorieUtils';
+import { getGlassInfo } from '../utils/glasswareUtils';
+import { getRequiredEquipment } from '../utils/equipmentUtils';
 
 interface Props {
   recipe: Recipe;
@@ -37,6 +39,8 @@ export function RecipeCard({ recipe, canMake, missingIngredients, splashWarnings
 
   const badge = getBadge();
   const calories = calculateCalories(recipe.ingredients);
+  const glass = getGlassInfo(recipe.glassType);
+  const equipment = getRequiredEquipment(recipe.name, recipe.tags);
 
   return (
     <div className={`recipe-card ${headerClass}`}>
@@ -81,6 +85,50 @@ export function RecipeCard({ recipe, canMake, missingIngredients, splashWarnings
           {recipe.garnish && (
             <p className="garnish-note">Garnish: {recipe.garnish}</p>
           )}
+
+          {/* ── Glassware ── */}
+          <div className="recipe-section recipe-glassware">
+            <h4>Glassware</h4>
+            <div className="glassware-row">
+              <span className="glassware-emoji">{glass.emoji}</span>
+              <div className="glassware-info">
+                <span className="glassware-label">{glass.label}</span>
+                <span className="glassware-reason">{glass.reason}</span>
+              </div>
+              <a
+                className="glassware-shop"
+                href="https://www.amazon.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Shop →
+              </a>
+            </div>
+          </div>
+
+          {/* ── Equipment ── */}
+          {equipment.length > 0 && (
+            <div className="equipment-alert">
+              <strong>Special equipment needed</strong>
+              <ul className="equipment-list">
+                {equipment.map(eq => (
+                  <li key={eq.name} className="equipment-item">
+                    <span className="equipment-name">{eq.name}</span>
+                    <span className="equipment-reason"> — {eq.reason}</span>
+                    <a
+                      className="equipment-shop"
+                      href="https://www.amazon.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Shop on Amazon →
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {!exploreMode && splashWarnings.length > 0 && (
             <div className="splash-alert">
               <strong>Running low:</strong> {splashWarnings.join(', ')} — you may not have enough

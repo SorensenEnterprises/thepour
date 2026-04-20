@@ -13,7 +13,9 @@ type Style         = 'classic' | 'adventurous';
 type LightPref     = 'light-pref' | 'no-pref';
 type Strength      = 'light'   | 'balanced' | 'bold';
 type Phase         = 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
-type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda';
+type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
+type ShotSpirit    = 'tequila' | 'whiskey' | 'vodka' | 'any';
+type ShotStyle     = 'classic' | 'fruity' | 'creamy';
 type MocktailVibe  = 'fruity' | 'citrus' | 'herbal' | 'fizzy';
 type MocktailBase  = 'sparkling' | 'still' | 'tea';
 type MocktailSweet = 'light' | 'medium' | 'sweet';
@@ -62,6 +64,16 @@ interface DirtySodaRec {
   bases:       SodaBase[];
   flavors:     SodaFlavor[];
   creams:      SodaCream[];
+}
+
+interface ShotRec {
+  name:        string;
+  description: string;
+  voice:       string;
+  ingredients: string[];
+  steps:       string[];
+  spirits:     ShotSpirit[];
+  styles:      ShotStyle[];
 }
 
 type DrinkRec = { name: string; description: string; voice: string; ingredients: string[]; steps: string[] };
@@ -557,6 +569,141 @@ function getTopDirtySodas(answers: Record<string, string>, n = 3): DirtySodaRec[
   return scored.slice(0, n).map(s => s.d);
 }
 
+// ── Shot Library ─────────────────────────────────────────────────────────────
+
+const SHOTS: ShotRec[] = [
+  {
+    name: 'Tequila Shot',
+    description: 'Silver tequila straight — lick salt, shoot, bite lime. The original party starter.',
+    voice: "The shot that launched a thousand nights. Salt. Shoot. Lime. You already know.",
+    ingredients: ['1½ oz Silver Tequila', 'Salt (on hand)', 'Lime wedge'],
+    steps: [
+      'Pour 1½ oz silver tequila into a shot glass.',
+      'Lick the back of your hand and pour a small pinch of salt on it.',
+      'Lick the salt, shoot the tequila, and bite the lime.',
+    ],
+    spirits: ['tequila'], styles: ['classic'],
+  },
+  {
+    name: 'Whiskey Shot',
+    description: 'Straight bourbon or rye, room temp, no chaser. Simple, honest, undeniable.',
+    voice: "No frills. No chaser. Just good whiskey and the decision that brought you here.",
+    ingredients: ['1½ oz Bourbon or Rye Whiskey'],
+    steps: [
+      'Pour 1½ oz whiskey into a shot glass.',
+      'Shoot neat — no chaser required.',
+    ],
+    spirits: ['whiskey'], styles: ['classic'],
+  },
+  {
+    name: 'Kamikaze',
+    description: 'Vodka, triple sec, and lime juice — a clean, bright, citrus-forward shooter.',
+    voice: "Three ingredients. Maximum impact. Vodka, triple sec, lime — the shot that gets it done.",
+    ingredients: ['1 oz Vodka', '½ oz Triple Sec', '½ oz Fresh Lime Juice'],
+    steps: [
+      'Combine all ingredients in a shaker with ice.',
+      'Shake hard for 8 seconds.',
+      'Strain into a shot glass.',
+    ],
+    spirits: ['vodka'], styles: ['classic', 'fruity'],
+  },
+  {
+    name: 'Lemon Drop Shot',
+    description: 'Citrus vodka with fresh lemon and a sugared rim. Tart, sweet, and gone in a second.',
+    voice: "Citrus vodka, fresh lemon, sugared rim. Tart and sweet in equal measure.",
+    ingredients: ['1½ oz Citrus Vodka', '½ oz Fresh Lemon Juice', '¼ oz Simple Syrup', 'Sugar rim'],
+    steps: [
+      'Rim a shot glass with sugar — wet the rim with lemon, press into sugar.',
+      'Shake vodka, lemon juice, and simple syrup with ice.',
+      'Strain into the prepared shot glass.',
+    ],
+    spirits: ['vodka'], styles: ['fruity', 'classic'],
+  },
+  {
+    name: 'Washington Apple',
+    description: 'Crown Royal, sour apple schnapps, and cranberry. Sweet, tart, and dangerously easy.',
+    voice: "Crown Royal meets sour apple and cranberry. Dangerously easy to drink.",
+    ingredients: ['1 oz Crown Royal (Canadian Whisky)', '½ oz Sour Apple Schnapps', '½ oz Cranberry Juice'],
+    steps: [
+      'Combine all ingredients in a shaker with ice.',
+      'Shake for 8 seconds.',
+      'Strain into a shot glass.',
+    ],
+    spirits: ['whiskey'], styles: ['fruity'],
+  },
+  {
+    name: 'Buttery Nipple',
+    description: 'Butterscotch schnapps layered with Irish cream. Smooth, sweet, and dessert-like.',
+    voice: "Butterscotch schnapps and Irish cream. Dessert decided to become a shot.",
+    ingredients: ['1 oz Butterscotch Schnapps', '½ oz Irish Cream (Baileys)'],
+    steps: [
+      'Pour butterscotch schnapps into a shot glass.',
+      'Slowly layer Irish cream on top by pouring over the back of a spoon.',
+      'Serve without stirring to show the layers.',
+    ],
+    spirits: ['any'], styles: ['creamy', 'fruity'],
+  },
+  {
+    name: 'Alabama Slammer',
+    description: 'Southern Comfort, amaretto, sloe gin, and OJ — a sweet, fruity Southern classic.',
+    voice: "Southern Comfort, amaretto, sloe gin, OJ. The South in a shot glass.",
+    ingredients: ['½ oz Southern Comfort', '½ oz Amaretto', '¼ oz Sloe Gin', '¼ oz Orange Juice'],
+    steps: [
+      'Combine all ingredients in a shaker with ice.',
+      'Shake briefly for 5 seconds.',
+      'Strain into a shot glass.',
+    ],
+    spirits: ['any'], styles: ['fruity'],
+  },
+  {
+    name: 'Jager Bomb',
+    description: 'Jägermeister dropped into Red Bull. Equal parts ritual and bad idea.',
+    voice: "Drop it in. Watch it sink. You know what happens next.",
+    ingredients: ['1½ oz Jägermeister', '½ can Red Bull (Energy Drink)'],
+    steps: [
+      'Pour Red Bull into a pint glass about halfway.',
+      'Pour Jägermeister into a shot glass.',
+      'Drop the shot glass directly into the pint glass.',
+      'Drink immediately.',
+    ],
+    spirits: ['any'], styles: ['classic'],
+  },
+  {
+    name: 'Slippery Nipple',
+    description: 'Sambuca and Irish cream — anise and chocolate in a two-layer shooter.',
+    voice: "Sambuca and Irish cream in layers. Anise and chocolate, two seconds flat.",
+    ingredients: ['1 oz Sambuca', '½ oz Irish Cream (Baileys)'],
+    steps: [
+      'Pour sambuca into a shot glass.',
+      'Layer Irish cream gently on top using the back of a spoon.',
+    ],
+    spirits: ['any'], styles: ['creamy'],
+  },
+  {
+    name: 'Pickle Back',
+    description: 'Whiskey shot followed immediately by a pickle brine chaser. A cult classic.',
+    voice: "Shoot the whiskey. Chase it with the brine. Some things can't be explained — only experienced.",
+    ingredients: ['1½ oz Rye Whiskey', '1 oz Pickle Brine (chaser)'],
+    steps: [
+      'Pour rye into a shot glass.',
+      'Pour pickle brine into a separate shot glass.',
+      'Shoot the whiskey, then immediately chase with the pickle brine.',
+    ],
+    spirits: ['whiskey'], styles: ['classic'],
+  },
+];
+
+function getTopShots(answers: Record<string, string>, n = 3): ShotRec[] {
+  const scored = SHOTS.map(s => {
+    let score = 0;
+    if (answers.shotSpirit === 'any' || s.spirits.includes(answers.shotSpirit as ShotSpirit) || s.spirits.includes('any')) score += 3;
+    if (s.styles.includes(answers.shotStyle as ShotStyle)) score += 2;
+    return { s, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, n).map(x => x.s);
+}
+
 // ── Questions ────────────────────────────────────────────────────────────────
 
 const COCKTAIL_QUESTIONS = [
@@ -680,9 +827,34 @@ const DIRTY_SODA_QUESTIONS = [
   },
 ];
 
+const SHOT_QUESTIONS = [
+  {
+    key:  'shotSpirit',
+    voice: "Let me pick the right poison.",
+    text:  'Your spirit of choice?',
+    options: [
+      { label: 'Tequila',          sub: 'Blanco, smooth, party-ready',         value: 'tequila'  as ShotSpirit },
+      { label: 'Whiskey',          sub: 'Bourbon, rye, or Canadian',           value: 'whiskey'  as ShotSpirit },
+      { label: 'Vodka',            sub: 'Clean, neutral, goes anywhere',       value: 'vodka'    as ShotSpirit },
+      { label: 'No Preference',    sub: 'Surprise me — I trust you',           value: 'any'      as ShotSpirit },
+    ],
+  },
+  {
+    key:  'shotStyle',
+    voice: "And the vibe?",
+    text:  'What kind of shot?',
+    options: [
+      { label: 'Classic Straight', sub: 'No fuss, full spirit, done',           value: 'classic' as ShotStyle },
+      { label: 'Fruity & Sweet',   sub: 'Schnapps, juice, flavored',            value: 'fruity'  as ShotStyle },
+      { label: 'Creamy & Smooth',  sub: 'Layered, rich, dessert-like',          value: 'creamy'  as ShotStyle },
+    ],
+  },
+];
+
 function getQuestions(cat: DrinkCategory | null) {
   if (cat === 'mocktail')    return MOCKTAIL_QUESTIONS;
   if (cat === 'dirty-soda')  return DIRTY_SODA_QUESTIONS;
+  if (cat === 'shot')        return SHOT_QUESTIONS;
   return COCKTAIL_QUESTIONS;
 }
 
@@ -797,6 +969,7 @@ export function BartenderModal({ onClose }: Props) {
         let results: DrinkRec[];
         if (category === 'mocktail')        results = getTopMocktails(next);
         else if (category === 'dirty-soda') results = getTopDirtySodas(next);
+        else if (category === 'shot')       results = getTopShots(next);
         else                                results = getTopCocktails(next as Required<Answers>);
         setRecs(results);
         setRec(null);
@@ -1006,6 +1179,13 @@ export function BartenderModal({ onClose }: Props) {
                   <span className="bm-cat-sub">Spirit-forward, classic or adventurous</span>
                 </div>
               </button>
+              <button className="bm-cat-option" onClick={() => handleCategoryPick('dirty-soda')}>
+                <span className="bm-cat-icon">🥤</span>
+                <div>
+                  <span className="bm-cat-label">Dirty Sodas</span>
+                  <span className="bm-cat-sub">Soda, syrup, and a cream float</span>
+                </div>
+              </button>
               <button className="bm-cat-option" onClick={() => handleCategoryPick('mocktail')}>
                 <span className="bm-cat-icon">🧃</span>
                 <div>
@@ -1013,11 +1193,11 @@ export function BartenderModal({ onClose }: Props) {
                   <span className="bm-cat-sub">Zero proof, full flavor</span>
                 </div>
               </button>
-              <button className="bm-cat-option" onClick={() => handleCategoryPick('dirty-soda')}>
-                <span className="bm-cat-icon">🥤</span>
+              <button className="bm-cat-option" onClick={() => handleCategoryPick('shot')}>
+                <span className="bm-cat-icon">🥃</span>
                 <div>
-                  <span className="bm-cat-label">Dirty Sodas</span>
-                  <span className="bm-cat-sub">Soda, syrup, and a cream float</span>
+                  <span className="bm-cat-label">Shots</span>
+                  <span className="bm-cat-sub">Quick, bold, no-nonsense</span>
                 </div>
               </button>
             </div>
