@@ -67,6 +67,13 @@ const SODA_IDS = new Set([
   'ginger-ale','ginger-beer','grapefruit-soda','hibiscus-tea','iced-tea',
   'lemonade','mango-soda','oolong-tea','orange-fanta','soda-water',
   'sparkling-water','sprite','sweet-tea','tonic-water',
+  // Energy drinks (~10 cal/oz regular, rounded up)
+  'red-bull','monster-energy','rockstar-energy','bang-energy','ghost-energy',
+  'c4-energy','reign-energy','prime-energy',
+  // Sugar-free energy (~1 cal/oz, rounded to soda tier)
+  'red-bull-sugar-free','monster-zero','celsius','celsius-energy',
+  // Premium enhanced mixers
+  'fever-tree-tonic','fever-tree-ginger-beer','olipop','poppi','liquid-death',
 ]);
 
 const CREAM_IDS = new Set([
@@ -132,7 +139,7 @@ function calPerOz(ingredientId: string, name: string): number {
   const n = name.toLowerCase();
   if (/syrup|orgeat|grenadine|honey|agave|shrub/.test(n)) return 50;
   if (/juice|puree|nectar|cider/.test(n)) return 15;
-  if (/soda|tonic|cola|ginger.?beer|lemonade|sparkling|energy drink/.test(n)) return 10;
+  if (/soda|tonic|cola|ginger.?beer|lemonade|sparkling|energy.?drink|red bull|monster|celsius|rockstar|bang|fever.?tree|olipop|poppi|liquid death/.test(n)) return 10;
   if (/cream|milk|butter/.test(n)) return 50;
   if (/wine|champagne|prosecco|cava|sherry/.test(n)) return 25;
   if (/beer|stout|ale|lager/.test(n)) return 15;

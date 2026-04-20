@@ -5,6 +5,8 @@ import { cocktailsVol2 } from './cocktailsVol2';
 import { mocktailsVol2 } from './mocktailsVol2';
 import { dirtySodasVol2 } from './dirtySodasVol2';
 import { shotsVol2 } from './shotsVol2';
+import { craftCocktails } from './craftCocktails';
+import { energyDrinkCocktails } from './energyDrinkCocktails';
 
 export const sampleRecipes: Recipe[] = [
   // ── Existing 5 ──────────────────────────────────────────────────────────────
@@ -837,4 +839,6 @@ export const sampleRecipes: Recipe[] = [
   ...mocktailsVol2,
   ...dirtySodasVol2,
   ...shotsVol2,
+  ...craftCocktails,
+  ...energyDrinkCocktails,
 ];

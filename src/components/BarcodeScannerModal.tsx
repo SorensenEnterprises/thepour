@@ -28,7 +28,8 @@ function detectCategory(text: string): Ingredient['category'] {
   if (/liqueur|triple\s*sec|vermouth|campari|aperol|amaretto|cointreau|chartreuse|kahlua|baileys|sambuca|frangelico|drambuie|midori/.test(t)) return 'liqueur';
   if (/\bbitters\b/.test(t)) return 'bitters';
   if (/\bsyrup\b|grenadine|orgeat|falernum/.test(t)) return 'syrup';
-  if (/juice|tonic|soda|ginger\s*beer|cola|lemonade|sparkling\s*water|club\s*soda|mixer/.test(t)) return 'mixer';
+  if (/red\s*bull|monster\s*energy|rockstar|celsius|bang\s*energy|ghost\s*energy|c4\s*energy|reign\s*energy|prime\s*energy|liquid\s*i\.?v|energy\s*drink/.test(t)) return 'mixer';
+  if (/juice|tonic|soda|ginger\s*beer|cola|lemonade|sparkling\s*water|club\s*soda|mixer|fever.?tree|olipop|poppi|liquid\s*death/.test(t)) return 'mixer';
   if (/olive|cherry|garnish/.test(t)) return 'garnish';
   return 'other';
 }
