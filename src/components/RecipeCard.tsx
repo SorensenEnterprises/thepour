@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Recipe } from '../types';
+import { calculateCalories } from '../utils/calorieUtils';
 
 interface Props {
   recipe: Recipe;
@@ -35,6 +36,7 @@ export function RecipeCard({ recipe, canMake, missingIngredients, splashWarnings
   }
 
   const badge = getBadge();
+  const calories = calculateCalories(recipe.ingredients);
 
   return (
     <div className={`recipe-card ${headerClass}`}>
@@ -50,6 +52,7 @@ export function RecipeCard({ recipe, canMake, missingIngredients, splashWarnings
           {recipe.tags.map(tag => (
             <span key={tag} className="tag">{tag}</span>
           ))}
+          <span className="tag recipe-calories">~{calories} cal</span>
         </div>
       </div>
 

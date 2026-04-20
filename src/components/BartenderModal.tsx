@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { DrinkSurvey } from './DrinkSurvey';
 import { ThePourLogo } from './ThePourLogo';
+import { calculateCaloriesFromStrings } from '../utils/calorieUtils';
 import './BartenderModal.css';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -9,7 +10,7 @@ import './BartenderModal.css';
 type Mood          = 'sweet' | 'sour' | 'bitter' | 'savory';
 type Spirit        = 'brown' | 'clear' | 'agave'  | 'any';
 type Style         = 'classic' | 'adventurous';
-type Method        = 'stirred' | 'shaken' | 'either';
+type LightPref     = 'light-pref' | 'no-pref';
 type Strength      = 'light'   | 'balanced' | 'bold';
 type Phase         = 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda';
@@ -21,11 +22,11 @@ type SodaFlavor    = 'coconut' | 'berry' | 'peach' | 'citrus';
 type SodaCream     = 'yes' | 'no';
 
 interface Answers {
-  mood?:     Mood;
-  spirit?:   Spirit;
-  style?:    Style;
-  method?:   Method;
-  strength?: Strength;
+  mood?:      Mood;
+  spirit?:    Spirit;
+  style?:     Style;
+  lightPref?: LightPref;
+  strength?:  Strength;
 }
 
 interface CocktailRec {
@@ -37,7 +38,7 @@ interface CocktailRec {
   moods:       Mood[];
   spirits:     Spirit[];
   styles:      Style[];
-  methods:     Method[];
+  methods?:    string[];
   strengths:   Strength[];
 }
 
@@ -299,11 +300,15 @@ const COCKTAILS: CocktailRec[] = [
 function getTopCocktails(answers: Required<Answers>, n = 3): CocktailRec[] {
   const scored = COCKTAILS.map(c => {
     let score = 0;
-    if (c.moods.includes(answers.mood))                                                         score += 3;
+    if (c.moods.includes(answers.mood))                                                              score += 3;
     if (answers.spirit === 'any' || c.spirits.includes(answers.spirit) || c.spirits.includes('any')) score += 3;
-    if (c.styles.includes(answers.style))                                                       score += 2;
-    if (answers.method === 'either' || c.methods.includes(answers.method) || c.methods.includes('either')) score += 1;
-    if (c.strengths.includes(answers.strength))                                                 score += 2;
+    if (c.styles.includes(answers.style))                                                            score += 2;
+    if (c.strengths.includes(answers.strength))                                                      score += 2;
+    if (answers.lightPref === 'light-pref') {
+      const cal = calculateCaloriesFromStrings(c.ingredients);
+      if (cal < 150) score += 3;
+      else if (cal < 200) score += 1;
+    }
     return { c, score };
   });
   scored.sort((a, b) => b.score - a.score);
@@ -587,13 +592,12 @@ const COCKTAIL_QUESTIONS = [
     ],
   },
   {
-    key:     'method' as const,
-    voice:   "This one matters more than you'd think.",
-    text:    'Stirred or shaken?',
+    key:     'lightPref' as const,
+    voice:   "One more thing before I pour.",
+    text:    'Looking for something lighter?',
     options: [
-      { label: 'Stirred',    sub: 'Silky, spirit-forward, elegant', value: 'stirred' as Method },
-      { label: 'Shaken',     sub: 'Cold, aerated, lively',          value: 'shaken'  as Method },
-      { label: 'Either Way', sub: "You trust my judgment",           value: 'either'  as Method },
+      { label: 'Yes, keep it light', sub: 'Under 150 calories',  value: 'light-pref' as LightPref },
+      { label: 'No preference',      sub: 'Whatever tastes best', value: 'no-pref'    as LightPref },
     ],
   },
   {
