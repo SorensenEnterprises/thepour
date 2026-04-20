@@ -1054,6 +1054,7 @@ export function BartenderModal({ onClose }: Props) {
                 <div key={r.name} className={`bm-rec-card${i === 0 ? ' bm-rec-card--top' : ''}`}>
                   {i === 0 && <span className="bm-rec-badge">Best match</span>}
                   <h3 className="bm-rec-name">{r.name}</h3>
+                  <span className="bm-rec-calories">~{calculateCaloriesFromStrings(r.ingredients)} cal</span>
                   <p className="bm-rec-desc">{r.description}</p>
                   <button
                     className="bm-rec-pick"

@@ -3,74 +3,91 @@ import { RecipeIngredient } from '../types';
 // ── Category sets by ingredient ID ───────────────────────────────────────────
 
 const SPIRIT_IDS = new Set([
-  'absinthe','amaretto','amaro-nonino','aperol','apple-brandy','apricot-brandy',
-  'baileys','banana-liqueur','benedictine','blue-curacao','bourbon','brandy',
-  'butterscotch-schnapps','cachaca','campari','canadian-whisky','chambord',
-  'chartreuse','cherry-brandy','cherry-liqueur','cinnamon-whisky','coffee-liqueur',
-  'cointreau','cognac','creme-de-cassis','dry-vermouth','elderflower-liqueur',
-  'fernet-branca','gin','grand-marnier','green-chartreuse','irish-cream',
-  'irish-whiskey','islay-scotch','japanese-whisky','kahlua','limoncello',
-  'lyres-bitter','lyres-vermouth','maraschino-liqueur','mezcal','midori',
-  'passoa','peach-schnapps','peppermint-schnapps','pimms','pisco',
-  'rum-aged','rum-dark','rum-overproof','rum-spiced','rum-white','rye-whiskey',
-  'sake','scotch','select-aperitivo','sloe-gin','sour-apple-schnapps',
-  'southern-comfort','sweet-vermouth','tequila','triple-sec','vodka',
-  'whiskey','yellow-chartreuse','sambuca','seedlip','seedlip-garden',
+  // Whiskeys
+  'bourbon','rye-whiskey','scotch','islay-scotch','irish-whiskey','japanese-whisky',
+  'canadian-whisky','whiskey',
+  // Gin & vodka
+  'gin','sloe-gin','vodka',
+  // Rum
+  'rum-white','rum-dark','rum-aged','rum-spiced','rum-overproof','cachaca',
+  // Agave
+  'tequila','mezcal','pisco',
+  // Brandy
+  'brandy','cognac','apple-brandy','apricot-brandy','cherry-brandy',
+  // Liqueurs (counted as spirits per spec)
+  'amaretto','amaro-nonino','aperol','baileys','banana-liqueur','benedictine',
+  'blue-curacao','butterscotch-schnapps','campari','chambord','chartreuse',
+  'cherry-liqueur','cinnamon-whisky','coffee-liqueur','cointreau',
+  'creme-de-cassis','creme-de-cacao','creme-de-cacao-white','creme-de-menthe',
+  'creme-de-mure','creme-de-violette','drambuie','dry-vermouth','elderflower-liqueur',
+  'falernum','fernet-branca','fireball','galliano','goldschlager','grand-marnier',
+  'green-chartreuse','irish-cream','jagermeister','kahlua','licor-43','lillet-blanc',
+  'limoncello','lyres-bitter','lyres-vermouth','maraschino-liqueur','mezcal','midori',
+  'passoa','peach-schnapps','peppermint-schnapps','pimms','sambuca','sake',
+  'scotch','select-aperitivo','sloe-gin','sour-apple-schnapps','southern-comfort',
+  'sweet-vermouth','triple-sec','yellow-chartreuse','blackberry-liqueur',
+  'high-proof-spirit','absinthe',
 ]);
 
 const WINE_IDS = new Set([
-  'champagne','prosecco','red-wine','white-wine','amontillado-sherry',
+  'champagne','prosecco','red-wine','white-wine','amontillado-sherry','dry-sherry',
   'sparkling-grape-juice',
 ]);
 
-const BEER_IDS = new Set(['beer','stout-beer']);
+const BEER_IDS = new Set([
+  'beer','stout-beer','guinness','lager-beer','japanese-beer',
+]);
 
 const SYRUP_IDS = new Set([
   'agave-syrup','almond-syrup','amaretto-syrup','blackberry-syrup',
-  'brown-sugar-syrup','caramel-syrup','cardamom-syrup','cherry-syrup',
-  'chocolate-syrup','cinnamon-syrup','coconut-syrup','grenadine',
-  'honey-ginger-syrup','lavender-syrup','lychee-syrup','mango-syrup',
-  'marshmallow-syrup','matcha-syrup','orgeat','passion-fruit-syrup',
-  'passionfruit-syrup','peach-syrup','peppermint-syrup','raspberry-syrup',
-  'rosemary-syrup','simple-syrup','strawberry-syrup','thyme-syrup',
-  'turmeric-syrup','vanilla-syrup','watermelon-syrup','brown-sugar',
-  'sugar','honey',
+  'blue-raspberry-syrup','brown-sugar-syrup','caramel-syrup','cardamom-syrup',
+  'cherry-syrup','chocolate-syrup','cinnamon-syrup','coconut-syrup',
+  'cotton-candy-syrup','elderflower-cordial','espresso-syrup','grenadine',
+  'hibiscus-syrup','honey','honey-ginger-syrup','honey-syrup','horchata-syrup',
+  'lavender-syrup','lemongrass-syrup','lychee-syrup','mango-syrup',
+  'marshmallow-syrup','matcha-syrup','mixed-berry-shrub','orgeat',
+  'passion-fruit-syrup','passionfruit-syrup','peach-syrup','peppermint-syrup',
+  'raspberry-shrub','raspberry-syrup','rosemary-syrup','simple-syrup',
+  'strawberry-shrub','strawberry-syrup','sugar','brown-sugar','thyme-syrup',
+  'turmeric-syrup','vanilla-syrup','watermelon-syrup',
 ]);
 
 const JUICE_IDS = new Set([
-  'apple-juice','beet-juice','blood-orange-juice','cranberry-juice',
-  'grapefruit-juice','lemon-juice','lime-juice','lychee-juice',
-  'mango-juice','mango-puree','orange-juice','passion-fruit-puree',
-  'passionfruit-puree','peach-nectar','peach-puree','pear-juice',
-  'pineapple-juice','pomegranate-juice','tart-cherry-juice','tomato-juice',
-  'watermelon-juice','yuzu-juice','kefir',
+  'apple-juice','beet-juice','blood-orange-juice','coconut-water','cranberry-juice',
+  'cucumber-juice','eggnog','grapefruit-juice','lemon-juice','lime-juice',
+  'lychee-juice','mango-juice','mango-puree','orange-juice','passion-fruit-puree',
+  'passionfruit-puree','peach-nectar','peach-puree','pear-juice','pineapple-juice',
+  'pomegranate-juice','tart-cherry-juice','tomato-juice','watermelon-juice',
+  'yuzu-juice','kefir','ginger-juice','lime',
 ]);
 
 const SODA_IDS = new Set([
-  '7up','apple-cider','blue-raspberry-soda','cherry-soda','coca-cola',
-  'cola','ginger-beer','lemonade','mango-soda','orange-fanta',
-  'soda-water','sparkling-water','sprite','sweet-tea','tonic-water',
-  'oolong-tea','pickle-brine',
+  '7up','apple-cider','blue-raspberry-soda','cherry-soda','coca-cola','cola',
+  'cold-brew-tea','cream-soda','dr-pepper','elderflower-tonic','energy-drink',
+  'ginger-ale','ginger-beer','grapefruit-soda','hibiscus-tea','iced-tea',
+  'lemonade','mango-soda','oolong-tea','orange-fanta','soda-water',
+  'sparkling-water','sprite','sweet-tea','tonic-water',
 ]);
 
 const CREAM_IDS = new Set([
-  'coconut-cream','cream','heavy-cream','oat-milk','yogurt',
-  'vanilla-ice-cream','butter',
+  'butter','coconut-cream','cream','cream-of-coconut','heavy-cream',
+  'hot-milk','oat-milk','vanilla-ice-cream','yogurt',
 ]);
 
 const ZERO_IDS = new Set([
-  'angostura-bitters','orange-bitters','peychauds-bitters','mole-bitters',
-  'salt','celery-salt','chili-lime-salt','chili-powder','rose-water',
-  'worcestershire','sugar-cube','cinnamon-stick','star-anise',
-  'absinthe-rinse',
+  'absinthe-rinse','angostura-bitters','apple-cider-vinegar','butter-extract',
+  'celery-salt','chili-lime-salt','chili-powder','cinnamon-stick','cloves',
+  'coffee','cold-brew-coffee','espresso','horseradish','hot-coffee','hot-sauce',
+  'hot-water','mole-bitters','orange-bitters','peychauds-bitters','pickle-brine',
+  'rose-water','salt','star-anise','sugar-cube','worcestershire',
 ]);
 
 const GARNISH_IDS = new Set([
-  'basil','blackberry','blueberry','cucumber','grapefruit-peel',
-  'jalapeño','lemon-peel','lime-wedge','lime-slice','maraschino-cherry',
-  'mint','orange-peel','orange-slice','raspberries','rosemary','sage',
-  'strawberries','strawberry','thai-basil','banana','mixed-berries',
-  'tamarind-paste',
+  'banana','basil','blackberry','blueberry','cucumber','fresh-raspberries',
+  'grapefruit-peel','jalapeno','jalapeño','lemon-peel','lime-slice','lime-wedge',
+  'maraschino-cherry','mint','mixed-berries','orange-peel','orange-slice',
+  'raspberries','rosemary','sage','star-anise','strawberries','strawberry',
+  'tamarind-paste','thai-basil',
 ]);
 
 // ── Unit conversion to oz ─────────────────────────────────────────────────────
@@ -82,7 +99,6 @@ function toOz(amount: number, unit: string): number {
     case 'splash':  return amount * 0.5;
     case 'tsp':     return amount * 0.1667;
     case 'tbsp':    return amount * 0.5;
-    // negligible / garnish units
     case 'dash':
     case 'dashes':
     case 'drop':
@@ -100,7 +116,7 @@ function toOz(amount: number, unit: string): number {
   }
 }
 
-// ── Cal/oz lookup ──────────────────────────────────────────────────────────────
+// ── Cal/oz lookup ─────────────────────────────────────────────────────────────
 
 function calPerOz(ingredientId: string, name: string): number {
   if (SPIRIT_IDS.has(ingredientId))  return 65;
@@ -112,24 +128,28 @@ function calPerOz(ingredientId: string, name: string): number {
   if (CREAM_IDS.has(ingredientId))   return 50;
   if (ZERO_IDS.has(ingredientId) || GARNISH_IDS.has(ingredientId)) return 0;
 
-  // name-based fallback
+  // name-based fallback when ID not in any set
   const n = name.toLowerCase();
-  if (/syrup|orgeat|grenadine|honey|agave/.test(n)) return 50;
-  if (/juice|puree|nectar/.test(n)) return 15;
-  if (/soda|tonic|cola|ginger beer|lemonade|sparkling/.test(n)) return 10;
+  if (/syrup|orgeat|grenadine|honey|agave|shrub/.test(n)) return 50;
+  if (/juice|puree|nectar|cider/.test(n)) return 15;
+  if (/soda|tonic|cola|ginger.?beer|lemonade|sparkling|energy drink/.test(n)) return 10;
   if (/cream|milk|butter/.test(n)) return 50;
   if (/wine|champagne|prosecco|cava|sherry/.test(n)) return 25;
-  if (/beer|stout|ale/.test(n)) return 15;
-  if (/whiskey|whisky|rum|gin|vodka|tequila|mezcal|brandy|cognac|liqueur|schnapps|vermouth|campari|aperol|chartreuse|amaro|fernet|pisco|cachaca/.test(n)) return 65;
+  if (/beer|stout|ale|lager/.test(n)) return 15;
+  if (/whiskey|whisky|rum|gin|vodka|tequila|mezcal|brandy|cognac|liqueur|schnapps|vermouth|campari|aperol|chartreuse|amaro|fernet|pisco|cachaca|bitters.*\d/.test(n)) return 65;
+  if (/bitters|peel|garnish|twist|salt|water$/.test(n)) return 0;
   return 20;
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
+const FALLBACK_CALORIES = 120;
+
 export function calculateCalories(ingredients: RecipeIngredient[]): number {
   let total = 0;
   for (const ing of ingredients) {
     if (ing.optional) continue;
+    // Egg white: ~15 cal per egg regardless of unit
     if (ing.ingredientId === 'egg-white' || ing.name.toLowerCase().includes('egg white')) {
       total += ing.amount * 15;
       continue;
@@ -137,10 +157,11 @@ export function calculateCalories(ingredients: RecipeIngredient[]): number {
     const oz = toOz(ing.amount, ing.unit);
     total += oz * calPerOz(ing.ingredientId, ing.name);
   }
-  return Math.round(total);
+  const result = Math.round(total);
+  return result > 0 ? result : FALLBACK_CALORIES;
 }
 
-// ── Fraction parsing for string ingredient lines ───────────────────────────────
+// ── Fraction parsing for string ingredient lines (BartenderModal) ─────────────
 
 const FRACTION_MAP: Record<string, number> = {
   '¼': 0.25, '½': 0.5, '¾': 0.75,
@@ -179,15 +200,16 @@ export function calculateCaloriesFromStrings(ingredients: string[]): number {
     if (oz === 0) continue;
     const n = name.toLowerCase();
     let cpo = 20;
-    if (/syrup|orgeat|grenadine|honey|agave/.test(n)) cpo = 50;
-    else if (/juice|puree|nectar/.test(n)) cpo = 15;
-    else if (/soda|tonic|cola|ginger beer|lemonade|sparkling water/.test(n)) cpo = 10;
-    else if (/cream|milk/.test(n)) cpo = 50;
-    else if (/wine|champagne|prosecco|sherry/.test(n)) cpo = 25;
-    else if (/beer|stout|ale/.test(n)) cpo = 15;
+    if (/syrup|orgeat|grenadine|honey|agave|shrub/.test(n))      cpo = 50;
+    else if (/juice|puree|nectar|cider/.test(n))                   cpo = 15;
+    else if (/soda|tonic|cola|ginger.?beer|lemonade|sparkling water/.test(n)) cpo = 10;
+    else if (/cream|milk/.test(n))                                 cpo = 50;
+    else if (/wine|champagne|prosecco|sherry/.test(n))             cpo = 25;
+    else if (/beer|stout|ale|lager/.test(n))                       cpo = 15;
     else if (/whiskey|whisky|rum|gin|vodka|tequila|mezcal|brandy|cognac|liqueur|schnapps|vermouth|campari|aperol|chartreuse|amaro|fernet|pisco|cachaca/.test(n)) cpo = 65;
-    else if (/bitters|peel|garnish|twist|salt/.test(n)) cpo = 0;
+    else if (/bitters|peel|garnish|twist|salt|water$/.test(n))    cpo = 0;
     total += oz * cpo;
   }
-  return Math.round(total);
+  const result = Math.round(total);
+  return result > 0 ? result : FALLBACK_CALORIES;
 }

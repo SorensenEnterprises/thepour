@@ -356,6 +356,16 @@
   letter-spacing: -0.3px;
 }
 
+.bm-rec-calories {
+  display: block;
+  font-size: 11px;
+  font-style: italic;
+  color: #4abbc4;
+  opacity: 0.85;
+  margin-top: 3px;
+  margin-bottom: 8px;
+}
+
 .bm-rec-desc {
   font-size: 12px;
   color: #6a8a8c;
