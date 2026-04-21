@@ -616,7 +616,7 @@
 /* ── Mode pick ── */
 .bm-mode-options {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 14px;
   margin-top: 8px;
 }
@@ -669,6 +669,97 @@
 
 .bm-mode-option--mybar:hover  .bm-mode-label { color: #4abbc4; }
 .bm-mode-option--explore:hover .bm-mode-label { color: #4abbc4; }
+
+/* ── I'm Out mode option ── */
+.bm-mode-option--imout .bm-mode-label { color: #c9a84c; }
+.bm-mode-option--imout { border-color: rgba(201,168,76,0.25); }
+.bm-mode-option--imout:hover { background: rgba(201,168,76,0.10); border-color: #c9a84c; }
+
+/* ── I'm Out scan prompt ── */
+.bm-scan-prompt-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.bm-scan-illustration {
+  font-size: 64px;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.bm-scan-btn {
+  background: #4abbc4;
+  border: none;
+  border-radius: 14px;
+  color: #091a1c;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 16px 40px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  width: 100%;
+  max-width: 280px;
+}
+
+.bm-scan-btn:hover  { background: #5dcdd6; }
+.bm-scan-btn:active { transform: scale(0.97); }
+
+.bm-scan-manual {
+  background: none;
+  border: none;
+  color: #6a8a8c;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.bm-scan-manual:hover { color: #4abbc4; }
+
+.bm-scan-success {
+  margin-top: 16px;
+  background: rgba(74,187,196,0.08);
+  border: 1px solid rgba(74,187,196,0.25);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: #4abbc4;
+  font-weight: 600;
+}
+
+.bm-scan-continue {
+  background: #4abbc4;
+  border: none;
+  border-radius: 8px;
+  color: #091a1c;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.bm-session-banner {
+  background: rgba(201,168,76,0.10);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-radius: 8px;
+  color: #c9a84c;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 14px;
+  text-align: center;
+  margin-bottom: 12px;
+}
 
 /* ── Reveal missing ingredients (explore mode) ── */
 .bm-rec-missing {
@@ -864,4 +955,5 @@
   .bm-shaker-scene     { min-height: 240px; }
   .bm-mode-options     { grid-template-columns: 1fr; gap: 10px; }
   .bm-mode-option      { padding: 16px 16px; }
+  .bm-scan-btn         { max-width: 100%; }
 }

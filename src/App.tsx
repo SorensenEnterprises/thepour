@@ -19,6 +19,7 @@ function AppContent() {
   const [view, setView] = useState<View>('landing');
   const [pendingView, setPendingView] = useState<'recipes' | 'inventory'>('recipes');
   const [bartenderOpen, setBartenderOpen] = useState(false);
+  const [bartenderInitialMode, setBartenderInitialMode] = useState<'my-bar' | 'im-out' | 'explore'>('my-bar');
 
   const { inventory, inStockIds, splashIds, setQuantity, addItem, editItem, removeItem } = useInventory(user?.id);
 
@@ -79,15 +80,27 @@ function AppContent() {
         )}
       </main>
 
-      <button className="bartender-fab" onClick={() => setBartenderOpen(true)}>
-        🍸 Ask Bartender
-      </button>
+      <div className="fab-group">
+        <button
+          className="im-out-fab"
+          onClick={() => { setBartenderInitialMode('im-out'); setBartenderOpen(true); }}
+        >
+          🚪 I'm Out
+        </button>
+        <button
+          className="bartender-fab"
+          onClick={() => { setBartenderInitialMode('my-bar'); setBartenderOpen(true); }}
+        >
+          🍸 Ask Bartender
+        </button>
+      </div>
 
       {bartenderOpen && (
         <BartenderModal
           onClose={() => setBartenderOpen(false)}
           inStockIds={inStockIds}
           onGoToInventory={() => { setBartenderOpen(false); setView('inventory'); }}
+          initialMode={bartenderInitialMode}
         />
       )}
     </div>

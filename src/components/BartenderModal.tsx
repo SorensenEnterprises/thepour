@@ -3,6 +3,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { DrinkSurvey } from './DrinkSurvey';
 import { ThePourLogo } from './ThePourLogo';
 import { calculateCaloriesFromStrings } from '../utils/calorieUtils';
+import { PhotoScanModal } from './PhotoScanModal';
+import { RecognizedBottle, bottleToIngredientIds } from '../lib/bottleRecognition';
 import './BartenderModal.css';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -12,8 +14,8 @@ type Spirit        = 'brown' | 'clear' | 'agave'  | 'any';
 type Style         = 'classic' | 'adventurous';
 type LightPref     = 'light-pref' | 'no-pref';
 type Strength      = 'light'   | 'balanced' | 'bold';
-type Phase         = 'mode-pick' | 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
-type BarMode       = 'my-bar' | 'explore';
+type Phase         = 'mode-pick' | 'scan-prompt' | 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
+type BarMode       = 'my-bar' | 'im-out' | 'explore';
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
 type ShotSpirit    = 'tequila' | 'whiskey' | 'vodka' | 'any';
 type ShotStyle     = 'classic' | 'fruity' | 'creamy';
@@ -350,7 +352,7 @@ function getTopCocktails(
   barMode: BarMode,
   n = 3,
 ): CocktailRec[] {
-  const eligible = barMode === 'my-bar'
+  const eligible = (barMode === 'my-bar' || barMode === 'im-out')
     ? COCKTAILS.filter(c => (COCKTAIL_REQUIRED_IDS[c.name] ?? []).every(id => inStockIds.has(id)))
     : COCKTAILS;
 
@@ -743,7 +745,7 @@ function getTopShots(
   barMode: BarMode,
   n = 3,
 ): ShotRec[] {
-  const eligible = barMode === 'my-bar'
+  const eligible = (barMode === 'my-bar' || barMode === 'im-out')
     ? SHOTS.filter(s => (SHOT_REQUIRED_IDS[s.name] ?? []).every(id => inStockIds.has(id)))
     : SHOTS;
 
@@ -925,12 +927,15 @@ interface Props {
   onClose: () => void;
   inStockIds?: Set<string>;
   onGoToInventory?: () => void;
+  initialMode?: BarMode;
 }
 
-export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventory }: Props) {
+export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventory, initialMode }: Props) {
   const { user } = useAuth();
-  const [phase, setPhase]           = useState<Phase>('mode-pick');
-  const [barMode, setBarMode]       = useState<BarMode>('my-bar');
+  const [phase, setPhase]           = useState<Phase>(initialMode === 'im-out' ? 'scan-prompt' : 'mode-pick');
+  const [barMode, setBarMode]       = useState<BarMode>(initialMode ?? 'my-bar');
+  const [sessionInStockIds, setSessionInStockIds] = useState<Set<string>>(new Set());
+  const [showPhotoScan, setShowPhotoScan] = useState(false);
   const [category, setCategory]     = useState<DrinkCategory | null>(null);
   const [step, setStep]             = useState(0);
   const [answers, setAnswers]       = useState<Record<string, string>>({});
@@ -1000,6 +1005,16 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
   function handleModePick(mode: BarMode) {
     setBarMode(mode);
     setAnimKey(k => k + 1);
+    if (mode === 'im-out') setPhase('scan-prompt');
+    else setPhase('category-pick');
+  }
+
+  function handleScanComplete(bottles: RecognizedBottle[]) {
+    const ids = new Set<string>();
+    bottles.forEach(b => bottleToIngredientIds(b).forEach(id => ids.add(id)));
+    setSessionInStockIds(ids);
+    setShowPhotoScan(false);
+    setAnimKey(k => k + 1);
     setPhase('category-pick');
   }
 
@@ -1021,6 +1036,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
   useEffect(() => {
     if (phase !== 'shaking') return;
     const qs = getQuestions(category);
+    const effectiveInStock = barMode === 'im-out' ? sessionInStockIds : inStockIds;
     const timer = setTimeout(() => {
       const next = answers;
       const filledStep = step + 1;
@@ -1032,8 +1048,8 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
         let results: DrinkRec[];
         if (category === 'mocktail')        results = getTopMocktails(next);
         else if (category === 'dirty-soda') results = getTopDirtySodas(next);
-        else if (category === 'shot')       results = getTopShots(next, inStockIds, barMode);
-        else                                results = getTopCocktails(next as Required<Answers>, inStockIds, barMode);
+        else if (category === 'shot')       results = getTopShots(next, effectiveInStock, barMode);
+        else                                results = getTopCocktails(next as Required<Answers>, effectiveInStock, barMode);
         setRecs(results);
         setRec(null);
         setPhase('reveal');
@@ -1048,6 +1064,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
     const audio = audioRef.current;
     if (audio) { audio.volume = 0.3; if (audio.paused) audio.play().catch(() => {}); }
     setBarMode('my-bar');
+    setSessionInStockIds(new Set());
     setCategory(null);
     setStep(0);
     setAnswers({});
@@ -1056,6 +1073,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
     setShakerLine('');
     setShowSurvey(false);
     setSurveyDone(false);
+    setShowPhotoScan(false);
     setPhase('mode-pick');
   }
 
@@ -1070,7 +1088,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
     let results: DrinkRec[];
     if (category === 'mocktail')        results = getTopMocktails(a);
     else if (category === 'dirty-soda') results = getTopDirtySodas(a);
-    else if (category === 'shot')       results = getTopShots(a, inStockIds, 'explore');
+    else if (category === 'shot')       results = getTopShots(a, new Set(), 'explore');
     else {
       const full: Required<Answers> = {
         mood:      (a.mood      as Mood)      ?? 'sweet',
@@ -1079,7 +1097,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
         lightPref: (a.lightPref as LightPref) ?? 'no-pref',
         strength:  (a.strength  as Strength)  ?? 'balanced',
       };
-      results = getTopCocktails(full, inStockIds, 'explore');
+      results = getTopCocktails(full, new Set(), 'explore');
     }
     setRecs(results);
   }
@@ -1268,6 +1286,13 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
                   <span className="bm-mode-sub">Only recommend what I can make tonight</span>
                 </div>
               </button>
+              <button className="bm-mode-option bm-mode-option--imout" onClick={() => handleModePick('im-out')}>
+                <span className="bm-mode-icon">🚪</span>
+                <div className="bm-mode-text">
+                  <span className="bm-mode-label">I'm Out</span>
+                  <span className="bm-mode-sub">Scan what's in front of you</span>
+                </div>
+              </button>
               <button className="bm-mode-option bm-mode-option--explore" onClick={() => handleModePick('explore')}>
                 <span className="bm-mode-icon">🔍</span>
                 <div className="bm-mode-text">
@@ -1276,6 +1301,34 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
                 </div>
               </button>
             </div>
+          </div>
+        )}
+
+        {/* ── Scan prompt (I'm Out mode) ── */}
+        {phase === 'scan-prompt' && (
+          <div className="bm-question-wrap" key="scan-prompt">
+            <p className="bm-voice">"Tell me what you're working with."</p>
+            <h2 className="bm-question">Point your camera at the bottles in front of you</h2>
+            <div className="bm-scan-prompt-area">
+              <div className="bm-scan-illustration">🍶</div>
+              <button className="bm-scan-btn" onClick={() => setShowPhotoScan(true)}>
+                📷 Scan Bottles
+              </button>
+              <button className="bm-scan-manual" onClick={() => setPhase('category-pick')}>
+                Add manually instead
+              </button>
+            </div>
+            {sessionInStockIds.size > 0 && (
+              <div className="bm-scan-success">
+                ✓ {sessionInStockIds.size} ingredients identified — continue below
+                <button
+                  className="bm-scan-continue"
+                  onClick={() => { setAnimKey(k => k + 1); setPhase('category-pick'); }}
+                >
+                  Continue →
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -1338,22 +1391,32 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
           </div>
         )}
 
-        {/* ── Empty state (My Bar mode, no eligible results) ── */}
-        {phase === 'reveal' && recs.length === 0 && barMode === 'my-bar' && (
+        {/* ── Empty state (My Bar / I'm Out mode, no eligible results) ── */}
+        {phase === 'reveal' && recs.length === 0 && (barMode === 'my-bar' || barMode === 'im-out') && (
           <div className="bm-empty">
             <div className="bm-empty-icon">🍸</div>
             <h2 className="bm-empty-headline">
-              {inStockIds.size === 0 ? 'Your bar needs a restock' : 'No matches for this category'}
+              {barMode === 'im-out'
+                ? 'Not enough bottles recognized'
+                : inStockIds.size === 0 ? 'Your bar needs a restock' : 'No matches for this category'}
             </h2>
             <p className="bm-empty-sub">
-              {inStockIds.size === 0
-                ? 'Add some bottles to get personalized recommendations from your bartender.'
-                : "None of your bottles match this drink type — try a different category or switch to Explore mode."}
+              {barMode === 'im-out'
+                ? "We didn't recognize enough bottles to make a recommendation. Try scanning again or add more manually."
+                : inStockIds.size === 0
+                  ? 'Add some bottles to get personalized recommendations from your bartender.'
+                  : "None of your bottles match this drink type — try a different category or switch to Explore mode."}
             </p>
             <div className="bm-empty-actions">
-              <button className="bm-empty-btn-primary" onClick={handleGoToInventory}>
-                Add to My Bar
-              </button>
+              {barMode === 'im-out' ? (
+                <button className="bm-empty-btn-primary" onClick={() => { setAnimKey(k => k + 1); setPhase('scan-prompt'); }}>
+                  Scan Again
+                </button>
+              ) : (
+                <button className="bm-empty-btn-primary" onClick={handleGoToInventory}>
+                  Add to My Bar
+                </button>
+              )}
               <button className="bm-empty-btn-secondary" onClick={handleSwitchToExplore}>
                 Explore All Drinks
               </button>
@@ -1384,6 +1447,11 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
         {/* ── Reveal — 3 options ── */}
         {phase === 'reveal' && recs.length > 0 && (
           <div className="bm-reveal">
+            {barMode === 'im-out' && (
+              <div className="bm-session-banner">
+                Based on what's in front of you — not saved to your bar
+              </div>
+            )}
             <p className="bm-reveal-label">
               {barMode === 'explore' ? 'Top picks for you tonight' : 'What you can make tonight'}
             </p>
@@ -1479,6 +1547,14 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
           recipeName={rec.name}
           userId={user?.id ?? null}
           onDismiss={() => { setShowSurvey(false); setSurveyDone(true); }}
+        />
+      )}
+
+      {showPhotoScan && (
+        <PhotoScanModal
+          mode="shelf"
+          onConfirmShelf={handleScanComplete}
+          onClose={() => setShowPhotoScan(false)}
         />
       )}
     </div>
