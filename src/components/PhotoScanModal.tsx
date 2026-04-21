@@ -25,14 +25,39 @@ const ALL_BOTTLE_TYPES: BottleType[] = [
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function fileToBase64(file: File): Promise<string> {
+const MAX_DIMENSION = 1500;
+const JPEG_QUALITY  = 0.85;
+
+function compressImage(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result.split(',')[1]);
-    };
     reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+          if (width >= height) {
+            height = Math.round((height / width) * MAX_DIMENSION);
+            width  = MAX_DIMENSION;
+          } else {
+            width  = Math.round((width / height) * MAX_DIMENSION);
+            height = MAX_DIMENSION;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width  = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('No 2d context')); return; }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+        console.log('[PhotoScanModal] Compressed image size (chars):', dataUrl.length, `(${width}×${height})`);
+        resolve(dataUrl.split(',')[1]);
+      };
+      img.src = reader.result as string;
+    };
     reader.readAsDataURL(file);
   });
 }
@@ -69,7 +94,7 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
     e.target.value = '';
     setStatus('loading');
     try {
-      const base64 = await fileToBase64(file);
+      const base64 = await compressImage(file);
       if (mode === 'single') {
         const result = await recognizeSingleBottle(base64);
         if (result) {
