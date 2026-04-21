@@ -5,7 +5,7 @@ import { BarcodeScannerModal } from '../components/BarcodeScannerModal';
 import { PhotoScanModal } from '../components/PhotoScanModal';
 import { ResponsibleFooter } from '../components/ResponsibleFooter';
 import { InventoryItem, QuantityLevel, Ingredient, BottleSize } from '../types';
-import { RecognizedBottle, mapBottleType } from '../lib/bottleRecognition';
+import { RecognizedBottle, mapBottleType, mapBottleToSpiritType } from '../lib/bottleRecognition';
 
 interface Props {
   inventory: InventoryItem[];
@@ -17,26 +17,21 @@ interface Props {
 
 type Overlay = 'none' | 'method-picker' | 'scan' | 'photo' | 'shelf' | 'add' | 'edit';
 
-function detectCategoryFromType(type: string): Ingredient['category'] {
-  switch (mapBottleType(type)) {
-    case 'spirits':   return 'spirit';
-    case 'liqueurs':  return 'liqueur';
-    case 'mixers':    return 'mixer';
-    default:          return 'other';
-  }
-}
+const detectCategoryFromType = (type: string): Ingredient['category'] => mapBottleType(type);
 
 export function InventoryPage({ inventory, onSetQuantity, onAddItem, onEditItem, onDeleteItem }: Props) {
   const [overlay, setOverlay]           = useState<Overlay>('none');
-  const [prefillName, setPrefillName]   = useState('');
+  const [prefillName, setPrefillName]         = useState('');
   const [prefillCategory, setPrefillCategory] = useState<Ingredient['category']>('spirit');
-  const [editingItem, setEditingItem]   = useState<InventoryItem | null>(null);
+  const [prefillSpiritType, setPrefillSpiritType] = useState('');
+  const [editingItem, setEditingItem]         = useState<InventoryItem | null>(null);
 
   const inStockCount = inventory.filter(i => i.quantity !== 'out').length;
 
-  function openAdd(name = '', category: Ingredient['category'] = 'spirit') {
+  function openAdd(name = '', category: Ingredient['category'] = 'spirit', spiritType = '') {
     setPrefillName(name);
     setPrefillCategory(category);
+    setPrefillSpiritType(spiritType);
     setEditingItem(null);
     setOverlay('add');
   }
@@ -113,7 +108,9 @@ export function InventoryPage({ inventory, onSetQuantity, onAddItem, onEditItem,
       {overlay === 'photo' && (
         <PhotoScanModal
           mode="single"
-          onConfirmSingle={(bottle: RecognizedBottle) => openAdd(bottle.name, detectCategoryFromType(bottle.type))}
+          onConfirmSingle={(bottle: RecognizedBottle) =>
+            openAdd(bottle.name, detectCategoryFromType(bottle.type), mapBottleToSpiritType(bottle.type, bottle.brand))
+          }
           onClose={() => setOverlay('none')}
         />
       )}
@@ -123,16 +120,16 @@ export function InventoryPage({ inventory, onSetQuantity, onAddItem, onEditItem,
           mode="shelf"
           onConfirmShelf={(bottles: RecognizedBottle[]) => {
             bottles.forEach((b, i) => {
+              const spiritType = mapBottleToSpiritType(b.type, b.brand);
               const item: InventoryItem = {
                 ingredientId:
                   b.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') +
-                  '-' +
-                  Date.now() +
-                  i,
-                name: b.name,
-                category: detectCategoryFromType(b.type),
-                quantity: 'full',
-                size: ([50, 375, 750, 1000, 1750].includes(b.size_ml) ? b.size_ml : 750) as BottleSize,
+                  '-' + Date.now() + i,
+                name:       b.name,
+                category:   detectCategoryFromType(b.type),
+                quantity:   'full',
+                size:       ([50, 375, 750, 1000, 1750].includes(b.size_ml) ? b.size_ml : 750) as BottleSize,
+                spiritType: spiritType || undefined,
               };
               onAddItem(item);
             });
@@ -146,6 +143,7 @@ export function InventoryPage({ inventory, onSetQuantity, onAddItem, onEditItem,
         <AddBottleForm
           prefillName={prefillName}
           prefillCategory={prefillCategory}
+          prefillSpiritType={prefillSpiritType}
           onSave={item => { onAddItem(item); setOverlay('none'); }}
           onClose={() => setOverlay('none')}
         />

@@ -6,6 +6,7 @@ import {
   recognizeShelf,
 } from '../lib/bottleRecognition';
 import { supabase } from '../lib/supabase';
+import { mapBottleType, mapBottleToSpiritType } from '../lib/bottleRecognition';
 import './PhotoScanModal.css';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -20,13 +21,15 @@ interface Props {
 }
 
 interface DebugInfo {
-  imageSizeKB:  number;
-  supabaseUrl:  string;
-  clientExists: boolean;
-  rawResponse:  string;
-  rawData:      string;
-  rawError:     string;
-  error:        string | null;
+  imageSizeKB:     number;
+  supabaseUrl:     string;
+  clientExists:    boolean;
+  rawResponse:     string;
+  rawData:         string;
+  rawError:        string;
+  error:           string | null;
+  mappedCategory:  string;
+  mappedSpiritType: string;
 }
 
 const ALL_BOTTLE_TYPES: BottleType[] = [
@@ -118,7 +121,9 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
 
       if (mode === 'single') {
         const { bottle, rawResponse, rawData, rawError, error } = await recognizeSingleBottle(base64);
-        setDebugInfo({ imageSizeKB, supabaseUrl, clientExists, rawResponse, rawData, rawError, error });
+        const mappedCategory   = bottle ? mapBottleType(bottle.type)                        : '';
+        const mappedSpiritType = bottle ? mapBottleToSpiritType(bottle.type, bottle.brand)  : '';
+        setDebugInfo({ imageSizeKB, supabaseUrl, clientExists, rawResponse, rawData, rawError, error, mappedCategory, mappedSpiritType });
         if (bottle) {
           setSingleResult(bottle);
           setDraftName(bottle.name);
@@ -129,7 +134,10 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
         }
       } else {
         const { bottles, rawResponse, rawData, rawError, error } = await recognizeShelf(base64);
-        setDebugInfo({ imageSizeKB, supabaseUrl, clientExists, rawResponse, rawData, rawError, error });
+        const firstBottle      = bottles[0];
+        const mappedCategory   = firstBottle ? mapBottleType(firstBottle.type)                             : '';
+        const mappedSpiritType = firstBottle ? mapBottleToSpiritType(firstBottle.type, firstBottle.brand)  : '';
+        setDebugInfo({ imageSizeKB, supabaseUrl, clientExists, rawResponse, rawData, rawError, error, mappedCategory, mappedSpiritType });
         setShelfRows(
           bottles.map(b => ({
             bottle:      b,
@@ -146,12 +154,14 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
       const msg = err instanceof Error ? err.message : String(err);
       setDebugInfo({
         imageSizeKB,
-        supabaseUrl:  process.env.REACT_APP_SUPABASE_URL ?? '(missing)',
-        clientExists: !!supabase,
-        rawResponse:  '',
-        rawData:      '',
-        rawError:     msg,
-        error:        msg,
+        supabaseUrl:      process.env.REACT_APP_SUPABASE_URL ?? '(missing)',
+        clientExists:     !!supabase,
+        rawResponse:      '',
+        rawData:          '',
+        rawError:         msg,
+        error:            msg,
+        mappedCategory:   '',
+        mappedSpiritType: '',
       });
       setStatus('error');
     }
@@ -227,10 +237,12 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
 
   const debugLines = debugInfo
     ? [
-        `Image size:      ${debugInfo.imageSizeKB} KB`,
-        `Supabase URL:    ${debugInfo.supabaseUrl}`,
-        `Client exists:   ${debugInfo.clientExists ? 'yes' : 'no'}`,
-        `Error:           ${debugInfo.error ?? 'none'}`,
+        `Image size:       ${debugInfo.imageSizeKB} KB`,
+        `Supabase URL:     ${debugInfo.supabaseUrl}`,
+        `Client exists:    ${debugInfo.clientExists ? 'yes' : 'no'}`,
+        `Error:            ${debugInfo.error ?? 'none'}`,
+        `Mapped category:  ${debugInfo.mappedCategory || '(none)'}`,
+        `Mapped spiritType:${debugInfo.mappedSpiritType || '(none — no recipe match)'}`,
         ``,
         `── invoke data ──`,
         debugInfo.rawData

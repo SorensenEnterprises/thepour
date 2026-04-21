@@ -44,34 +44,83 @@ export interface ShelfRecognitionResult {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-export const mapBottleType = (aiType: string): string => {
+// Returns exact Ingredient['category'] values used by the inventory system.
+export const mapBottleType = (aiType: string): 'spirit' | 'liqueur' | 'mixer' | 'other' => {
   const type = aiType.toLowerCase().trim();
-  const spiritTypes = [
+  const spiritKeywords = [
     'gin', 'vodka', 'rum', 'tequila', 'mezcal', 'whiskey', 'whisky',
     'bourbon', 'scotch', 'rye', 'brandy', 'cognac', 'calvados',
     'absinthe', 'grappa', 'pisco', 'cachaca', 'baijiu', 'soju',
     'aquavit', 'schnapps', 'armagnac',
   ];
-  const liqueurTypes = [
-    'liqueur', 'liquor', 'triple sec', 'cointreau', 'amaretto',
-    'kahlua', 'baileys', 'campari', 'aperol', 'vermouth', 'amaro',
-    'chartreuse', 'benedictine', 'drambuie', 'frangelico', 'sambuca',
-    'limoncello', 'curacao', 'maraschino', 'falernum',
+  const liqueurKeywords = [
+    'liqueur', 'triple sec', 'cointreau', 'amaretto', 'kahlua',
+    'baileys', 'campari', 'aperol', 'vermouth', 'amaro', 'chartreuse',
+    'benedictine', 'drambuie', 'frangelico', 'sambuca', 'limoncello',
+    'curacao', 'maraschino', 'falernum', 'elderflower', 'chambord',
   ];
-  const mixerTypes = [
+  const mixerKeywords = [
     'mixer', 'tonic', 'soda', 'juice', 'syrup', 'bitters',
     'ginger beer', 'ginger ale', 'cola', 'lemon-lime', 'energy drink',
     'red bull', 'monster', 'celsius',
   ];
-  const wineTypes  = ['wine', 'champagne', 'prosecco', 'cava', 'sparkling wine', 'port', 'sherry', 'sake'];
-  const beerTypes  = ['beer', 'ale', 'lager', 'stout', 'porter', 'ipa', 'cider'];
 
-  if (spiritTypes.some(s => type.includes(s)))  return 'spirits';
-  if (liqueurTypes.some(s => type.includes(s))) return 'liqueurs';
-  if (mixerTypes.some(s => type.includes(s)))   return 'mixers';
-  if (wineTypes.some(s => type.includes(s)))    return 'wine';
-  if (beerTypes.some(s => type.includes(s)))    return 'beer';
-  return 'spirits';
+  if (spiritKeywords.some(k => type.includes(k)))  return 'spirit';
+  if (liqueurKeywords.some(k => type.includes(k))) return 'liqueur';
+  if (mixerKeywords.some(k => type.includes(k)))   return 'mixer';
+  return 'spirit'; // default unrecognised bottles to spirit
+};
+
+// Maps AI type+brand to a SPIRIT_TYPES / LIQUEUR_TYPES / FORTIFIED_TYPES value
+// so useInventory can expand it to canonical recipe ingredient IDs.
+export const mapBottleToSpiritType = (aiType: string, brand: string = ''): string => {
+  const text = `${aiType} ${brand}`.toLowerCase().trim();
+
+  // Whiskey — most specific first
+  if (text.includes('bourbon'))                                               return 'bourbon';
+  if (text.includes('rye whiskey') || text.includes('rye whisky'))           return 'rye-whiskey';
+  if (text.includes('irish whiskey') || text.includes('irish whisky'))       return 'irish-whiskey';
+  if (text.includes('islay') || text.includes('peated'))                     return 'scotch-peated';
+  if (text.includes('scotch') || text.includes('blended whisky'))            return 'scotch-blended';
+  if (text.includes('japanese whisky') || text.includes('japanese whiskey')) return 'japanese-whisky';
+  if (text.includes('whiskey') || text.includes('whisky'))                   return 'bourbon';
+
+  // Tequila
+  if (text.includes('reposado'))                                return 'tequila-reposado';
+  if (text.includes('añejo') || text.includes('anejo'))         return 'tequila-anejo';
+  if (text.includes('tequila'))                                 return 'tequila-blanco';
+
+  // Other spirits
+  if (text.includes('mezcal'))                                  return 'mezcal';
+  if (text.includes('old tom'))                                 return 'gin-old-tom';
+  if (text.includes('navy strength'))                           return 'gin-navy';
+  if (text.includes('gin'))                                     return 'gin-london-dry';
+  if (text.includes('white rum') || text.includes('light rum') || text.includes('silver rum')) return 'rum-white';
+  if (text.includes('dark rum')  || text.includes('black rum')) return 'rum-dark';
+  if (text.includes('aged rum'))                                return 'rum-aged';
+  if (text.includes('spiced rum'))                              return 'rum-spiced';
+  if (text.includes('rum'))                                     return 'rum-white';
+  if (text.includes('vodka'))                                   return 'vodka';
+  if (text.includes('cognac') || text.includes('brandy') || text.includes('armagnac') || text.includes('calvados')) return 'cognac-brandy';
+
+  // Liqueurs & fortified
+  if (text.includes('triple sec') || text.includes('cointreau') || text.includes('curacao')) return 'triple-sec';
+  if (text.includes('kahlua') || text.includes('coffee liqueur')) return 'coffee-liqueur';
+  if (text.includes('baileys')  || text.includes('irish cream'))  return 'irish-cream';
+  if (text.includes('amaretto'))                                   return 'amaretto';
+  if (text.includes('elderflower') || text.includes('st. germain') || text.includes('st germain')) return 'elderflower';
+  if (text.includes('peach schnapps'))                             return 'peach-schnapps';
+  if (text.includes('campari'))                                    return 'campari-l';
+  if (text.includes('aperol'))                                     return 'aperol-l';
+  if (text.includes('chambord'))                                   return 'chambord';
+  if (text.includes('sweet vermouth') || text.includes('rosso'))  return 'sweet-vermouth';
+  if (text.includes('dry vermouth')   || text.includes('bianco') || text.includes('blanc vermouth')) return 'dry-vermouth';
+  if (text.includes('vermouth'))                                   return 'sweet-vermouth';
+  if (text.includes('fino') || text.includes('manzanilla') || text.includes('dry sherry')) return 'dry-sherry';
+  if (text.includes('cream sherry'))                               return 'cream-sherry';
+  if (text.includes('port'))                                       return 'port';
+
+  return '';
 };
 
 const cleanJson = (text: string): string =>
