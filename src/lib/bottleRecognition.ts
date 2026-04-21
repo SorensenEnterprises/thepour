@@ -42,6 +42,15 @@ export interface ShelfRecognitionResult {
   error:       string | null;
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const cleanJson = (text: string): string =>
+  text
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/```\s*$/i, '')
+    .trim();
+
 // ── Edge function call ────────────────────────────────────────────────────────
 
 interface EdgeResult {
@@ -89,7 +98,7 @@ export async function recognizeSingleBottle(base64: string): Promise<SingleRecog
     const result = await callEdgeFunction(base64, 'single');
     raw = result.raw; rawData = result.rawData; rawError = result.rawError;
     console.log('[bottleRecognition] Single content text:', result.text);
-    const parsed = JSON.parse(result.text.trim());
+    const parsed = JSON.parse(cleanJson(result.text));
     if (parsed.error) {
       return { bottle: null, rawResponse: raw, rawData, rawError, error: `Model returned: ${parsed.error}` };
     }
@@ -109,7 +118,7 @@ export async function recognizeShelf(base64: string): Promise<ShelfRecognitionRe
     const result = await callEdgeFunction(base64, 'shelf');
     raw = result.raw; rawData = result.rawData; rawError = result.rawError;
     console.log('[bottleRecognition] Shelf content text:', result.text);
-    const parsed = JSON.parse(result.text.trim());
+    const parsed = JSON.parse(cleanJson(result.text));
     if (!Array.isArray(parsed)) {
       console.warn('[bottleRecognition] Response was not an array:', parsed);
       return { bottles: [], rawResponse: raw, rawData, rawError, error: `Expected array, got: ${result.text.slice(0, 200)}` };
