@@ -29,77 +29,98 @@ export interface RecognizedBottle {
 export interface SingleRecognitionResult {
   bottle:      RecognizedBottle | null;
   rawResponse: string;
+  rawData:     string;
+  rawError:    string;
   error:       string | null;
 }
 
 export interface ShelfRecognitionResult {
   bottles:     RecognizedBottle[];
   rawResponse: string;
+  rawData:     string;
+  rawError:    string;
   error:       string | null;
 }
 
 // ── Edge function call ────────────────────────────────────────────────────────
 
-async function callEdgeFunction(
-  imageBase64: string,
-  mode: 'single' | 'shelf',
-): Promise<{ text: string; raw: string }> {
-  console.log('[bottleRecognition] Calling edge function, mode:', mode, 'image chars:', imageBase64.length);
+interface EdgeResult {
+  text:     string;
+  raw:      string;
+  rawData:  string;
+  rawError: string;
+}
+
+async function callEdgeFunction(imageBase64: string, mode: 'single' | 'shelf'): Promise<EdgeResult> {
+  console.log('[bottleRecognition] supabase client:', supabase);
+  console.log('[bottleRecognition] invoking identify-bottles with mode:', mode);
+  console.log('[bottleRecognition] image size:', imageBase64.length, 'chars');
 
   const { data, error } = await supabase.functions.invoke('identify-bottles', {
     body: { imageBase64, mode },
   });
 
-  const raw = JSON.stringify(data ?? error);
-  console.log('[bottleRecognition] Edge function response:', raw);
+  console.log('[bottleRecognition] invoke result - data:', data);
+  console.log('[bottleRecognition] invoke result - error:', error);
+
+  const rawData  = data  ? JSON.stringify(data)  : '(null)';
+  const rawError = error ? JSON.stringify({ message: error.message, name: error.name, context: String((error as any).context) }) : '(null)';
+  const raw      = JSON.stringify({ data, error: error ? { message: error.message, name: error.name } : null });
+
+  console.log('[bottleRecognition] rawData:', rawData);
+  console.log('[bottleRecognition] rawError:', rawError);
 
   if (error) {
-    throw new Error(`Edge function error: ${error.message}`);
+    throw Object.assign(new Error(`Edge function error: ${error.message}`), { rawData, rawError });
   }
   if (data?.error) {
-    throw new Error(`Server error: ${data.error}`);
+    throw Object.assign(new Error(`Server error: ${data.error}`), { rawData, rawError });
   }
 
   const text: string = data?.result ?? '';
-  return { text, raw };
+  return { text, raw, rawData, rawError };
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────
 
 export async function recognizeSingleBottle(base64: string): Promise<SingleRecognitionResult> {
-  let raw = '';
+  let raw = ''; let rawData = ''; let rawError = '';
   try {
-    const { text, raw: rawRes } = await callEdgeFunction(base64, 'single');
-    raw = rawRes;
-    console.log('[bottleRecognition] Single content text:', text);
-    const parsed = JSON.parse(text.trim());
+    const result = await callEdgeFunction(base64, 'single');
+    raw = result.raw; rawData = result.rawData; rawError = result.rawError;
+    console.log('[bottleRecognition] Single content text:', result.text);
+    const parsed = JSON.parse(result.text.trim());
     if (parsed.error) {
-      return { bottle: null, rawResponse: raw, error: `Model returned: ${parsed.error}` };
+      return { bottle: null, rawResponse: raw, rawData, rawError, error: `Model returned: ${parsed.error}` };
     }
-    return { bottle: parsed as RecognizedBottle, rawResponse: raw, error: null };
+    return { bottle: parsed as RecognizedBottle, rawResponse: raw, rawData, rawError, error: null };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    rawData  = (err as any).rawData  ?? rawData;
+    rawError = (err as any).rawError ?? rawError;
     console.error('[bottleRecognition] recognizeSingleBottle error:', err);
-    return { bottle: null, rawResponse: raw, error: msg };
+    return { bottle: null, rawResponse: raw, rawData, rawError, error: msg };
   }
 }
 
 export async function recognizeShelf(base64: string): Promise<ShelfRecognitionResult> {
-  let raw = '';
+  let raw = ''; let rawData = ''; let rawError = '';
   try {
-    const { text, raw: rawRes } = await callEdgeFunction(base64, 'shelf');
-    raw = rawRes;
-    console.log('[bottleRecognition] Shelf content text:', text);
-    const parsed = JSON.parse(text.trim());
+    const result = await callEdgeFunction(base64, 'shelf');
+    raw = result.raw; rawData = result.rawData; rawError = result.rawError;
+    console.log('[bottleRecognition] Shelf content text:', result.text);
+    const parsed = JSON.parse(result.text.trim());
     if (!Array.isArray(parsed)) {
       console.warn('[bottleRecognition] Response was not an array:', parsed);
-      return { bottles: [], rawResponse: raw, error: `Expected array, got: ${text.slice(0, 200)}` };
+      return { bottles: [], rawResponse: raw, rawData, rawError, error: `Expected array, got: ${result.text.slice(0, 200)}` };
     }
-    return { bottles: parsed as RecognizedBottle[], rawResponse: raw, error: null };
+    return { bottles: parsed as RecognizedBottle[], rawResponse: raw, rawData, rawError, error: null };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    rawData  = (err as any).rawData  ?? rawData;
+    rawError = (err as any).rawError ?? rawError;
     console.error('[bottleRecognition] recognizeShelf error:', err);
-    return { bottles: [], rawResponse: raw, error: msg };
+    return { bottles: [], rawResponse: raw, rawData, rawError, error: msg };
   }
 }
 

@@ -5,6 +5,7 @@ import {
   recognizeSingleBottle,
   recognizeShelf,
 } from '../lib/bottleRecognition';
+import { supabase } from '../lib/supabase';
 import './PhotoScanModal.css';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -19,9 +20,13 @@ interface Props {
 }
 
 interface DebugInfo {
-  imageSizeKB: number;
-  rawResponse: string;
-  error:       string | null;
+  imageSizeKB:  number;
+  supabaseUrl:  string;
+  clientExists: boolean;
+  rawResponse:  string;
+  rawData:      string;
+  rawError:     string;
+  error:        string | null;
 }
 
 const ALL_BOTTLE_TYPES: BottleType[] = [
@@ -92,7 +97,7 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
   const [debugInfo, setDebugInfo]         = useState<DebugInfo | null>(null);
 
   const fileRef = useRef<HTMLInputElement>(null);
-  const hasApiKey = !!process.env.REACT_APP_ANTHROPIC_API_KEY;
+  const hasApiKey = !!process.env.REACT_APP_SUPABASE_URL;
 
   // ── File handling ────────────────────────────────────────────────────────
 
@@ -108,9 +113,12 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
       const { base64, sizeKB } = await compressImage(file);
       imageSizeKB = sizeKB;
 
+      const supabaseUrl  = process.env.REACT_APP_SUPABASE_URL ?? '(missing)';
+      const clientExists = !!supabase;
+
       if (mode === 'single') {
-        const { bottle, rawResponse, error } = await recognizeSingleBottle(base64);
-        setDebugInfo({ imageSizeKB, rawResponse, error });
+        const { bottle, rawResponse, rawData, rawError, error } = await recognizeSingleBottle(base64);
+        setDebugInfo({ imageSizeKB, supabaseUrl, clientExists, rawResponse, rawData, rawError, error });
         if (bottle) {
           setSingleResult(bottle);
           setDraftName(bottle.name);
@@ -120,8 +128,8 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
           setStatus('error');
         }
       } else {
-        const { bottles, rawResponse, error } = await recognizeShelf(base64);
-        setDebugInfo({ imageSizeKB, rawResponse, error });
+        const { bottles, rawResponse, rawData, rawError, error } = await recognizeShelf(base64);
+        setDebugInfo({ imageSizeKB, supabaseUrl, clientExists, rawResponse, rawData, rawError, error });
         setShelfRows(
           bottles.map(b => ({
             bottle:      b,
@@ -136,7 +144,15 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      setDebugInfo({ imageSizeKB, rawResponse: '', error: msg });
+      setDebugInfo({
+        imageSizeKB,
+        supabaseUrl:  process.env.REACT_APP_SUPABASE_URL ?? '(missing)',
+        clientExists: !!supabase,
+        rawResponse:  '',
+        rawData:      '',
+        rawError:     msg,
+        error:        msg,
+      });
       setStatus('error');
     }
   }
@@ -211,12 +227,22 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
 
   const debugLines = debugInfo
     ? [
-        `Image size: ${debugInfo.imageSizeKB} KB`,
-        `Error: ${debugInfo.error ?? 'none'}`,
+        `Image size:      ${debugInfo.imageSizeKB} KB`,
+        `Supabase URL:    ${debugInfo.supabaseUrl}`,
+        `Client exists:   ${debugInfo.clientExists ? 'yes' : 'no'}`,
+        `Error:           ${debugInfo.error ?? 'none'}`,
         ``,
-        `Raw response (first 500 chars):`,
+        `── invoke data ──`,
+        debugInfo.rawData
+          ? debugInfo.rawData.slice(0, 300) + (debugInfo.rawData.length > 300 ? '…' : '')
+          : '(empty)',
+        ``,
+        `── invoke error ──`,
+        debugInfo.rawError !== '(null)' ? debugInfo.rawError : '(none)',
+        ``,
+        `── raw response (first 400 chars) ──`,
         debugInfo.rawResponse
-          ? debugInfo.rawResponse.slice(0, 500) + (debugInfo.rawResponse.length > 500 ? '…' : '')
+          ? debugInfo.rawResponse.slice(0, 400) + (debugInfo.rawResponse.length > 400 ? '…' : '')
           : '(empty)',
       ].join('\n')
     : null;

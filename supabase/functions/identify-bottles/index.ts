@@ -10,12 +10,15 @@ const SINGLE_PROMPT = `You are a spirits and beverage identification expert. Ide
 const SHELF_PROMPT = `You are an expert at identifying alcoholic beverage bottles. Look carefully at this image. Identify EVERY bottle, can, or beverage container you can see, even if partially visible or the label is not fully clear. Make your best identification attempt for each one. Return ONLY a valid JSON array with no other text. Each item: { "name": string, "brand": string, "type": string, "size_ml": number, "confidence": "high"|"medium"|"low" }. If genuinely no bottles exist return [].`
 
 serve(async (req) => {
+  console.log('identify-bottles invoked, method:', req.method)
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const { imageBase64, mode } = await req.json()
+    console.log('identify-bottles mode:', mode, 'image chars:', imageBase64?.length ?? 0)
 
     if (!imageBase64 || !mode) {
       return new Response(

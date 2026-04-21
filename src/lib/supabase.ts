@@ -16,6 +16,8 @@ if (!url || !key) {
   );
 }
 
+console.log('[supabase] URL:', url ? url.slice(0, 40) : 'MISSING', '| key present:', !!key);
+
 // Use placeholder values when env vars are absent so createClient never throws
 // at module-init time (it validates that the URL is a non-empty string).
 // All actual network calls are guarded by supabaseConfigured checks.
