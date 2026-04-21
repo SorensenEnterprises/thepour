@@ -924,9 +924,10 @@ const SHAKER_LINES = [
 interface Props {
   onClose: () => void;
   inStockIds?: Set<string>;
+  onGoToInventory?: () => void;
 }
 
-export function BartenderModal({ onClose, inStockIds = new Set() }: Props) {
+export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventory }: Props) {
   const { user } = useAuth();
   const [phase, setPhase]           = useState<Phase>('mode-pick');
   const [barMode, setBarMode]       = useState<BarMode>('my-bar');
@@ -939,6 +940,7 @@ export function BartenderModal({ onClose, inStockIds = new Set() }: Props) {
   const [shakerLine, setShakerLine] = useState('');
   const [showSurvey, setShowSurvey] = useState(false);
   const [surveyDone, setSurveyDone] = useState(false);
+  const [notifyClicked, setNotifyClicked] = useState(false);
 
   const revealTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const audioRef          = useRef<HTMLAudioElement | null>(null);
@@ -1055,6 +1057,31 @@ export function BartenderModal({ onClose, inStockIds = new Set() }: Props) {
     setShowSurvey(false);
     setSurveyDone(false);
     setPhase('mode-pick');
+  }
+
+  function handleGoToInventory() {
+    cancelPendingTimer();
+    fadeOutMusic(() => onGoToInventory?.());
+  }
+
+  function handleSwitchToExplore() {
+    setBarMode('explore');
+    const a = answers;
+    let results: DrinkRec[];
+    if (category === 'mocktail')        results = getTopMocktails(a);
+    else if (category === 'dirty-soda') results = getTopDirtySodas(a);
+    else if (category === 'shot')       results = getTopShots(a, inStockIds, 'explore');
+    else {
+      const full: Required<Answers> = {
+        mood:      (a.mood      as Mood)      ?? 'sweet',
+        spirit:    (a.spirit    as Spirit)    ?? 'any',
+        style:     (a.style     as Style)     ?? 'classic',
+        lightPref: (a.lightPref as LightPref) ?? 'no-pref',
+        strength:  (a.strength  as Strength)  ?? 'balanced',
+      };
+      results = getTopCocktails(full, inStockIds, 'explore');
+    }
+    setRecs(results);
   }
 
   const currentQuestions = getQuestions(category);
@@ -1308,6 +1335,49 @@ export function BartenderModal({ onClose, inStockIds = new Set() }: Props) {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* ── Empty state (My Bar mode, no eligible results) ── */}
+        {phase === 'reveal' && recs.length === 0 && barMode === 'my-bar' && (
+          <div className="bm-empty">
+            <div className="bm-empty-icon">🍸</div>
+            <h2 className="bm-empty-headline">
+              {inStockIds.size === 0 ? 'Your bar needs a restock' : 'No matches for this category'}
+            </h2>
+            <p className="bm-empty-sub">
+              {inStockIds.size === 0
+                ? 'Add some bottles to get personalized recommendations from your bartender.'
+                : "None of your bottles match this drink type — try a different category or switch to Explore mode."}
+            </p>
+            <div className="bm-empty-actions">
+              <button className="bm-empty-btn-primary" onClick={handleGoToInventory}>
+                Add to My Bar
+              </button>
+              <button className="bm-empty-btn-secondary" onClick={handleSwitchToExplore}>
+                Explore All Drinks
+              </button>
+            </div>
+
+            <div className="bm-delivery-card">
+              <span className="bm-delivery-badge">Coming Soon</span>
+              <div className="bm-delivery-icon">🚚</div>
+              <p className="bm-delivery-headline">Need to restock? Delivery is coming soon.</p>
+              <p className="bm-delivery-sub">
+                We're partnering with delivery services to restock your bar in under an hour.
+              </p>
+              {notifyClicked ? (
+                <span className="bm-delivery-toast">You're on the list! 🍹</span>
+              ) : (
+                <button className="bm-delivery-notify" onClick={() => setNotifyClicked(true)}>
+                  Notify me
+                </button>
+              )}
+            </div>
+
+            <button className="bm-reveal-restart" onClick={handleRestart} style={{ marginTop: 16 }}>
+              Start over
+            </button>
           </div>
         )}
 
