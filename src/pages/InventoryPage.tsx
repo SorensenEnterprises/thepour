@@ -5,7 +5,7 @@ import { BarcodeScannerModal } from '../components/BarcodeScannerModal';
 import { PhotoScanModal } from '../components/PhotoScanModal';
 import { ResponsibleFooter } from '../components/ResponsibleFooter';
 import { InventoryItem, QuantityLevel, Ingredient, BottleSize } from '../types';
-import { RecognizedBottle } from '../lib/bottleRecognition';
+import { RecognizedBottle, mapBottleType } from '../lib/bottleRecognition';
 
 interface Props {
   inventory: InventoryItem[];
@@ -18,11 +18,12 @@ interface Props {
 type Overlay = 'none' | 'method-picker' | 'scan' | 'photo' | 'shelf' | 'add' | 'edit';
 
 function detectCategoryFromType(type: string): Ingredient['category'] {
-  if (['Vodka', 'Bourbon', 'Gin', 'Rum', 'Tequila', 'Mezcal', 'Scotch', 'Whiskey'].includes(type)) return 'spirit';
-  if (type === 'Liqueur') return 'liqueur';
-  if (type === 'Beer' || type === 'Wine') return 'other';
-  if (type === 'Mixer' || type === 'Energy Drink') return 'mixer';
-  return 'other';
+  switch (mapBottleType(type)) {
+    case 'spirits':   return 'spirit';
+    case 'liqueurs':  return 'liqueur';
+    case 'mixers':    return 'mixer';
+    default:          return 'other';
+  }
 }
 
 export function InventoryPage({ inventory, onSetQuantity, onAddItem, onEditItem, onDeleteItem }: Props) {

@@ -44,6 +44,36 @@ export interface ShelfRecognitionResult {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+export const mapBottleType = (aiType: string): string => {
+  const type = aiType.toLowerCase().trim();
+  const spiritTypes = [
+    'gin', 'vodka', 'rum', 'tequila', 'mezcal', 'whiskey', 'whisky',
+    'bourbon', 'scotch', 'rye', 'brandy', 'cognac', 'calvados',
+    'absinthe', 'grappa', 'pisco', 'cachaca', 'baijiu', 'soju',
+    'aquavit', 'schnapps', 'armagnac',
+  ];
+  const liqueurTypes = [
+    'liqueur', 'liquor', 'triple sec', 'cointreau', 'amaretto',
+    'kahlua', 'baileys', 'campari', 'aperol', 'vermouth', 'amaro',
+    'chartreuse', 'benedictine', 'drambuie', 'frangelico', 'sambuca',
+    'limoncello', 'curacao', 'maraschino', 'falernum',
+  ];
+  const mixerTypes = [
+    'mixer', 'tonic', 'soda', 'juice', 'syrup', 'bitters',
+    'ginger beer', 'ginger ale', 'cola', 'lemon-lime', 'energy drink',
+    'red bull', 'monster', 'celsius',
+  ];
+  const wineTypes  = ['wine', 'champagne', 'prosecco', 'cava', 'sparkling wine', 'port', 'sherry', 'sake'];
+  const beerTypes  = ['beer', 'ale', 'lager', 'stout', 'porter', 'ipa', 'cider'];
+
+  if (spiritTypes.some(s => type.includes(s)))  return 'spirits';
+  if (liqueurTypes.some(s => type.includes(s))) return 'liqueurs';
+  if (mixerTypes.some(s => type.includes(s)))   return 'mixers';
+  if (wineTypes.some(s => type.includes(s)))    return 'wine';
+  if (beerTypes.some(s => type.includes(s)))    return 'beer';
+  return 'spirits';
+};
+
 const cleanJson = (text: string): string =>
   text
     .replace(/^```json\s*/i, '')
