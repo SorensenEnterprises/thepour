@@ -613,6 +613,88 @@
 
 .bm-recipe-restart:hover { border-color: #4abbc4; color: #4abbc4; }
 
+/* ── Mode pick ── */
+.bm-mode-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.bm-mode-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(74,187,196,0.06);
+  border: 1.5px solid rgba(74,187,196,0.18);
+  border-radius: 16px;
+  padding: 20px 20px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.bm-mode-option:hover {
+  background: rgba(74,187,196,0.12);
+  border-color: #4abbc4;
+}
+
+.bm-mode-option:active { transform: scale(0.97); }
+
+.bm-mode-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.bm-mode-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bm-mode-label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #f5ead8;
+  line-height: 1.2;
+}
+
+.bm-mode-sub {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  color: #6a8a8c;
+  line-height: 1.4;
+}
+
+.bm-mode-option--mybar:hover  .bm-mode-label { color: #4abbc4; }
+.bm-mode-option--explore:hover .bm-mode-label { color: #4abbc4; }
+
+/* ── Reveal missing ingredients (explore mode) ── */
+.bm-rec-missing {
+  font-size: 12px;
+  color: #c8a84c;
+  background: rgba(200,168,76,0.08);
+  border: 1px solid rgba(200,168,76,0.22);
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin: 6px 0 4px;
+  line-height: 1.4;
+}
+
+.bm-rec-missing-label {
+  font-weight: 600;
+}
+
+/* ── Reveal low-stock note ── */
+.bm-reveal-low-stock {
+  font-size: 13px;
+  color: #6a8a8c;
+  text-align: center;
+  margin: 0 0 12px;
+  font-style: italic;
+}
+
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .bm-options          { grid-template-columns: 1fr; gap: 8px; }
@@ -620,4 +702,6 @@
   .bm-option-label     { font-size: 17px; }
   .bm-question         { font-size: 26px; margin-bottom: 28px; }
   .bm-shaker-scene     { min-height: 240px; }
+  .bm-mode-options     { grid-template-columns: 1fr; gap: 10px; }
+  .bm-mode-option      { padding: 16px 16px; }
 }

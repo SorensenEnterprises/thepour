@@ -84,7 +84,7 @@ function AppContent() {
       </button>
 
       {bartenderOpen && (
-        <BartenderModal onClose={() => setBartenderOpen(false)} />
+        <BartenderModal onClose={() => setBartenderOpen(false)} inStockIds={inStockIds} />
       )}
     </div>
   );

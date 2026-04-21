@@ -12,7 +12,8 @@ type Spirit        = 'brown' | 'clear' | 'agave'  | 'any';
 type Style         = 'classic' | 'adventurous';
 type LightPref     = 'light-pref' | 'no-pref';
 type Strength      = 'light'   | 'balanced' | 'bold';
-type Phase         = 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
+type Phase         = 'mode-pick' | 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
+type BarMode       = 'my-bar' | 'explore';
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
 type ShotSpirit    = 'tequila' | 'whiskey' | 'vodka' | 'any';
 type ShotStyle     = 'classic' | 'fruity' | 'creamy';
@@ -307,10 +308,53 @@ const COCKTAILS: CocktailRec[] = [
   },
 ];
 
+// ── Required spirit/liqueur IDs per cocktail (mixers & garnishes excluded) ────
+
+const COCKTAIL_REQUIRED_IDS: Record<string, string[]> = {
+  'Old Fashioned':     ['bourbon'],
+  'Manhattan':         ['rye-whiskey', 'sweet-vermouth'],
+  'Whiskey Sour':      ['bourbon'],
+  'Paper Plane':       ['bourbon', 'aperol', 'amaro-nonino'],
+  'Penicillin':        ['scotch'],
+  'Negroni':           ['gin', 'campari', 'sweet-vermouth'],
+  'Gin & Tonic':       ['gin'],
+  'Last Word':         ['gin', 'green-chartreuse', 'maraschino-liqueur'],
+  'Espresso Martini':  ['vodka', 'coffee-liqueur'],
+  'Gimlet':            ['gin'],
+  'Margarita':         ['tequila', 'triple-sec'],
+  'Paloma':            ['tequila'],
+  'Mezcal Negroni':    ['mezcal', 'campari', 'sweet-vermouth'],
+  "Tommy's Margarita": ['tequila'],
+  'Daiquiri':          ['rum-white'],
+  'Dark & Stormy':     ['rum-dark'],
+};
+
+const SHOT_REQUIRED_IDS: Record<string, string[]> = {
+  'Tequila Shot':    ['tequila'],
+  'Whiskey Shot':    ['bourbon'],
+  'Kamikaze':        ['vodka', 'triple-sec'],
+  'Lemon Drop Shot': ['vodka'],
+  'Washington Apple':['bourbon'],
+  'Buttery Nipple':  ['butterscotch-schnapps', 'irish-cream'],
+  'Alabama Slammer': ['southern-comfort', 'amaretto'],
+  'Jager Bomb':      ['jagermeister'],
+  'Slippery Nipple': ['sambuca', 'irish-cream'],
+  'Pickle Back':     ['rye-whiskey'],
+};
+
 // ── Scoring ──────────────────────────────────────────────────────────────────
 
-function getTopCocktails(answers: Required<Answers>, n = 3): CocktailRec[] {
-  const scored = COCKTAILS.map(c => {
+function getTopCocktails(
+  answers: Required<Answers>,
+  inStockIds: Set<string>,
+  barMode: BarMode,
+  n = 3,
+): CocktailRec[] {
+  const eligible = barMode === 'my-bar'
+    ? COCKTAILS.filter(c => (COCKTAIL_REQUIRED_IDS[c.name] ?? []).every(id => inStockIds.has(id)))
+    : COCKTAILS;
+
+  const scored = eligible.map(c => {
     let score = 0;
     if (c.moods.includes(answers.mood))                                                              score += 3;
     if (answers.spirit === 'any' || c.spirits.includes(answers.spirit) || c.spirits.includes('any')) score += 3;
@@ -693,8 +737,17 @@ const SHOTS: ShotRec[] = [
   },
 ];
 
-function getTopShots(answers: Record<string, string>, n = 3): ShotRec[] {
-  const scored = SHOTS.map(s => {
+function getTopShots(
+  answers: Record<string, string>,
+  inStockIds: Set<string>,
+  barMode: BarMode,
+  n = 3,
+): ShotRec[] {
+  const eligible = barMode === 'my-bar'
+    ? SHOTS.filter(s => (SHOT_REQUIRED_IDS[s.name] ?? []).every(id => inStockIds.has(id)))
+    : SHOTS;
+
+  const scored = eligible.map(s => {
     let score = 0;
     if (answers.shotSpirit === 'any' || s.spirits.includes(answers.shotSpirit as ShotSpirit) || s.spirits.includes('any')) score += 3;
     if (s.styles.includes(answers.shotStyle as ShotStyle)) score += 2;
@@ -870,11 +923,13 @@ const SHAKER_LINES = [
 
 interface Props {
   onClose: () => void;
+  inStockIds?: Set<string>;
 }
 
-export function BartenderModal({ onClose }: Props) {
+export function BartenderModal({ onClose, inStockIds = new Set() }: Props) {
   const { user } = useAuth();
-  const [phase, setPhase]           = useState<Phase>('category-pick');
+  const [phase, setPhase]           = useState<Phase>('mode-pick');
+  const [barMode, setBarMode]       = useState<BarMode>('my-bar');
   const [category, setCategory]     = useState<DrinkCategory | null>(null);
   const [step, setStep]             = useState(0);
   const [answers, setAnswers]       = useState<Record<string, string>>({});
@@ -940,6 +995,12 @@ export function BartenderModal({ onClose }: Props) {
     return () => clearTimeout(t);
   }, [phase, rec]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  function handleModePick(mode: BarMode) {
+    setBarMode(mode);
+    setAnimKey(k => k + 1);
+    setPhase('category-pick');
+  }
+
   function handleCategoryPick(cat: DrinkCategory) {
     setCategory(cat);
     setStep(0);
@@ -969,8 +1030,8 @@ export function BartenderModal({ onClose }: Props) {
         let results: DrinkRec[];
         if (category === 'mocktail')        results = getTopMocktails(next);
         else if (category === 'dirty-soda') results = getTopDirtySodas(next);
-        else if (category === 'shot')       results = getTopShots(next);
-        else                                results = getTopCocktails(next as Required<Answers>);
+        else if (category === 'shot')       results = getTopShots(next, inStockIds, barMode);
+        else                                results = getTopCocktails(next as Required<Answers>, inStockIds, barMode);
         setRecs(results);
         setRec(null);
         setPhase('reveal');
@@ -984,6 +1045,7 @@ export function BartenderModal({ onClose }: Props) {
     if (fadeFnRef.current) clearInterval(fadeFnRef.current);
     const audio = audioRef.current;
     if (audio) { audio.volume = 0.3; if (audio.paused) audio.play().catch(() => {}); }
+    setBarMode('my-bar');
     setCategory(null);
     setStep(0);
     setAnswers({});
@@ -992,7 +1054,7 @@ export function BartenderModal({ onClose }: Props) {
     setShakerLine('');
     setShowSurvey(false);
     setSurveyDone(false);
-    setPhase('category-pick');
+    setPhase('mode-pick');
   }
 
   const currentQuestions = getQuestions(category);
@@ -1166,6 +1228,30 @@ export function BartenderModal({ onClose }: Props) {
           </div>
         )}
 
+        {/* ── Mode pick ── */}
+        {phase === 'mode-pick' && (
+          <div className="bm-question-wrap" key="mode">
+            <p className="bm-voice">"Here's the thing — I work best when I know what you've got."</p>
+            <h2 className="bm-question">What are we working with?</h2>
+            <div className="bm-mode-options">
+              <button className="bm-mode-option bm-mode-option--mybar" onClick={() => handleModePick('my-bar')}>
+                <span className="bm-mode-icon">🏠</span>
+                <div className="bm-mode-text">
+                  <span className="bm-mode-label">My Bar</span>
+                  <span className="bm-mode-sub">Only recommend what I can make tonight</span>
+                </div>
+              </button>
+              <button className="bm-mode-option bm-mode-option--explore" onClick={() => handleModePick('explore')}>
+                <span className="bm-mode-icon">🔍</span>
+                <div className="bm-mode-text">
+                  <span className="bm-mode-label">Explore</span>
+                  <span className="bm-mode-sub">Show me anything — I'll grab what I need</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── Category pick ── */}
         {phase === 'category-pick' && (
           <div className="bm-question-wrap" key="cat">
@@ -1228,23 +1314,44 @@ export function BartenderModal({ onClose }: Props) {
         {/* ── Reveal — 3 options ── */}
         {phase === 'reveal' && recs.length > 0 && (
           <div className="bm-reveal">
-            <p className="bm-reveal-label">Your top picks tonight</p>
+            <p className="bm-reveal-label">
+              {barMode === 'explore' ? 'Top picks for you tonight' : 'What you can make tonight'}
+            </p>
             <div className="bm-rec-cards">
-              {recs.map((r, i) => (
-                <div key={r.name} className={`bm-rec-card${i === 0 ? ' bm-rec-card--top' : ''}`}>
-                  {i === 0 && <span className="bm-rec-badge">Best match</span>}
-                  <h3 className="bm-rec-name">{r.name}</h3>
-                  <span className="bm-rec-calories">~{calculateCaloriesFromStrings(r.ingredients)} cal</span>
-                  <p className="bm-rec-desc">{r.description}</p>
-                  <button
-                    className="bm-rec-pick"
-                    onClick={() => { setRec(r); setPhase('recipe'); }}
-                  >
-                    Make this →
-                  </button>
-                </div>
-              ))}
+              {recs.map((r, i) => {
+                const missingIds = barMode === 'explore'
+                  ? (COCKTAIL_REQUIRED_IDS[r.name] ?? SHOT_REQUIRED_IDS[r.name] ?? [])
+                      .filter(id => !inStockIds.has(id))
+                  : [];
+                return (
+                  <div key={r.name} className={`bm-rec-card${i === 0 ? ' bm-rec-card--top' : ''}`}>
+                    {i === 0 && <span className="bm-rec-badge">Best match</span>}
+                    <h3 className="bm-rec-name">{r.name}</h3>
+                    <span className="bm-rec-calories">~{calculateCaloriesFromStrings(r.ingredients)} cal</span>
+                    <p className="bm-rec-desc">{r.description}</p>
+                    {missingIds.length > 0 && (
+                      <div className="bm-rec-missing">
+                        <span className="bm-rec-missing-label">You'll need: </span>
+                        {missingIds.map(id =>
+                          id.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ')
+                        ).join(', ')}
+                      </div>
+                    )}
+                    <button
+                      className="bm-rec-pick"
+                      onClick={() => { setRec(r); setPhase('recipe'); }}
+                    >
+                      Make this →
+                    </button>
+                  </div>
+                );
+              })}
             </div>
+            {barMode === 'my-bar' && recs.length < 3 && (
+              <p className="bm-reveal-low-stock">
+                Add more bottles to see more recommendations
+              </p>
+            )}
             <button className="bm-reveal-restart" onClick={handleRestart}>
               Ask again
             </button>
