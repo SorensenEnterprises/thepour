@@ -24,6 +24,18 @@ export interface RecognizedBottle {
   confidence: 'high' | 'medium' | 'low';
 }
 
+export interface SingleRecognitionResult {
+  bottle:      RecognizedBottle | null;
+  rawResponse: string;
+  error:       string | null;
+}
+
+export interface ShelfRecognitionResult {
+  bottles:     RecognizedBottle[];
+  rawResponse: string;
+  error:       string | null;
+}
+
 // ── Prompts ──────────────────────────────────────────────────────────────────
 
 const SINGLE_SYSTEM_PROMPT = `You are a spirits and beverage identification expert. Identify the bottle in this photo and return ONLY a valid JSON object with no preamble, explanation, or markdown formatting:
@@ -36,7 +48,12 @@ const SHELF_SYSTEM_PROMPT = `You are an expert at identifying alcoholic beverage
 
 const ANTHROPIC_API_KEY = process.env.REACT_APP_ANTHROPIC_API_KEY;
 
-async function callVision(base64: string, systemPrompt: string): Promise<string> {
+interface VisionResult {
+  text: string;
+  raw:  string;
+}
+
+async function callVision(base64: string, systemPrompt: string): Promise<VisionResult> {
   console.log('[bottleRecognition] Image size (chars):', base64.length);
   console.log('[bottleRecognition] API key present:', !!ANTHROPIC_API_KEY);
 
@@ -58,20 +75,6 @@ async function callVision(base64: string, systemPrompt: string): Promise<string>
     ],
   };
 
-  console.log('[bottleRecognition] Request body (image truncated):', {
-    ...requestBody,
-    messages: requestBody.messages.map(m => ({
-      ...m,
-      content: Array.isArray(m.content)
-        ? m.content.map((c: any) =>
-            c.type === 'image'
-              ? { ...c, source: { ...c.source, data: c.source.data.slice(0, 40) + '...' } }
-              : c
-          )
-        : m.content,
-    })),
-  });
-
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -84,52 +87,64 @@ async function callVision(base64: string, systemPrompt: string): Promise<string>
   });
 
   const data = await res.json();
-  console.log('[bottleRecognition] Raw API response:', JSON.stringify(data));
+  const raw = JSON.stringify(data);
+  console.log('[bottleRecognition] Raw API response:', raw);
 
   if (!res.ok) {
     console.error('[bottleRecognition] API error status:', res.status, data);
-    throw new Error(`API error ${res.status}: ${JSON.stringify(data)}`);
+    throw new Error(`API ${res.status}: ${raw}`);
   }
 
-  return data.content?.[0]?.text ?? '';
+  const text = data.content?.[0]?.text ?? '';
+  return { text, raw };
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────
 
-export async function recognizeSingleBottle(base64: string): Promise<RecognizedBottle | null> {
+export async function recognizeSingleBottle(base64: string): Promise<SingleRecognitionResult> {
   if (!ANTHROPIC_API_KEY) {
-    console.warn('[bottleRecognition] No API key — skipping recognition');
-    return null;
+    const msg = 'No API key configured';
+    console.warn('[bottleRecognition]', msg);
+    return { bottle: null, rawResponse: '', error: msg };
   }
+  let raw = '';
   try {
-    const text = await callVision(base64, SINGLE_SYSTEM_PROMPT);
-    console.log('[bottleRecognition] Single parsed text:', text);
+    const { text, raw: rawRes } = await callVision(base64, SINGLE_SYSTEM_PROMPT);
+    raw = rawRes;
+    console.log('[bottleRecognition] Single content text:', text);
     const parsed = JSON.parse(text.trim());
-    if (parsed.error) return null;
-    return parsed as RecognizedBottle;
+    if (parsed.error) {
+      return { bottle: null, rawResponse: raw, error: `Model returned: ${parsed.error}` };
+    }
+    return { bottle: parsed as RecognizedBottle, rawResponse: raw, error: null };
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     console.error('[bottleRecognition] recognizeSingleBottle error:', err);
-    return null;
+    return { bottle: null, rawResponse: raw, error: msg };
   }
 }
 
-export async function recognizeShelf(base64: string): Promise<RecognizedBottle[]> {
+export async function recognizeShelf(base64: string): Promise<ShelfRecognitionResult> {
   if (!ANTHROPIC_API_KEY) {
-    console.warn('[bottleRecognition] No API key — skipping recognition');
-    return [];
+    const msg = 'No API key configured';
+    console.warn('[bottleRecognition]', msg);
+    return { bottles: [], rawResponse: '', error: msg };
   }
+  let raw = '';
   try {
-    const text = await callVision(base64, SHELF_SYSTEM_PROMPT);
-    console.log('[bottleRecognition] Shelf parsed text:', text);
+    const { text, raw: rawRes } = await callVision(base64, SHELF_SYSTEM_PROMPT);
+    raw = rawRes;
+    console.log('[bottleRecognition] Shelf content text:', text);
     const parsed = JSON.parse(text.trim());
     if (!Array.isArray(parsed)) {
       console.warn('[bottleRecognition] Response was not an array:', parsed);
-      return [];
+      return { bottles: [], rawResponse: raw, error: `Expected array, got: ${text.slice(0, 200)}` };
     }
-    return parsed as RecognizedBottle[];
+    return { bottles: parsed as RecognizedBottle[], rawResponse: raw, error: null };
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     console.error('[bottleRecognition] recognizeShelf error:', err);
-    return [];
+    return { bottles: [], rawResponse: raw, error: msg };
   }
 }
 

@@ -18,6 +18,12 @@ interface Props {
   onClose: () => void;
 }
 
+interface DebugInfo {
+  imageSizeKB: number;
+  rawResponse: string;
+  error:       string | null;
+}
+
 const ALL_BOTTLE_TYPES: BottleType[] = [
   'Vodka', 'Bourbon', 'Gin', 'Rum', 'Tequila', 'Mezcal', 'Scotch',
   'Whiskey', 'Liqueur', 'Wine', 'Beer', 'Mixer', 'Energy Drink', 'Other',
@@ -28,7 +34,7 @@ const ALL_BOTTLE_TYPES: BottleType[] = [
 const MAX_DIMENSION = 1500;
 const JPEG_QUALITY  = 0.85;
 
-function compressImage(file: File): Promise<string> {
+function compressImage(file: File): Promise<{ base64: string; sizeKB: number }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = reject;
@@ -53,8 +59,10 @@ function compressImage(file: File): Promise<string> {
         if (!ctx) { reject(new Error('No 2d context')); return; }
         ctx.drawImage(img, 0, 0, width, height);
         const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
-        console.log('[PhotoScanModal] Compressed image size (chars):', dataUrl.length, `(${width}×${height})`);
-        resolve(dataUrl.split(',')[1]);
+        const base64  = dataUrl.split(',')[1];
+        const sizeKB  = Math.round((base64.length * 0.75) / 1024);
+        console.log('[PhotoScanModal] Compressed image:', sizeKB, 'KB', `(${width}×${height})`);
+        resolve({ base64, sizeKB });
       };
       img.src = reader.result as string;
     };
@@ -65,12 +73,12 @@ function compressImage(file: File): Promise<string> {
 // ── ShelfRow sub-component ────────────────────────────────────────────────────
 
 interface ShelfRowItem {
-  bottle: RecognizedBottle;
-  checked: boolean;
+  bottle:      RecognizedBottle;
+  checked:     boolean;
   editingName: boolean;
   editingType: boolean;
-  draftName: string;
-  draftType: BottleType;
+  draftName:   string;
+  draftType:   BottleType;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -81,6 +89,7 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
   const [editingName, setEditingName]     = useState(false);
   const [draftName, setDraftName]         = useState('');
   const [shelfRows, setShelfRows]         = useState<ShelfRowItem[]>([]);
+  const [debugInfo, setDebugInfo]         = useState<DebugInfo | null>(null);
 
   const fileRef = useRef<HTMLInputElement>(null);
   const hasApiKey = !!process.env.REACT_APP_ANTHROPIC_API_KEY;
@@ -90,36 +99,44 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Reset so re-selecting same file works
     e.target.value = '';
     setStatus('loading');
+    setDebugInfo(null);
+
+    let imageSizeKB = 0;
     try {
-      const base64 = await compressImage(file);
+      const { base64, sizeKB } = await compressImage(file);
+      imageSizeKB = sizeKB;
+
       if (mode === 'single') {
-        const result = await recognizeSingleBottle(base64);
-        if (result) {
-          setSingleResult(result);
-          setDraftName(result.name);
+        const { bottle, rawResponse, error } = await recognizeSingleBottle(base64);
+        setDebugInfo({ imageSizeKB, rawResponse, error });
+        if (bottle) {
+          setSingleResult(bottle);
+          setDraftName(bottle.name);
           setEditingName(false);
           setStatus('single-result');
         } else {
           setStatus('error');
         }
       } else {
-        const results = await recognizeShelf(base64);
+        const { bottles, rawResponse, error } = await recognizeShelf(base64);
+        setDebugInfo({ imageSizeKB, rawResponse, error });
         setShelfRows(
-          results.map(b => ({
-            bottle: b,
-            checked: true,
+          bottles.map(b => ({
+            bottle:      b,
+            checked:     true,
             editingName: false,
             editingType: false,
-            draftName: b.name,
-            draftType: b.type,
+            draftName:   b.name,
+            draftType:   b.type,
           }))
         );
         setStatus('shelf-result');
       }
-    } catch {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setDebugInfo({ imageSizeKB, rawResponse: '', error: msg });
       setStatus('error');
     }
   }
@@ -138,6 +155,7 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
   function handleTryAgain() {
     setSingleResult(null);
     setShelfRows([]);
+    setDebugInfo(null);
     setStatus('idle');
   }
 
@@ -188,6 +206,20 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
   }
 
   const checkedCount = shelfRows.filter(r => r.checked).length;
+
+  // ── Debug panel ───────────────────────────────────────────────────────────
+
+  const debugLines = debugInfo
+    ? [
+        `Image size: ${debugInfo.imageSizeKB} KB`,
+        `Error: ${debugInfo.error ?? 'none'}`,
+        ``,
+        `Raw response (first 500 chars):`,
+        debugInfo.rawResponse
+          ? debugInfo.rawResponse.slice(0, 500) + (debugInfo.rawResponse.length > 500 ? '…' : '')
+          : '(empty)',
+      ].join('\n')
+    : null;
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -411,9 +443,12 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
           </>
         )}
 
-        {/* Hidden file input for idle and try-again flows */}
-        {(status === 'idle') && (
-          <>{/* file input already rendered inside idle block */}</>
+        {/* ── DEBUG PANEL ── */}
+        {debugLines !== null && (
+          <div className="psm-debug">
+            <span className="psm-debug-label">Debug</span>
+            <pre className="psm-debug-box">{debugLines}</pre>
+          </div>
         )}
       </div>
     </div>
