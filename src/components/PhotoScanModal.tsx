@@ -5,8 +5,6 @@ import {
   recognizeSingleBottle,
   recognizeShelf,
 } from '../lib/bottleRecognition';
-import { supabase } from '../lib/supabase';
-import { mapBottleType, mapBottleToSpiritType } from '../lib/bottleRecognition';
 import './PhotoScanModal.css';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -18,18 +16,6 @@ interface Props {
   onConfirmSingle?: (bottle: RecognizedBottle) => void;
   onConfirmShelf?: (bottles: RecognizedBottle[]) => void;
   onClose: () => void;
-}
-
-interface DebugInfo {
-  imageSizeKB:     number;
-  supabaseUrl:     string;
-  clientExists:    boolean;
-  rawResponse:     string;
-  rawData:         string;
-  rawError:        string;
-  error:           string | null;
-  mappedCategory:  string;
-  mappedSpiritType: string;
 }
 
 const ALL_BOTTLE_TYPES: BottleType[] = [
@@ -97,7 +83,6 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
   const [editingName, setEditingName]     = useState(false);
   const [draftName, setDraftName]         = useState('');
   const [shelfRows, setShelfRows]         = useState<ShelfRowItem[]>([]);
-  const [debugInfo, setDebugInfo]         = useState<DebugInfo | null>(null);
 
   const fileRef = useRef<HTMLInputElement>(null);
   const hasApiKey = !!process.env.REACT_APP_SUPABASE_URL;
@@ -109,21 +94,12 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
     if (!file) return;
     e.target.value = '';
     setStatus('loading');
-    setDebugInfo(null);
 
-    let imageSizeKB = 0;
     try {
-      const { base64, sizeKB } = await compressImage(file);
-      imageSizeKB = sizeKB;
-
-      const supabaseUrl  = process.env.REACT_APP_SUPABASE_URL ?? '(missing)';
-      const clientExists = !!supabase;
+      const { base64 } = await compressImage(file);
 
       if (mode === 'single') {
-        const { bottle, rawResponse, rawData, rawError, error } = await recognizeSingleBottle(base64);
-        const mappedCategory   = bottle ? mapBottleType(bottle.type)                        : '';
-        const mappedSpiritType = bottle ? mapBottleToSpiritType(bottle.type, bottle.brand)  : '';
-        setDebugInfo({ imageSizeKB, supabaseUrl, clientExists, rawResponse, rawData, rawError, error, mappedCategory, mappedSpiritType });
+        const { bottle } = await recognizeSingleBottle(base64);
         if (bottle) {
           setSingleResult(bottle);
           setDraftName(bottle.name);
@@ -133,11 +109,7 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
           setStatus('error');
         }
       } else {
-        const { bottles, rawResponse, rawData, rawError, error } = await recognizeShelf(base64);
-        const firstBottle      = bottles[0];
-        const mappedCategory   = firstBottle ? mapBottleType(firstBottle.type)                             : '';
-        const mappedSpiritType = firstBottle ? mapBottleToSpiritType(firstBottle.type, firstBottle.brand)  : '';
-        setDebugInfo({ imageSizeKB, supabaseUrl, clientExists, rawResponse, rawData, rawError, error, mappedCategory, mappedSpiritType });
+        const { bottles } = await recognizeShelf(base64);
         setShelfRows(
           bottles.map(b => ({
             bottle:      b,
@@ -150,19 +122,7 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
         );
         setStatus('shelf-result');
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setDebugInfo({
-        imageSizeKB,
-        supabaseUrl:      process.env.REACT_APP_SUPABASE_URL ?? '(missing)',
-        clientExists:     !!supabase,
-        rawResponse:      '',
-        rawData:          '',
-        rawError:         msg,
-        error:            msg,
-        mappedCategory:   '',
-        mappedSpiritType: '',
-      });
+    } catch {
       setStatus('error');
     }
   }
@@ -181,7 +141,6 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
   function handleTryAgain() {
     setSingleResult(null);
     setShelfRows([]);
-    setDebugInfo(null);
     setStatus('idle');
   }
 
@@ -232,32 +191,6 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
   }
 
   const checkedCount = shelfRows.filter(r => r.checked).length;
-
-  // ── Debug panel ───────────────────────────────────────────────────────────
-
-  const debugLines = debugInfo
-    ? [
-        `Image size:       ${debugInfo.imageSizeKB} KB`,
-        `Supabase URL:     ${debugInfo.supabaseUrl}`,
-        `Client exists:    ${debugInfo.clientExists ? 'yes' : 'no'}`,
-        `Error:            ${debugInfo.error ?? 'none'}`,
-        `Mapped category:  ${debugInfo.mappedCategory || '(none)'}`,
-        `Mapped spiritType:${debugInfo.mappedSpiritType || '(none — no recipe match)'}`,
-        ``,
-        `── invoke data ──`,
-        debugInfo.rawData
-          ? debugInfo.rawData.slice(0, 300) + (debugInfo.rawData.length > 300 ? '…' : '')
-          : '(empty)',
-        ``,
-        `── invoke error ──`,
-        debugInfo.rawError !== '(null)' ? debugInfo.rawError : '(none)',
-        ``,
-        `── raw response (first 400 chars) ──`,
-        debugInfo.rawResponse
-          ? debugInfo.rawResponse.slice(0, 400) + (debugInfo.rawResponse.length > 400 ? '…' : '')
-          : '(empty)',
-      ].join('\n')
-    : null;
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -481,13 +414,6 @@ export function PhotoScanModal({ mode, onConfirmSingle, onConfirmShelf, onClose 
           </>
         )}
 
-        {/* ── DEBUG PANEL ── */}
-        {debugLines !== null && (
-          <div className="psm-debug">
-            <span className="psm-debug-label">Debug</span>
-            <pre className="psm-debug-box">{debugLines}</pre>
-          </div>
-        )}
       </div>
     </div>
   );

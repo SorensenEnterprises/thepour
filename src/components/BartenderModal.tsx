@@ -4,7 +4,9 @@ import { DrinkSurvey } from './DrinkSurvey';
 import { ThePourLogo } from './ThePourLogo';
 import { calculateCaloriesFromStrings } from '../utils/calorieUtils';
 import { PhotoScanModal } from './PhotoScanModal';
+import { ChatBartender } from './ChatBartender';
 import { RecognizedBottle, bottleToIngredientIds } from '../lib/bottleRecognition';
+import { InventoryItem } from '../types';
 import './BartenderModal.css';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -14,7 +16,7 @@ type Spirit        = 'brown' | 'clear' | 'agave'  | 'any';
 type Style         = 'classic' | 'adventurous';
 type LightPref     = 'light-pref' | 'no-pref';
 type Strength      = 'light'   | 'balanced' | 'bold';
-type Phase         = 'mode-pick' | 'scan-prompt' | 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
+type Phase         = 'mode-pick' | 'scan-prompt' | 'chat' | 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
 type BarMode       = 'my-bar' | 'im-out' | 'explore';
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
 type ShotSpirit    = 'tequila' | 'whiskey' | 'vodka' | 'any';
@@ -926,13 +928,18 @@ const SHAKER_LINES = [
 interface Props {
   onClose: () => void;
   inStockIds?: Set<string>;
+  inventory?: InventoryItem[];
   onGoToInventory?: () => void;
   initialMode?: BarMode;
 }
 
-export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventory, initialMode }: Props) {
+export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], onGoToInventory, initialMode }: Props) {
   const { user } = useAuth();
-  const [phase, setPhase]           = useState<Phase>(initialMode === 'im-out' ? 'scan-prompt' : 'mode-pick');
+  const [phase, setPhase]           = useState<Phase>(
+    initialMode === 'im-out' ? 'scan-prompt' :
+    initialMode === 'my-bar' || initialMode === 'explore' ? 'chat' :
+    'mode-pick'
+  );
   const [barMode, setBarMode]       = useState<BarMode>(initialMode ?? 'my-bar');
   const [sessionInStockIds, setSessionInStockIds] = useState<Set<string>>(new Set());
   const [showPhotoScan, setShowPhotoScan] = useState(false);
@@ -1006,7 +1013,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
     setBarMode(mode);
     setAnimKey(k => k + 1);
     if (mode === 'im-out') setPhase('scan-prompt');
-    else setPhase('category-pick');
+    else setPhase('chat');
   }
 
   function handleScanComplete(bottles: RecognizedBottle[]) {
@@ -1015,7 +1022,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
     setSessionInStockIds(ids);
     setShowPhotoScan(false);
     setAnimKey(k => k + 1);
-    setPhase('category-pick');
+    setPhase('chat');
   }
 
   function handleCategoryPick(cat: DrinkCategory) {
@@ -1226,7 +1233,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
 
       </div>
 
-      <div className={`bm-shell${(phase === 'recipe' || phase === 'reveal') ? ' bm-shell--recipe' : ''}`}>
+      <div className={`bm-shell${(phase === 'recipe' || phase === 'reveal') ? ' bm-shell--recipe' : ''}${phase === 'chat' ? ' bm-shell--chat' : ''}`}>
 
         {/* ── Shaker transition ── */}
         {phase === 'shaking' && (
@@ -1314,8 +1321,8 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
               <button className="bm-scan-btn" onClick={() => setShowPhotoScan(true)}>
                 📷 Scan Bottles
               </button>
-              <button className="bm-scan-manual" onClick={() => setPhase('category-pick')}>
-                Add manually instead
+              <button className="bm-scan-manual" onClick={() => setPhase('chat')}>
+                Skip scan — just chat
               </button>
             </div>
             {sessionInStockIds.size > 0 && (
@@ -1323,13 +1330,22 @@ export function BartenderModal({ onClose, inStockIds = new Set(), onGoToInventor
                 ✓ {sessionInStockIds.size} ingredients identified — continue below
                 <button
                   className="bm-scan-continue"
-                  onClick={() => { setAnimKey(k => k + 1); setPhase('category-pick'); }}
+                  onClick={() => { setAnimKey(k => k + 1); setPhase('chat'); }}
                 >
                   Continue →
                 </button>
               </div>
             )}
           </div>
+        )}
+
+        {/* ── Chat ── */}
+        {phase === 'chat' && (
+          <ChatBartender
+            mode={barMode}
+            inventory={barMode === 'im-out' ? [] : inventory}
+            onGoToInventory={onGoToInventory ? () => { cancelPendingTimer(); fadeOutMusic(() => onGoToInventory!()); } : undefined}
+          />
         )}
 
         {/* ── Category pick ── */}

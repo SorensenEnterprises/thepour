@@ -1,0 +1,182 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../lib/supabase';
+import { InventoryItem } from '../types';
+import './ChatBartender.css';
+
+type BarMode = 'my-bar' | 'im-out' | 'explore';
+
+interface Message {
+  role: 'bartender' | 'user';
+  text: string;
+}
+
+interface Props {
+  mode: BarMode;
+  inventory: InventoryItem[];
+  onGoToInventory?: () => void;
+}
+
+const QUICK_REPLIES_INITIAL = [
+  'Surprise me 🎲',
+  'Something classic',
+  'Light and refreshing',
+  'Strong and stirred',
+  "I'm feeling adventurous",
+];
+
+function getOpeningMessage(mode: BarMode, count: number): string {
+  if (mode === 'im-out') {
+    return "Tell me what's in front of you tonight — what are you working with?";
+  }
+  if (mode === 'explore') {
+    return "The world's your oyster tonight. I can recommend anything — what's calling to you?";
+  }
+  if (count === 0) {
+    return "Looks like we're starting from scratch — head over to My Bar to stock it up. In the meantime, want me to suggest something you could grab?";
+  }
+  if (count < 5) {
+    return `You've got ${count} bottle${count !== 1 ? 's' : ''} to work with. Not a lot, but I can work with that. What are you in the mood for tonight?`;
+  }
+  return `Nice setup — ${count} bottles to work with. What are you in the mood for tonight?`;
+}
+
+export function ChatBartender({ mode, inventory, onGoToInventory }: Props) {
+  const openingText = getOpeningMessage(mode, inventory.length);
+
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'bartender', text: openingText },
+  ]);
+  const [quickReplies, setQuickReplies] = useState<string[]>(QUICK_REPLIES_INITIAL);
+  const [input, setInput]   = useState('');
+  const [typing, setTyping] = useState(false);
+
+  const bottomRef  = useRef<HTMLDivElement>(null);
+  const inputRef   = useRef<HTMLInputElement>(null);
+  const apiHistory = useRef<{ role: 'user' | 'assistant'; content: string }[]>([]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, typing]);
+
+  async function sendMessage(text: string) {
+    if (!text.trim() || typing) return;
+
+    const userMsg: Message = { role: 'user', text: text.trim() };
+    setMessages(prev => [...prev, userMsg]);
+    setQuickReplies([]);
+    setInput('');
+    setTyping(true);
+
+    apiHistory.current.push({ role: 'user', content: text.trim() });
+
+    try {
+      const inventoryList = inventory.length > 0
+        ? inventory
+            .filter(i => i.quantity !== 'out')
+            .map(i => i.spiritType ? `${i.name} (${i.spiritType})` : i.name)
+            .join(', ')
+        : 'none';
+
+      const { data, error } = await supabase.functions.invoke('chat-bartender', {
+        body: {
+          messages: apiHistory.current,
+          inventoryList,
+          mode,
+        },
+      });
+
+      if (error || data?.error) {
+        throw new Error(error?.message ?? data?.error ?? 'Unknown error');
+      }
+
+      const reply: string       = data?.message ?? "Sorry, I lost my train of thought. Try again?";
+      const chips: string[]     = data?.quickReplies ?? [];
+
+      apiHistory.current.push({ role: 'assistant', content: reply });
+      setMessages(prev => [...prev, { role: 'bartender', text: reply }]);
+      setQuickReplies(chips);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setMessages(prev => [
+        ...prev,
+        { role: 'bartender', text: `Something went wrong on my end — sorry about that. (${msg})` },
+      ]);
+    } finally {
+      setTyping(false);
+    }
+  }
+
+  function handleSend() {
+    sendMessage(input);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') handleSend();
+  }
+
+  return (
+    <div className="cb-wrap">
+      <div className="cb-messages">
+        {messages.map((msg, i) => (
+          <div key={i} className={`cb-row cb-row--${msg.role}`}>
+            {msg.role === 'bartender' && (
+              <div className="cb-avatar">🍸</div>
+            )}
+            <div className={`cb-bubble cb-bubble--${msg.role}`}>
+              {msg.text}
+            </div>
+          </div>
+        ))}
+
+        {typing && (
+          <div className="cb-row cb-row--bartender">
+            <div className="cb-avatar">🍸</div>
+            <div className="cb-bubble cb-bubble--bartender cb-bubble--typing">
+              <span className="cb-dot" />
+              <span className="cb-dot" />
+              <span className="cb-dot" />
+            </div>
+          </div>
+        )}
+
+        <div ref={bottomRef} />
+      </div>
+
+      {quickReplies.length > 0 && !typing && (
+        <div className="cb-chips">
+          {quickReplies.map((chip, i) => (
+            <button key={i} className="cb-chip" onClick={() => sendMessage(chip)}>
+              {chip}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {mode === 'my-bar' && inventory.filter(i => i.quantity !== 'out').length === 0 && onGoToInventory && (
+        <button className="cb-go-inventory" onClick={onGoToInventory}>
+          Stock my bar →
+        </button>
+      )}
+
+      <div className="cb-input-row">
+        <input
+          ref={inputRef}
+          className="cb-input"
+          placeholder="Ask me anything…"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={typing}
+        />
+        <button
+          className="cb-send-btn"
+          onClick={handleSend}
+          disabled={!input.trim() || typing}
+          aria-label="Send"
+        >
+          ↑
+        </button>
+      </div>
+    </div>
+  );
+}

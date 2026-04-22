@@ -1,0 +1,191 @@
+.cb-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ── Messages ── */
+.cb-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cb-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.cb-row--user {
+  flex-direction: row-reverse;
+}
+
+/* ── Avatar ── */
+.cb-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(74, 187, 196, 0.15);
+  border: 1px solid rgba(74, 187, 196, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+/* ── Bubbles ── */
+.cb-bubble {
+  max-width: 74%;
+  padding: 11px 14px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.cb-bubble--bartender {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-bottom-left-radius: 4px;
+}
+
+.cb-bubble--user {
+  background: var(--teal);
+  color: #091a1c;
+  border-bottom-right-radius: 4px;
+  font-weight: 500;
+}
+
+/* ── Typing indicator ── */
+.cb-bubble--typing {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cb-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  display: inline-block;
+  animation: cb-bounce 1.2s ease-in-out infinite;
+}
+
+.cb-dot:nth-child(1) { animation-delay: 0s; }
+.cb-dot:nth-child(2) { animation-delay: 0.2s; }
+.cb-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes cb-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%            { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ── Quick reply chips ── */
+.cb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 16px 4px;
+}
+
+.cb-chip {
+  background: none;
+  border: 1px solid var(--border-teal);
+  border-radius: 20px;
+  color: var(--teal);
+  font-size: 13px;
+  font-family: inherit;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.cb-chip:hover {
+  background: rgba(74, 187, 196, 0.1);
+}
+
+/* ── Go to inventory shortcut ── */
+.cb-go-inventory {
+  margin: 4px 16px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-family: inherit;
+  padding: 8px 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.cb-go-inventory:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+/* ── Input row ── */
+.cb-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.cb-input {
+  flex: 1;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 10px 16px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.cb-input::placeholder { color: var(--text-muted); }
+
+.cb-input:focus {
+  border-color: var(--teal);
+}
+
+.cb-send-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--teal);
+  border: none;
+  color: #091a1c;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.cb-send-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.cb-send-btn:not(:disabled):hover {
+  background: #5dcdd6;
+}

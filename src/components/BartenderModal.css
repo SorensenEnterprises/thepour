@@ -458,6 +458,16 @@
   scrollbar-color: rgba(74,187,196,0.2) transparent;
 }
 
+.bm-shell--chat {
+  height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-1);
+  border: 1px solid var(--border-teal);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
 .bm-shell--recipe::-webkit-scrollbar       { width: 4px; }
 .bm-shell--recipe::-webkit-scrollbar-track { background: transparent; }
 .bm-shell--recipe::-webkit-scrollbar-thumb { background: rgba(74,187,196,0.25); border-radius: 2px; }

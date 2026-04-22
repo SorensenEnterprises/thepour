@@ -99,6 +99,7 @@ function AppContent() {
         <BartenderModal
           onClose={() => setBartenderOpen(false)}
           inStockIds={inStockIds}
+          inventory={inventory}
           onGoToInventory={() => { setBartenderOpen(false); setView('inventory'); }}
           initialMode={bartenderInitialMode}
         />
