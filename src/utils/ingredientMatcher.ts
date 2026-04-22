@@ -1,6 +1,7 @@
 import Fuse from 'fuse.js';
 import { InventoryItem, SPIRIT_TYPE_CANONICAL } from '../types';
 import { getCanonicalIds } from './brandMap';
+import { PANTRY_CATEGORIES } from '../data/pantryItems';
 
 const FILLER_RE = /\b(fresh|squeezed|homemade|house|pure|quality)\b/gi;
 
@@ -34,7 +35,10 @@ export interface InventoryMatcher {
   isSatisfied(ingredientId: string, ingredientName?: string): boolean;
 }
 
-export function buildInventoryMatcher(items: InventoryItem[]): InventoryMatcher {
+export function buildInventoryMatcher(
+  items: InventoryItem[],
+  checkedPantryIds: Set<string> = new Set(),
+): InventoryMatcher {
   const inStock = items.filter(i => i.quantity !== 'out');
 
   // Build canonical ID set — same logic as useInventory's inStockIds
@@ -51,15 +55,34 @@ export function buildInventoryMatcher(items: InventoryItem[]): InventoryMatcher 
   const fuseData = inStock.map(item => ({ name: normalize(item.name) }));
   const fuse = new Fuse(fuseData, { keys: ['name'], threshold: 0.35, includeScore: true });
 
+  // Build pantry satisfies set — normalized strings from checked pantry items
+  const pantryNormalized = new Set<string>();
+  if (checkedPantryIds.size > 0) {
+    PANTRY_CATEGORIES.forEach(cat => {
+      cat.items.forEach(item => {
+        if (checkedPantryIds.has(item.id)) {
+          item.satisfies.forEach(s => pantryNormalized.add(normalize(s)));
+        }
+      });
+    });
+  }
+
   return {
     isSatisfied(ingredientId: string, ingredientName?: string): boolean {
-      // Tier 1: exact canonical ID lookup
+      // Tier 1: exact canonical ID lookup (covers brand-expanded inventory)
       if (canonicalIds.has(ingredientId)) return true;
 
-      // Tier 2: fuzzy name match (handles unrecognized brand names)
+      // Tier 2: Fuse.js fuzzy name match (handles unrecognized bottle names)
       if (ingredientName) {
         const results = fuse.search(normalize(ingredientName));
         if (results.length > 0) return true;
+      }
+
+      // Tier 3: pantry satisfies match (fresh citrus, eggs, syrups, etc.)
+      if (pantryNormalized.size > 0) {
+        const normalizedId = normalize(ingredientId.replace(/-/g, ' '));
+        if (pantryNormalized.has(normalizedId)) return true;
+        if (ingredientName && pantryNormalized.has(normalize(ingredientName))) return true;
       }
 
       return false;

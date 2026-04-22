@@ -3,6 +3,7 @@ import { InventoryList } from '../components/InventoryList';
 import { AddBottleForm } from '../components/AddBottleForm';
 import { BarcodeScannerModal } from '../components/BarcodeScannerModal';
 import { PhotoScanModal } from '../components/PhotoScanModal';
+import { PantrySection } from '../components/PantrySection';
 import { ResponsibleFooter } from '../components/ResponsibleFooter';
 import { InventoryItem, QuantityLevel, Ingredient, BottleSize } from '../types';
 import { RecognizedBottle, mapBottleType, mapBottleToSpiritType } from '../lib/bottleRecognition';
@@ -18,6 +19,8 @@ interface Props {
   onClearError?: () => void;
   isGuest?: boolean;
   onSignIn?: () => void;
+  checkedPantryIds?: Set<string>;
+  onTogglePantry?: (itemId: string) => void;
 }
 
 type Overlay = 'none' | 'method-picker' | 'scan' | 'photo' | 'shelf' | 'add' | 'edit';
@@ -27,6 +30,7 @@ const detectCategoryFromType = (type: string): Ingredient['category'] => mapBott
 export function InventoryPage({
   inventory, onSetQuantity, onAddItem, onEditItem, onDeleteItem,
   loading, error, onClearError, isGuest, onSignIn,
+  checkedPantryIds = new Set(), onTogglePantry,
 }: Props) {
   const [overlay, setOverlay]           = useState<Overlay>('none');
   const [prefillName, setPrefillName]         = useState('');
@@ -92,6 +96,14 @@ export function InventoryPage({
           onDelete={onDeleteItem}
         />
       )}
+
+      {onTogglePantry && (
+        <PantrySection
+          checkedPantryIds={checkedPantryIds}
+          onToggle={onTogglePantry}
+        />
+      )}
+
       <ResponsibleFooter />
 
       {overlay === 'method-picker' && (

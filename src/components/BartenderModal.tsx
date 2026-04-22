@@ -929,11 +929,12 @@ interface Props {
   onClose: () => void;
   inStockIds?: Set<string>;
   inventory?: InventoryItem[];
+  checkedPantryIds?: Set<string>;
   onGoToInventory?: () => void;
   initialMode?: BarMode;
 }
 
-export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], onGoToInventory, initialMode }: Props) {
+export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode }: Props) {
   const { user } = useAuth();
   const [phase, setPhase]           = useState<Phase>(
     initialMode === 'im-out' ? 'scan-prompt' :
@@ -1352,6 +1353,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
             <ChatBartender
               mode={barMode}
               inventory={barMode === 'im-out' ? [] : inventory}
+              checkedPantryIds={barMode === 'im-out' ? new Set() : checkedPantryIds}
               onGoToInventory={onGoToInventory ? () => { cancelPendingTimer(); fadeOutMusic(() => onGoToInventory!()); } : undefined}
             />
           </>

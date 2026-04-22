@@ -1,0 +1,90 @@
+.pantry-section {
+  margin-top: 40px;
+  padding: 0 0 32px;
+  border-top: 1px solid rgba(74, 187, 196, 0.15);
+}
+
+.pantry-header {
+  margin-bottom: 20px;
+  padding-top: 28px;
+}
+
+.pantry-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #e8f0f1;
+  margin: 0 0 6px;
+  letter-spacing: 0.01em;
+}
+
+.pantry-hint {
+  font-size: 0.8rem;
+  color: #5e8a8e;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.pantry-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pantry-cat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pantry-cat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #7aadb2;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pantry-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pantry-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(74, 187, 196, 0.25);
+  background: rgba(255, 255, 255, 0.04);
+  color: #7aadb2;
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.pantry-chip:hover {
+  border-color: rgba(74, 187, 196, 0.5);
+  color: #b0d8dc;
+  background: rgba(74, 187, 196, 0.08);
+}
+
+.pantry-chip--checked {
+  background: rgba(74, 187, 196, 0.18);
+  border-color: #4abbc4;
+  color: #d6f0f2;
+}
+
+.pantry-chip--checked:hover {
+  background: rgba(74, 187, 196, 0.28);
+}
+
+.pantry-chip-check {
+  font-size: 0.72rem;
+  color: #4abbc4;
+  font-weight: 700;
+  line-height: 1;
+}

@@ -5,12 +5,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-function buildSystemPrompt(inventoryList: string, mode: string): string {
+function buildSystemPrompt(inventoryList: string, mode: string, pantryList: string): string {
+  const pantryLine = pantryList ? `\nUser also has in pantry: ${pantryList}` : ''
   const inventorySection = mode === 'im-out'
     ? `The user is out at a bar or restaurant. They may tell you what bottles are available.`
     : mode === 'explore'
     ? `The user wants to explore cocktails with no restriction on ingredients.`
-    : `CURRENT USER INVENTORY (in-stock bottles):\n${inventoryList || 'none'}\n\nFor My Bar mode, only recommend drinks the user can make with what they have. If their bar is empty, gently encourage them to stock it.`
+    : `CURRENT USER INVENTORY (in-stock bottles):\n${inventoryList || 'none'}${pantryLine}\n\nFor My Bar mode, only recommend drinks the user can make with what they have. If their bar is empty, gently encourage them to stock it.`
 
   return `You are Vesper — a sophisticated, slightly sassy female bartender working inside the thepour cocktail app. You have deep knowledge of classic and modern cocktails, spirits, flavor profiles, and bar technique.
 
@@ -67,7 +68,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, inventoryList, mode } = await req.json()
+    const { messages, inventoryList, mode, pantryList } = await req.json()
     console.log('chat-bartender mode:', mode, 'messages:', messages?.length ?? 0)
 
     if (!messages || !Array.isArray(messages)) {
@@ -85,7 +86,7 @@ serve(async (req) => {
       )
     }
 
-    const systemPrompt = buildSystemPrompt(inventoryList ?? '', mode ?? 'my-bar')
+    const systemPrompt = buildSystemPrompt(inventoryList ?? '', mode ?? 'my-bar', pantryList ?? '')
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

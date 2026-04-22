@@ -7,6 +7,7 @@ import { InventoryPage } from './pages/InventoryPage';
 import { LandingPage } from './pages/LandingPage';
 import { AuthPage } from './pages/AuthPage';
 import { useInventory } from './hooks/useInventory';
+import { usePantry } from './hooks/usePantry';
 import { sampleRecipes } from './data/sampleRecipes';
 import { matchRecipesToInventory } from './utils/recipeUtils';
 import { QuantityLevel } from './types';
@@ -27,9 +28,11 @@ function AppContent() {
     setQuantity, addItem, editItem, removeItem,
   } = useInventory(user?.id);
 
+  const { checkedPantryIds, togglePantry } = usePantry(user?.id);
+
   const matches = useMemo(
-    () => matchRecipesToInventory(sampleRecipes, inventory, splashIds),
-    [inventory, splashIds]
+    () => matchRecipesToInventory(sampleRecipes, inventory, splashIds, checkedPantryIds),
+    [inventory, splashIds, checkedPantryIds]
   );
 
   if (loading) {
@@ -85,6 +88,8 @@ function AppContent() {
             onClearError={clearError}
             isGuest={isGuest && !user}
             onSignIn={() => { setPendingView('inventory'); setView('auth'); }}
+            checkedPantryIds={checkedPantryIds}
+            onTogglePantry={togglePantry}
           />
         )}
       </main>
@@ -109,6 +114,7 @@ function AppContent() {
           onClose={() => setBartenderOpen(false)}
           inStockIds={inStockIds}
           inventory={inventory}
+          checkedPantryIds={checkedPantryIds}
           onGoToInventory={() => { setBartenderOpen(false); setView('inventory'); }}
           initialMode={bartenderInitialMode}
         />

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { InventoryItem } from '../types';
+import { PANTRY_CATEGORIES } from '../data/pantryItems';
 import './ChatBartender.css';
 
 type BarMode = 'my-bar' | 'im-out' | 'explore';
@@ -13,6 +14,7 @@ interface Message {
 interface Props {
   mode: BarMode;
   inventory: InventoryItem[];
+  checkedPantryIds?: Set<string>;
   onGoToInventory?: () => void;
 }
 
@@ -24,7 +26,7 @@ const QUICK_REPLIES_INITIAL = [
   "I'm feeling adventurous",
 ];
 
-function getOpeningMessage(mode: BarMode, count: number): string {
+function getOpeningMessage(mode: BarMode, count: number, checkedPantryIds?: Set<string>): string {
   if (mode === 'im-out') {
     return "Ooh, not a bad selection. Let's see what we can do with what's in front of you.";
   }
@@ -34,11 +36,15 @@ function getOpeningMessage(mode: BarMode, count: number): string {
   if (count === 0) {
     return "Okay, we need to talk. Your bar is empty and I'm concerned. Want to scan some bottles first, or should I show you what you're missing out on?";
   }
+  const hasCitrus = checkedPantryIds?.has('fresh-lime') || checkedPantryIds?.has('fresh-lemon');
+  if (hasCitrus) {
+    return `Well, well. ${count} bottle${count !== 1 ? 's' : ''} and fresh citrus on deck — we have real options tonight. What are we making?`;
+  }
   return `Well, well. ${count} bottle${count !== 1 ? 's' : ''} and you still can't decide what to make. Lucky you found me. What are we working with tonight?`;
 }
 
-export function ChatBartender({ mode, inventory, onGoToInventory }: Props) {
-  const openingText = getOpeningMessage(mode, inventory.length);
+export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInventory }: Props) {
+  const openingText = getOpeningMessage(mode, inventory.length, checkedPantryIds);
 
   const [messages, setMessages] = useState<Message[]>([
     { role: 'bartender', text: openingText },
@@ -74,11 +80,20 @@ export function ChatBartender({ mode, inventory, onGoToInventory }: Props) {
             .join(', ')
         : 'none';
 
+      const pantryList = checkedPantryIds && checkedPantryIds.size > 0
+        ? PANTRY_CATEGORIES
+            .flatMap(cat => cat.items)
+            .filter(item => checkedPantryIds.has(item.id))
+            .map(item => item.name)
+            .join(', ')
+        : '';
+
       const { data, error } = await supabase.functions.invoke('chat-bartender', {
         body: {
           messages: apiHistory.current,
           inventoryList,
           mode,
+          pantryList,
         },
       });
 

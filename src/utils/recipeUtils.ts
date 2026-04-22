@@ -14,9 +14,10 @@ export type RecipeMatch = {
 export function matchRecipesToInventory(
   recipes: Recipe[],
   inventory: InventoryItem[],
-  splashIds: Set<string>
+  splashIds: Set<string>,
+  checkedPantryIds: Set<string> = new Set(),
 ): RecipeMatch[] {
-  const matcher = buildInventoryMatcher(inventory);
+  const matcher = buildInventoryMatcher(inventory, checkedPantryIds);
   return recipes
     .map(recipe => {
       const required = recipe.ingredients.filter(i => !i.optional && !isGarnish(i.ingredientId));
