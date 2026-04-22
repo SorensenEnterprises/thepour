@@ -1,4 +1,5 @@
-import { Recipe } from '../types';
+import { Recipe, InventoryItem } from '../types';
+import { buildInventoryMatcher, isGarnish } from './ingredientMatcher';
 
 export type RecipeMatch = {
   recipe: Recipe;
@@ -12,15 +13,16 @@ export type RecipeMatch = {
 
 export function matchRecipesToInventory(
   recipes: Recipe[],
-  inStockIds: Set<string>,
+  inventory: InventoryItem[],
   splashIds: Set<string>
 ): RecipeMatch[] {
+  const matcher = buildInventoryMatcher(inventory);
   return recipes
     .map(recipe => {
-      const required = recipe.ingredients.filter(i => !i.optional);
-      const missing = required.filter(i => !inStockIds.has(i.ingredientId));
+      const required = recipe.ingredients.filter(i => !i.optional && !isGarnish(i.ingredientId));
+      const missing = required.filter(i => !matcher.isSatisfied(i.ingredientId, i.name));
       const splashWarnings = required
-        .filter(i => inStockIds.has(i.ingredientId) && splashIds.has(i.ingredientId))
+        .filter(i => matcher.isSatisfied(i.ingredientId, i.name) && splashIds.has(i.ingredientId))
         .map(i => i.name);
       return {
         recipe,

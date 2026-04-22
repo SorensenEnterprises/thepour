@@ -491,23 +491,6 @@ export const cocktailsVol2: Recipe[] = [
     difficulty: 'medium',
   },
   {
-    id: '174',
-    name: 'Black Russian',
-    description: 'Vodka and coffee liqueur over ice — dark, simple, and deeply satisfying.',
-    ingredients: [
-      { ingredientId: 'vodka', name: 'Vodka', amount: 2, unit: 'oz' },
-      { ingredientId: 'coffee-liqueur', name: 'Coffee Liqueur', amount: 1, unit: 'oz' },
-    ],
-    instructions: [
-      'Fill a rocks glass with ice.',
-      'Add vodka, then coffee liqueur.',
-      'Stir briefly to combine.',
-    ],
-    glassType: 'Rocks',
-    tags: ['vodka', 'coffee', 'classic', 'stirred', 'easy'],
-    difficulty: 'easy',
-  },
-  {
     id: '175',
     name: 'White Russian',
     description: 'The Dude abides — vodka, coffee liqueur, and cream over ice.',

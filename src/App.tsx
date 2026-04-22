@@ -28,8 +28,8 @@ function AppContent() {
   } = useInventory(user?.id);
 
   const matches = useMemo(
-    () => matchRecipesToInventory(sampleRecipes, inStockIds, splashIds),
-    [inStockIds, splashIds]
+    () => matchRecipesToInventory(sampleRecipes, inventory, splashIds),
+    [inventory, splashIds]
   );
 
   if (loading) {

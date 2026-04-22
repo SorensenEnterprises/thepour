@@ -319,14 +319,21 @@ export function useInventory(userId?: string) {
   }, [inventory]);
 
   const splashIds = useMemo(() => {
-    const ids = new Set<string>();
+    // Map each canonical ID → all in-stock items that provide it
+    const providedBy = new Map<string, InventoryItem[]>();
     inventory.forEach(item => {
-      if (!isLowStock(item)) return;
-      ids.add(item.ingredientId);
-      getCanonicalIds(item.name).forEach(id => ids.add(id));
-      if (item.spiritType) {
-        (SPIRIT_TYPE_CANONICAL[item.spiritType] ?? []).forEach(id => ids.add(id));
-      }
+      if (item.quantity === 'out') return;
+      const ids: string[] = [item.ingredientId, ...getCanonicalIds(item.name)];
+      if (item.spiritType) ids.push(...(SPIRIT_TYPE_CANONICAL[item.spiritType] ?? []));
+      ids.forEach(id => {
+        if (!providedBy.has(id)) providedBy.set(id, []);
+        providedBy.get(id)!.push(item);
+      });
+    });
+    // An ID is "splash" only if every item providing it is low stock
+    const ids = new Set<string>();
+    providedBy.forEach((items, id) => {
+      if (items.every(item => isLowStock(item))) ids.add(id);
     });
     return ids;
   }, [inventory]);
