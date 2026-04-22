@@ -81,7 +81,23 @@ async function dbFetch(userId: string): Promise<{ rows: InventoryItem[] | null; 
     .order('created_at');
 
   if (error) return { rows: null, error: error.message };
-  return { rows: (data as DbRow[]).map(rowToItem), error: null };
+
+  const items = (data as DbRow[]).map(rowToItem);
+
+  // Deduplicate by name (case-insensitive). Ordered by created_at ASC so later
+  // entries are newer — Map.set overwrites so the last occurrence (newest) wins.
+  const seenByName = new Map<string, InventoryItem>();
+  items.forEach(item => seenByName.set(item.name.toLowerCase().trim(), item));
+
+  const keptIds = new Set(Array.from(seenByName.values()).map(i => i.id));
+  const dupIds  = items.map(i => i.id!).filter(id => id && !keptIds.has(id));
+
+  if (dupIds.length > 0) {
+    supabase.from('user_inventory').delete().in('id', dupIds).eq('user_id', userId)
+      .then(({ error: e }) => { if (e) console.error('[useInventory] dedup:', e.message); });
+  }
+
+  return { rows: items.filter(i => keptIds.has(i.id)), error: null };
 }
 
 // Check if a row exists by id, then UPDATE; if not, INSERT.
