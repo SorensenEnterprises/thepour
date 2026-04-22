@@ -232,10 +232,24 @@ export function bottleToIngredientIds(bottle: RecognizedBottle): string[] {
       'green-chartreuse',
       'yellow-chartreuse',
     ];
+    case 'Energy Drink': {
+      const text = `${bottle.name} ${bottle.brand}`.toLowerCase();
+      if (text.includes('red bull') || text.includes('redbull')) {
+        if (text.includes('sugar free') || text.includes('sugarfree') || text.includes('zero')) return ['red-bull-sugar-free'];
+        if (text.includes('peach'))           return ['red-bull-peach'];
+        return ['red-bull'];
+      }
+      if (text.includes('monster')) {
+        if (text.includes('ultra white') || text.includes('white ultra')) return ['monster-ultra-white'];
+        return ['monster-energy'];
+      }
+      if (text.includes('celsius'))      return ['celsius-energy'];
+      if (text.includes('liquid death')) return ['liquid-death'];
+      return ['energy-drink'];
+    }
     case 'Wine':
     case 'Beer':
     case 'Mixer':
-    case 'Energy Drink':
     case 'Other':
     default:
       return [];
