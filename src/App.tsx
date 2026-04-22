@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NavBar } from './components/NavBar';
 import { BartenderModal } from './components/BartenderModal';

@@ -25,7 +25,6 @@ export function VesperRecipeCard({ recipe, inventory, checkedPantryIds }: Props)
   const glass    = getGlassInfo(recipe.glassType);
 
   const allIngredients = recipe.ingredients;
-  const showCount      = expanded ? allIngredients.length : MAX_COLLAPSED_INGREDIENTS;
   const hiddenCount    = allIngredients.length - MAX_COLLAPSED_INGREDIENTS;
 
   return (

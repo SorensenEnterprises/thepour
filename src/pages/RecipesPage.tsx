@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { RecipeCard, MadeThisResult } from '../components/RecipeCard';
 import { OneIngredientAway } from '../components/OneIngredientAway';
 import { RecipeMatch } from '../utils/recipeUtils';
@@ -114,12 +114,12 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
     missing: false,
   });
 
-  function pushToast(text: string, variant: 'normal' | 'amber' = 'normal') {
+  const pushToast = useCallback((text: string, variant: 'normal' | 'amber' = 'normal') => {
     const id = toastCounter + 1;
     setToastCounter(id);
     setToasts(prev => [...prev, { id, text, variant }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
-  }
+  }, [toastCounter]);
 
   const handleMadeThis = useCallback((recipe: Recipe, count: number): MadeThisResult => {
     const { updated, lowBottles, adjustedCount } = decrementInventory(inventory, recipe, count);
@@ -145,7 +145,7 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
     onRecipeMade?.(recipe.name, count);
 
     return { lowBottles, adjustedCount };
-  }, [inventory, onSetQuantity, onRecipeMade, toastCounter]);
+  }, [inventory, onSetQuantity, onRecipeMade, pushToast]);
 
   const categoryMatches = useMemo(() => {
     if (category === 'cocktail') {
