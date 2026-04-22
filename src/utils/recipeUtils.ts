@@ -18,7 +18,7 @@ export function matchRecipesToInventory(
   checkedPantryIds: Set<string> = new Set(),
 ): RecipeMatch[] {
   const matcher = buildInventoryMatcher(inventory, checkedPantryIds);
-  return recipes
+  const results = recipes
     .map(recipe => {
       const required = recipe.ingredients.filter(i => !i.optional && !isGarnish(i.ingredientId));
       const missing = required.filter(i => !matcher.isSatisfied(i.ingredientId, i.name));
@@ -36,4 +36,12 @@ export function matchRecipesToInventory(
       };
     })
     .sort((a, b) => a.missingCount - b.missingCount);
+
+  if (process.env.NODE_ENV === 'development') {
+    const ready = results.filter(r => r.canMake).length;
+    const oneAway = results.filter(r => r.missingCount === 1).length;
+    console.log(`[recipeMatch] ${recipes.length} recipes → ${ready} ready, ${oneAway} one-away`);
+  }
+
+  return results;
 }
