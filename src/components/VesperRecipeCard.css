@@ -244,3 +244,21 @@
   border-radius: 8px;
   padding: 8px 10px;
 }
+
+/* ── Make This button ── */
+.vrc-make-btn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  background: var(--teal);
+  border: none;
+  border-radius: 10px;
+  color: #091a1c;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 11px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.vrc-make-btn:hover { background: #5dcdd6; }

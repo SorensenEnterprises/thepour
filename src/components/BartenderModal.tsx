@@ -6,7 +6,7 @@ import { calculateCaloriesFromStrings } from '../utils/calorieUtils';
 import { PhotoScanModal } from './PhotoScanModal';
 import { ChatBartender } from './ChatBartender';
 import { RecognizedBottle, bottleToIngredientIds } from '../lib/bottleRecognition';
-import { InventoryItem } from '../types';
+import { InventoryItem, QuantityLevel } from '../types';
 import { UnlockSuggestion } from '../utils/unlockCalculator';
 import { sampleRecipes } from '../data/sampleRecipes';
 import './BartenderModal.css';
@@ -937,9 +937,10 @@ interface Props {
   unlockSuggestions?: UnlockSuggestion[];
   contextNote?: string;
   onContextNoteConsumed?: () => void;
+  onSetQuantity?: (id: string, qty: QuantityLevel) => void;
 }
 
-export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode, unlockSuggestions = [], contextNote, onContextNoteConsumed }: Props) {
+export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode, unlockSuggestions = [], contextNote, onContextNoteConsumed, onSetQuantity }: Props) {
   const { user } = useAuth();
   const [phase, setPhase]           = useState<Phase>(
     initialMode === 'im-out' ? 'scan-prompt' :
@@ -1364,6 +1365,8 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
               recipes={sampleRecipes}
               contextNote={contextNote}
               onContextNoteConsumed={onContextNoteConsumed}
+              onSetQuantity={barMode !== 'im-out' ? onSetQuantity : undefined}
+              userId={user?.id ?? null}
             />
           </>
         )}

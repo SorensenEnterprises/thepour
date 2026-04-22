@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { Recipe, InventoryItem } from '../types';
+import { Recipe, InventoryItem, QuantityLevel } from '../types';
 import { PANTRY_CATEGORIES } from '../data/pantryItems';
 import { UnlockSuggestion } from '../utils/unlockCalculator';
 import { VesperRecipeCard } from './VesperRecipeCard';
+import { IMadeThisModal } from './IMadeThisModal';
+import { DrinkSurvey } from './DrinkSurvey';
+import { decrementInventory } from '../utils/inventoryDecrement';
 import './ChatBartender.css';
 
 type BarMode = 'my-bar' | 'im-out' | 'explore';
@@ -23,6 +26,8 @@ interface Props {
   recipes?: Recipe[];
   contextNote?: string;
   onContextNoteConsumed?: () => void;
+  onSetQuantity?: (id: string, qty: QuantityLevel) => void;
+  userId?: string | null;
 }
 
 function renderMarkdown(text: string): React.ReactElement {
@@ -114,11 +119,15 @@ function getOpeningMessage(
   return base;
 }
 
-export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInventory, unlockSuggestions = [], recipes = [], contextNote, onContextNoteConsumed }: Props) {
+export function ChatBartender({
+  mode, inventory, checkedPantryIds, onGoToInventory,
+  unlockSuggestions = [], recipes = [],
+  contextNote, onContextNoteConsumed,
+  onSetQuantity, userId,
+}: Props) {
   const topUnlock   = unlockSuggestions[0];
   const openingText = getOpeningMessage(mode, inventory.length, checkedPantryIds, topUnlock);
 
-  // Case-insensitive lookup: normalized name → Recipe
   const recipeByName = useRef<Map<string, Recipe>>(new Map());
   recipeByName.current = new Map(recipes.map(r => [r.name.toLowerCase().trim(), r]));
 
@@ -128,6 +137,12 @@ export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInvento
   const [quickReplies, setQuickReplies] = useState<string[]>(QUICK_REPLIES_INITIAL);
   const [input, setInput]   = useState('');
   const [typing, setTyping] = useState(false);
+
+  // Make This modal state
+  const [makingRecipe, setMakingRecipe]   = useState<Recipe | null>(null);
+  const [surveyRecipe, setSurveyRecipe]   = useState<Recipe | null>(null);
+  const [surveyDoneIds, setSurveyDoneIds] = useState<Set<string>>(new Set());
+  const [makeToast, setMakeToast]         = useState<string | null>(null);
 
   const bottomRef  = useRef<HTMLDivElement>(null);
   const inputRef   = useRef<HTMLInputElement>(null);
@@ -142,6 +157,12 @@ export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInvento
     apiHistory.current.push({ role: 'user', content: contextNote });
     onContextNoteConsumed?.();
   }, [contextNote]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Recipes from the most recent bartender message (for Make This chip + card handler)
+  const lastBartenderMsg = [...messages].reverse().find(m => m.role === 'bartender');
+  const makeThisRecipes: Recipe[] = (lastBartenderMsg?.recommendedRecipes ?? [])
+    .map(name => recipeByName.current.get(name.toLowerCase().trim()))
+    .filter((r): r is Recipe => r !== undefined);
 
   async function sendMessage(text: string) {
     if (!text.trim() || typing) return;
@@ -190,9 +211,9 @@ export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInvento
         throw new Error(error?.message ?? data?.error ?? 'Unknown error');
       }
 
-      const reply: string            = data?.message ?? "Sorry, I lost my train of thought. Try again?";
-      const chips: string[]          = data?.quickReplies ?? [];
-      const recNames: string[]       = data?.recommendedRecipes ?? [];
+      const reply: string      = data?.message ?? "Sorry, I lost my train of thought. Try again?";
+      const chips: string[]    = data?.quickReplies ?? [];
+      const recNames: string[] = data?.recommendedRecipes ?? [];
 
       apiHistory.current.push({ role: 'assistant', content: reply });
       setMessages(prev => [...prev, {
@@ -212,16 +233,60 @@ export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInvento
     }
   }
 
-  function handleSend() {
-    sendMessage(input);
+  function handleMakeConfirm(count: number) {
+    if (!makingRecipe) return;
+    const recipe = makingRecipe;
+    setMakingRecipe(null);
+
+    // Decrement inventory
+    if (onSetQuantity) {
+      const { updated } = decrementInventory(inventory, recipe, count);
+      updated.forEach(item => {
+        const original = inventory.find(i => i.ingredientId === item.ingredientId);
+        if (original && original.quantity !== item.quantity) {
+          onSetQuantity(item.ingredientId, item.quantity);
+        }
+      });
+    }
+
+    // Brief toast
+    setMakeToast('Bar updated 🍸');
+    setTimeout(() => setMakeToast(null), 3000);
+
+    // Send chat message so Vesper can respond
+    const label = count === 1 ? 'drink' : 'drinks';
+    sendMessage(`I just made ${count} ${label} of ${recipe.name}`);
+
+    // Rating prompt after a pause, once per recipe
+    if (!surveyDoneIds.has(recipe.id)) {
+      setTimeout(() => setSurveyRecipe(recipe), 2200);
+    }
   }
 
+  function handleChipClick(chip: string) {
+    if (chip === 'Make This 🍸') {
+      const target = makeThisRecipes[0] ?? null;
+      if (target) { setMakingRecipe(target); return; }
+    }
+    sendMessage(chip);
+  }
+
+  // Prepend "Make This 🍸" when the last Vesper message had recipe cards
+  const displayedChips = makeThisRecipes.length > 0 && quickReplies.length > 0
+    ? ['Make This 🍸', ...quickReplies]
+    : quickReplies;
+
+  function handleSend() { sendMessage(input); }
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') handleSend();
   }
 
   return (
     <div className="cb-wrap">
+      {makeToast && (
+        <div className="cb-make-toast">{makeToast}</div>
+      )}
+
       <div className="cb-messages">
         {messages.map((msg, i) => {
           const cards = msg.recommendedRecipes
@@ -246,6 +311,7 @@ export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInvento
                       recipe={recipe}
                       inventory={inventory}
                       checkedPantryIds={checkedPantryIds ?? new Set()}
+                      onMakeThis={setMakingRecipe}
                     />
                   ))}
                 </div>
@@ -268,10 +334,14 @@ export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInvento
         <div ref={bottomRef} />
       </div>
 
-      {quickReplies.length > 0 && !typing && (
+      {displayedChips.length > 0 && !typing && (
         <div className="cb-chips">
-          {quickReplies.map((chip, i) => (
-            <button key={i} className="cb-chip" onClick={() => sendMessage(chip)}>
+          {displayedChips.map((chip, i) => (
+            <button
+              key={i}
+              className={`cb-chip${chip === 'Make This 🍸' ? ' cb-chip--make' : ''}`}
+              onClick={() => handleChipClick(chip)}
+            >
               {chip}
             </button>
           ))}
@@ -303,6 +373,25 @@ export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInvento
           ↑
         </button>
       </div>
+
+      {makingRecipe && (
+        <IMadeThisModal
+          recipeName={makingRecipe.name}
+          onConfirm={handleMakeConfirm}
+          onCancel={() => setMakingRecipe(null)}
+        />
+      )}
+
+      {surveyRecipe && !surveyDoneIds.has(surveyRecipe.id) && (
+        <DrinkSurvey
+          recipeName={surveyRecipe.name}
+          userId={userId ?? null}
+          onDismiss={() => {
+            setSurveyDoneIds(prev => { const s = new Set(prev); s.add(surveyRecipe.id); return s; });
+            setSurveyRecipe(null);
+          }}
+        />
+      )}
     </div>
   );
 }

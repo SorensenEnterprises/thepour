@@ -9,11 +9,12 @@ interface Props {
   recipe: Recipe;
   inventory: InventoryItem[];
   checkedPantryIds: Set<string>;
+  onMakeThis?: (recipe: Recipe) => void;
 }
 
 const MAX_COLLAPSED_INGREDIENTS = 5;
 
-export function VesperRecipeCard({ recipe, inventory, checkedPantryIds }: Props) {
+export function VesperRecipeCard({ recipe, inventory, checkedPantryIds, onMakeThis }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   const matcher  = buildInventoryMatcher(inventory, checkedPantryIds);
@@ -113,6 +114,15 @@ export function VesperRecipeCard({ recipe, inventory, checkedPantryIds }: Props)
             </div>
           )}
         </div>
+      )}
+
+      {onMakeThis && (
+        <button
+          className="vrc-make-btn"
+          onClick={e => { e.stopPropagation(); onMakeThis(recipe); }}
+        >
+          Make This 🍸
+        </button>
       )}
     </div>
   );

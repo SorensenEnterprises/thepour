@@ -135,6 +135,7 @@ function AppContent() {
           unlockSuggestions={unlockSuggestions}
           contextNote={lastMadeNote}
           onContextNoteConsumed={() => setLastMadeNote(undefined)}
+          onSetQuantity={(id, qty) => setQuantity(id, qty)}
         />
       )}
     </div>
