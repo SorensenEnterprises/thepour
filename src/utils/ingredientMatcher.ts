@@ -322,7 +322,7 @@ const RESOLVER_RULES: Array<[RegExp, string[]]> = [
   [/winter jack|apple.*whisk|whisk.*apple/i,              ['APPLE_BRANDY', 'WHISKEY']],
   [/blackberry.*whisk|whisk.*blackberry/i,                ['BLACKBERRY_LIQUEUR', 'WHISKEY']],
   [/tennessee whisk|jack daniel|george dickel/i,           ['BOURBON', 'WHISKEY']],
-  [/bourbon|kentucky.*whisk|knob creek|maker.{0,5}mark|woodford|buffalo trace|wild turkey|four roses|heaven hill|evan williams|elijah craig|old bardstown|bulleit.*bour|1837.*bourbon|dragged bourbon|jim beam/i, ['BOURBON', 'WHISKEY']],
+  [/bourbon|kentucky.*whisk|knob creek|maker.{0,5}mark|woodford|buffalo trace|wild turkey|four roses|heaven hill|evan williams|elijah craig|old bardstown|bulleit.*bour|1837.*bourbon|dragged bourbon|jim beam|michter/i, ['BOURBON', 'WHISKEY']],
   [/rye whisk|bulleit rye|sazerac rye|rittenhouse|pikesville/i, ['RYE_WHISKEY', 'WHISKEY']],
   [/islay|laphroaig|ardbeg|lagavulin|bowmore|bruichladdich|caol ila|bunnahabhain/i, ['ISLAY_SCOTCH', 'SCOTCH', 'WHISKEY']],
   [/scotch|single malt|blended scotch|glenfiddich|macallan|chivas|johnnie walker|dalmore|glenlivet|glenmorangie|balvenie|oban|talisker/i, ['SCOTCH', 'WHISKEY']],
@@ -366,7 +366,7 @@ const RESOLVER_RULES: Array<[RegExp, string[]]> = [
   // ── Absinthe / Sake ───────────────────────────────────────────────────
   [/absinthe/i,                                           ['ABSINTHE']],
   [/sake|rice wine/i,                                     ['SAKE']],
-  [/pimm.{0,3}s|pimms/i,                                  ['PIMMS']],
+  [/pimm.{0,3}s|pimms|no\.?\s*1 cup liqueur|cup liqueur/i,  ['PIMMS']],
   [/southern comfort/i,                                   ['SOUTHERN_COMFORT']],
 
   // ── Orange liqueurs ───────────────────────────────────────────────────
@@ -387,16 +387,16 @@ const RESOLVER_RULES: Array<[RegExp, string[]]> = [
   [/blackberry liqueur/i,                                  ['BLACKBERRY_LIQUEUR']],
   [/maraschino liqueur|luxardo/i,                          ['MARASCHINO_LIQUEUR']],
   [/cherry liqueur|cherry heering/i,                       ['CHERRY_LIQUEUR']],
-  [/st\.?\s*germain|elderflower liqueur/i,                 ['ELDERFLOWER_LIQUEUR']],
+  [/st[-.]?\s*germain|elderflower liqueur/i,               ['ELDERFLOWER_LIQUEUR']],
   [/elderflower cordial/i,                                 ['ELDERFLOWER_CORDIAL']],
-  [/elderflower/i,                                         ['ELDERFLOWER_LIQUEUR']],
   [/passoa|passion fruit liqueur/i,                        ['PASSOA']],
+  [/parcha|maracuya/i,                                     ['PASSOA', 'PASSION_FRUIT_PUREE']],
   [/midori|melon liqueur/i,                                ['MIDORI']],
   [/banana liqueur|creme de banane/i,                      ['BANANA_LIQUEUR']],
   [/peach schnapps|peach liqueur/i,                        ['PEACH_SCHNAPPS']],
   [/sour apple schnapps|apple pucker/i,                    ['SOUR_APPLE_SCHNAPPS']],
   [/butterscotch schnapps|buttershots/i,                   ['BUTTERSCOTCH_SCHNAPPS']],
-  [/peppermint schnapps/i,                                 ['PEPPERMINT_SCHNAPPS', 'CREME_DE_MENTHE']],
+  [/peppermint.*schnapps|schnapps.*peppermint|\bpeppermint\b/i, ['PEPPERMINT_SCHNAPPS', 'CREME_DE_MENTHE']],
   [/creme de menthe|mint liqueur/i,                        ['CREME_DE_MENTHE', 'PEPPERMINT_SCHNAPPS']],
   [/creme de cassis|blackcurrant liqueur/i,                ['CREME_DE_CASSIS']],
   [/white.*creme de cacao|creme de cacao.*white/i,         ['CREME_DE_CACAO_WHITE', 'CREME_DE_CACAO']],
@@ -424,8 +424,9 @@ const RESOLVER_RULES: Array<[RegExp, string[]]> = [
   [/lillet/i,                                              ['LILLET_BLANC']],
   [/sambuca|ouzo/i,                                        ['SAMBUCA']],
 
-  // ── Irish cream ───────────────────────────────────────────────────────
+  // ── Irish cream / cream liqueurs ─────────────────────────────────────
   [/irish cream|baileys|bailey.{0,3}s/i,                   ['IRISH_CREAM']],
+  [/cask.*cream|cream.*cask|chocolate.*cream liqueur|cream liqueur/i, ['IRISH_CREAM', 'CREME_DE_CACAO']],
 
   // ── Aperitifs ─────────────────────────────────────────────────────────
   [/select aperitivo/i,                                    ['SELECT_APERITIVO', 'APERITIVO']],
@@ -498,7 +499,7 @@ const RESOLVER_RULES: Array<[RegExp, string[]]> = [
   [/blue raspberry soda/i,                                 ['BLUE_RASPBERRY_SODA']],
   [/grapefruit soda|paloma/i,                              ['GRAPEFRUIT_SODA']],
   [/stout|\bguinness\b/i,                                  ['STOUT', 'BEER']],
-  [/lager|pale ale|pilsner|sapporo|asahi|kirin|japanese beer/i, ['BEER']],
+  [/\blager\b|pale ale|pilsner|sapporo|asahi|kirin|japanese beer/i, ['BEER']],
   [/\bbeer\b/i,                                            ['BEER']],
 
   // ── Syrups ────────────────────────────────────────────────────────────
@@ -507,7 +508,7 @@ const RESOLVER_RULES: Array<[RegExp, string[]]> = [
   [/honey.*ginger.*syrup|ginger.*honey/i,                  ['HONEY_SYRUP', 'HONEY']],
   [/honey.*syrup/i,                                        ['HONEY_SYRUP', 'HONEY']],
   [/\bhoney\b/i,                                           ['HONEY', 'HONEY_SYRUP']],
-  [/agave.*syrup|agave nectar|\bagave\b/i,                 ['AGAVE_SYRUP']],
+  [/agave.*syrup|agave nectar|agave cordial/i,             ['AGAVE_SYRUP']],
   [/demerara syrup|rich syrup|2:1 syrup/i,                 ['SIMPLE_SYRUP', 'DEMERARA_SYRUP']],
   [/simple syrup|sugar syrup|1:1 syrup/i,                  ['SIMPLE_SYRUP']],
   [/brown sugar syrup/i,                                   ['SIMPLE_SYRUP']],
