@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { InventoryItem, QuantityLevel, SPIRIT_TYPE_CANONICAL } from '../types';
+import { InventoryItem, QuantityLevel, BottleSize, SPIRIT_TYPE_CANONICAL } from '../types';
+import type { Ingredient } from '../types';
 import { sampleInventory } from '../data/sampleInventory';
 import { supabase, supabaseConfigured } from '../lib/supabase';
 import { getCanonicalIds } from '../utils/brandMap';
@@ -7,7 +8,6 @@ import { getCanonicalIds } from '../utils/brandMap';
 const LS_KEY = 'thepour_inventory';
 
 // ── Low-stock detection ───────────────────────────────────────────────────────
-// Factors in bottle size so a 375ml at ¼ triggers the same warning as a splash
 
 const QUANTITY_FRACTION: Record<QuantityLevel, number> = {
   'full':           0.95,
@@ -18,7 +18,6 @@ const QUANTITY_FRACTION: Record<QuantityLevel, number> = {
   'out':            0,
 };
 
-// ~4 oz — enough for roughly 2 standard pours
 const LOW_STOCK_ML = 120;
 
 function isLowStock(item: InventoryItem): boolean {
@@ -28,9 +27,9 @@ function isLowStock(item: InventoryItem): boolean {
   return ml < LOW_STOCK_ML;
 }
 
-// ── localStorage helpers ──────────────────────────────────────────────────────
+// ── localStorage helpers (guest mode only) ────────────────────────────────────
 
-function loadFromLocalStorage(): InventoryItem[] {
+function lsLoad(): InventoryItem[] {
   try {
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return sampleInventory;
@@ -45,132 +44,236 @@ function loadFromLocalStorage(): InventoryItem[] {
   }
 }
 
-function saveToLocalStorage(inventory: InventoryItem[]) {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify(inventory));
-  } catch { /* storage full — silently skip */ }
+function lsSave(inventory: InventoryItem[]) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(inventory)); } catch {}
 }
 
-// ── Supabase helpers ──────────────────────────────────────────────────────────
+// ── Supabase row types ────────────────────────────────────────────────────────
 
-type SupabaseRow = { ingredient_id: string; quantity_level: string; spirit_type: string | null };
+interface DbRow {
+  ingredient_id: string;
+  name:          string;
+  category:      string;
+  spirit_type:   string | null;
+  quantity:      string;
+  size_ml:       number;
+}
 
-async function loadFromSupabase(userId: string): Promise<InventoryItem[]> {
-  const base = loadFromLocalStorage();
-  if (!supabaseConfigured) return base;
+function rowToItem(row: DbRow): InventoryItem {
+  return {
+    ingredientId: row.ingredient_id,
+    name:         row.name,
+    category:     row.category as Ingredient['category'],
+    spiritType:   row.spirit_type ?? undefined,
+    quantity:     row.quantity as QuantityLevel,
+    size:         (row.size_ml as BottleSize) ?? 750,
+  };
+}
 
+function itemToRow(userId: string, item: InventoryItem) {
+  return {
+    user_id:       userId,
+    ingredient_id: item.ingredientId,
+    name:          item.name,
+    category:      item.category,
+    spirit_type:   item.spiritType ?? null,
+    quantity:      item.quantity,
+    size_ml:       item.size ?? 750,
+    updated_at:    new Date().toISOString(),
+  };
+}
+
+// ── Supabase CRUD ─────────────────────────────────────────────────────────────
+
+async function dbFetch(userId: string): Promise<{ rows: InventoryItem[] | null; error: string | null }> {
   const { data, error } = await supabase
-    .from('inventory')
-    .select('ingredient_id, quantity_level, spirit_type')
-    .eq('user_id', userId);
+    .from('user_inventory')
+    .select('ingredient_id, name, category, spirit_type, quantity, size_ml')
+    .eq('user_id', userId)
+    .order('created_at');
 
-  if (error || !data || data.length === 0) return base;
-
-  const remote = new Map<string, { quantity: QuantityLevel; spiritType?: string }>(
-    (data as SupabaseRow[]).map(r => [
-      r.ingredient_id,
-      { quantity: r.quantity_level as QuantityLevel, spiritType: r.spirit_type ?? undefined },
-    ])
-  );
-
-  return base.map(item => {
-    const r = remote.get(item.ingredientId);
-    if (!r) return item;
-    return { ...item, quantity: r.quantity, spiritType: r.spiritType ?? item.spiritType };
-  });
+  if (error) return { rows: null, error: error.message };
+  return { rows: (data as DbRow[]).map(rowToItem), error: null };
 }
 
-function upsertToSupabase(userId: string, ingredientId: string, quantity: QuantityLevel, spiritType?: string) {
-  if (!supabaseConfigured) return;
-  supabase
-    .from('inventory')
-    .upsert(
-      {
-        user_id:       userId,
-        ingredient_id: ingredientId,
-        quantity_level: quantity,
-        spirit_type:   spiritType ?? null,
-        updated_at:    new Date().toISOString(),
-      },
-      { onConflict: 'user_id,ingredient_id' }
-    )
-    .then(({ error }) => {
-      if (error) console.error('Supabase upsert error:', error.message);
-    });
+async function dbUpsert(userId: string, item: InventoryItem): Promise<string | null> {
+  const { error } = await supabase
+    .from('user_inventory')
+    .upsert(itemToRow(userId, item), { onConflict: 'user_id,ingredient_id' });
+  return error ? error.message : null;
 }
 
-function deleteFromSupabase(userId: string, ingredientId: string) {
-  if (!supabaseConfigured) return;
-  supabase
-    .from('inventory')
+async function dbBulkUpsert(userId: string, items: InventoryItem[]): Promise<string | null> {
+  if (items.length === 0) return null;
+  const { error } = await supabase
+    .from('user_inventory')
+    .upsert(items.map(i => itemToRow(userId, i)), { onConflict: 'user_id,ingredient_id' });
+  return error ? error.message : null;
+}
+
+async function dbDelete(userId: string, ingredientId: string): Promise<string | null> {
+  const { error } = await supabase
+    .from('user_inventory')
     .delete()
     .eq('user_id', userId)
-    .eq('ingredient_id', ingredientId)
-    .then(({ error }) => {
-      if (error) console.error('Supabase delete error:', error.message);
-    });
+    .eq('ingredient_id', ingredientId);
+  return error ? error.message : null;
 }
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useInventory(userId?: string) {
   const [inventory, setInventory] = useState<InventoryItem[]>(sampleInventory);
-  const [ready, setReady] = useState(false);
-  const userIdRef   = useRef(userId);
-  const inventoryRef = useRef(inventory);
-  userIdRef.current   = userId;
-  inventoryRef.current = inventory;
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState<string | null>(null);
 
+  const inventoryRef = useRef(inventory);
+  const userIdRef    = useRef(userId);
+  inventoryRef.current = inventory;
+  userIdRef.current    = userId;
+
+  // ── Load on auth change ────────────────────────────────────────────────────
   useEffect(() => {
-    setReady(false);
-    if (userId) {
-      loadFromSupabase(userId).then(inv => { setInventory(inv); setReady(true); });
-    } else {
-      setInventory(loadFromLocalStorage());
-      setReady(true);
+    if (!userId) {
+      setInventory(lsLoad());
+      setLoading(false);
+      return;
     }
+
+    if (!supabaseConfigured) {
+      setInventory(lsLoad());
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    dbFetch(userId).then(async ({ rows, error: fetchErr }) => {
+      if (fetchErr) {
+        console.error('[useInventory] fetch error:', fetchErr);
+        // Table may not exist yet — fall back to localStorage gracefully
+        setInventory(lsLoad());
+        setLoading(false);
+        return;
+      }
+
+      if (rows && rows.length > 0) {
+        // Source of truth is Supabase
+        setInventory(rows);
+        setLoading(false);
+        return;
+      }
+
+      // user_inventory is empty — one-time migration from localStorage
+      const local = lsLoad();
+      const migrateErr = await dbBulkUpsert(userId, local);
+      if (migrateErr) {
+        console.error('[useInventory] migration error:', migrateErr);
+      }
+      setInventory(local);
+      setLoading(false);
+    });
   }, [userId]);
 
+  // Guest mode — keep localStorage in sync
   useEffect(() => {
-    if (!ready) return;
-    saveToLocalStorage(inventory);
-  }, [inventory, ready]);
+    if (userId || loading) return;
+    lsSave(inventory);
+  }, [inventory, userId, loading]);
 
-  const setQuantity = useCallback((ingredientId: string, quantity: QuantityLevel) => {
-    setInventory(prev => prev.map(item =>
-      item.ingredientId === ingredientId ? { ...item, quantity } : item
+  const clearError = useCallback(() => setError(null), []);
+
+  // ── setQuantity ────────────────────────────────────────────────────────────
+  const setQuantity = useCallback(async (ingredientId: string, quantity: QuantityLevel) => {
+    const uid = userIdRef.current;
+
+    if (!uid || !supabaseConfigured) {
+      setInventory(prev => prev.map(i =>
+        i.ingredientId === ingredientId ? { ...i, quantity } : i
+      ));
+      return;
+    }
+
+    const snapshot = inventoryRef.current;
+    setInventory(prev => prev.map(i =>
+      i.ingredientId === ingredientId ? { ...i, quantity } : i
     ));
-    if (userIdRef.current) {
-      const item = inventoryRef.current.find(i => i.ingredientId === ingredientId);
-      upsertToSupabase(userIdRef.current, ingredientId, quantity, item?.spiritType);
+
+    // Use full upsert so new items that arrived via migration are handled
+    const target = snapshot.find(i => i.ingredientId === ingredientId);
+    if (!target) return;
+    const err = await dbUpsert(uid, { ...target, quantity });
+    if (err) {
+      setInventory(snapshot);
+      setError('Couldn\'t save quantity change — please try again.');
     }
   }, []);
 
-  const addItem = useCallback((item: InventoryItem) => {
+  // ── addItem ────────────────────────────────────────────────────────────────
+  const addItem = useCallback(async (item: InventoryItem) => {
+    const uid = userIdRef.current;
+
+    if (!uid || !supabaseConfigured) {
+      setInventory(prev => [...prev, item]);
+      return;
+    }
+
+    // Write first, then update local state on success
+    const err = await dbUpsert(uid, item);
+    if (err) {
+      setError('Couldn\'t save bottle — please try again.');
+      return;
+    }
     setInventory(prev => [...prev, item]);
-    if (userIdRef.current) upsertToSupabase(userIdRef.current, item.ingredientId, item.quantity, item.spiritType);
   }, []);
 
-  const editItem = useCallback((updated: InventoryItem) => {
-    setInventory(prev => prev.map(item =>
-      item.ingredientId === updated.ingredientId ? updated : item
+  // ── editItem ───────────────────────────────────────────────────────────────
+  const editItem = useCallback(async (updated: InventoryItem) => {
+    const uid = userIdRef.current;
+
+    if (!uid || !supabaseConfigured) {
+      setInventory(prev => prev.map(i =>
+        i.ingredientId === updated.ingredientId ? updated : i
+      ));
+      return;
+    }
+
+    const err = await dbUpsert(uid, updated);
+    if (err) {
+      setError('Couldn\'t save changes — please try again.');
+      return;
+    }
+    setInventory(prev => prev.map(i =>
+      i.ingredientId === updated.ingredientId ? updated : i
     ));
-    if (userIdRef.current) upsertToSupabase(userIdRef.current, updated.ingredientId, updated.quantity, updated.spiritType);
   }, []);
 
-  const removeItem = useCallback((ingredientId: string) => {
-    setInventory(prev => prev.filter(item => item.ingredientId !== ingredientId));
-    if (userIdRef.current) deleteFromSupabase(userIdRef.current, ingredientId);
+  // ── removeItem ─────────────────────────────────────────────────────────────
+  const removeItem = useCallback(async (ingredientId: string) => {
+    const uid = userIdRef.current;
+
+    if (!uid || !supabaseConfigured) {
+      setInventory(prev => prev.filter(i => i.ingredientId !== ingredientId));
+      return;
+    }
+
+    const snapshot = inventoryRef.current;
+    setInventory(prev => prev.filter(i => i.ingredientId !== ingredientId));
+
+    const err = await dbDelete(uid, ingredientId);
+    if (err) {
+      setInventory(snapshot);
+      setError('Couldn\'t delete item — please try again.');
+    }
   }, []);
 
+  // ── Derived sets ──────────────────────────────────────────────────────────
   const inStockIds = useMemo(() => {
     const ids = new Set<string>();
     inventory.forEach(item => {
       if (item.quantity === 'out') return;
       ids.add(item.ingredientId);
-      // Brand/keyword name expansion
       getCanonicalIds(item.name).forEach(id => ids.add(id));
-      // Explicit spiritType expansion (most precise — user-selected or form-derived)
       if (item.spiritType) {
         (SPIRIT_TYPE_CANONICAL[item.spiritType] ?? []).forEach(id => ids.add(id));
       }
@@ -178,7 +281,6 @@ export function useInventory(userId?: string) {
     return ids;
   }, [inventory]);
 
-  // splashIds = "low stock" — factors in bottle size, also expands via brand map + spiritType
   const splashIds = useMemo(() => {
     const ids = new Set<string>();
     inventory.forEach(item => {
@@ -192,5 +294,16 @@ export function useInventory(userId?: string) {
     return ids;
   }, [inventory]);
 
-  return { inventory, inStockIds, splashIds, setQuantity, addItem, editItem, removeItem, ready };
+  return {
+    inventory,
+    inStockIds,
+    splashIds,
+    loading,
+    error,
+    clearError,
+    setQuantity,
+    addItem,
+    editItem,
+    removeItem,
+  };
 }

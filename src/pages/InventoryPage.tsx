@@ -13,13 +13,21 @@ interface Props {
   onAddItem: (item: InventoryItem) => void;
   onEditItem: (item: InventoryItem) => void;
   onDeleteItem: (id: string) => void;
+  loading?: boolean;
+  error?: string | null;
+  onClearError?: () => void;
+  isGuest?: boolean;
+  onSignIn?: () => void;
 }
 
 type Overlay = 'none' | 'method-picker' | 'scan' | 'photo' | 'shelf' | 'add' | 'edit';
 
 const detectCategoryFromType = (type: string): Ingredient['category'] => mapBottleType(type);
 
-export function InventoryPage({ inventory, onSetQuantity, onAddItem, onEditItem, onDeleteItem }: Props) {
+export function InventoryPage({
+  inventory, onSetQuantity, onAddItem, onEditItem, onDeleteItem,
+  loading, error, onClearError, isGuest, onSignIn,
+}: Props) {
   const [overlay, setOverlay]           = useState<Overlay>('none');
   const [prefillName, setPrefillName]         = useState('');
   const [prefillCategory, setPrefillCategory] = useState<Ingredient['category']>('spirit');
@@ -43,6 +51,20 @@ export function InventoryPage({ inventory, onSetQuantity, onAddItem, onEditItem,
 
   return (
     <div className="page">
+      {isGuest && (
+        <div className="inv-guest-banner">
+          <span className="inv-guest-banner-text">Your bar isn't saved yet — it'll disappear when you close the browser.</span>
+          <button className="inv-guest-banner-btn" onClick={onSignIn}>Sign in to save →</button>
+        </div>
+      )}
+
+      {error && (
+        <div className="inv-error-toast">
+          <span>{error}</span>
+          <button className="inv-error-dismiss" onClick={onClearError} aria-label="Dismiss">×</button>
+        </div>
+      )}
+
       <div className="page-header inventory-page-header">
         <div>
           <h2>My Bar</h2>
@@ -57,12 +79,19 @@ export function InventoryPage({ inventory, onSetQuantity, onAddItem, onEditItem,
         </div>
       </div>
 
-      <InventoryList
-        inventory={inventory}
-        onSetQuantity={onSetQuantity}
-        onEdit={openEdit}
-        onDelete={onDeleteItem}
-      />
+      {loading ? (
+        <div className="inv-loading">
+          <div className="inv-loading-spinner" />
+          <p className="inv-loading-text">Loading your bar…</p>
+        </div>
+      ) : (
+        <InventoryList
+          inventory={inventory}
+          onSetQuantity={onSetQuantity}
+          onEdit={openEdit}
+          onDelete={onDeleteItem}
+        />
+      )}
       <ResponsibleFooter />
 
       {overlay === 'method-picker' && (

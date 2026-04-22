@@ -21,7 +21,11 @@ function AppContent() {
   const [bartenderOpen, setBartenderOpen] = useState(false);
   const [bartenderInitialMode, setBartenderInitialMode] = useState<'my-bar' | 'im-out' | 'explore'>('my-bar');
 
-  const { inventory, inStockIds, splashIds, setQuantity, addItem, editItem, removeItem } = useInventory(user?.id);
+  const {
+    inventory, inStockIds, splashIds,
+    loading: inventoryLoading, error: inventoryError, clearError,
+    setQuantity, addItem, editItem, removeItem,
+  } = useInventory(user?.id);
 
   const matches = useMemo(
     () => matchRecipesToInventory(sampleRecipes, inStockIds, splashIds),
@@ -76,6 +80,11 @@ function AppContent() {
             onAddItem={addItem}
             onEditItem={editItem}
             onDeleteItem={removeItem}
+            loading={inventoryLoading}
+            error={inventoryError}
+            onClearError={clearError}
+            isGuest={isGuest && !user}
+            onSignIn={() => { setPendingView('inventory'); setView('auth'); }}
           />
         )}
       </main>
