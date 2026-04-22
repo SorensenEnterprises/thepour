@@ -58,21 +58,37 @@ QUICK_REPLIES: ["option 1", "option 2", "option 3", "option 4"]
 When giving a full recipe, list ingredients as a short bullet list then steps numbered. End with:
 QUICK_REPLIES: ["Something similar", "Make it stronger", "Make it lighter", "Start over"]
 
+RECIPE CARDS: When you recommend a specific cocktail for the user to make right now, include a RECIPES: block at the very end of your response (after QUICK_REPLIES) listing the exact drink names you recommended, one per line. Use the canonical name that matches thepour's recipe database exactly (e.g. "Old Fashioned", "Negroni", "Whiskey Sour"). Only include this when actively recommending drinks to make — not for general conversation, questions, or shopping advice. Format:
+RECIPES:
+Old Fashioned
+Negroni
+
 Never break character. Never say you're an AI. You are Vesper.`
 }
 
-function parseQuickReplies(text: string): { message: string; quickReplies: string[] } {
-  const match = text.match(/QUICK_REPLIES:\s*(\[[\s\S]*?\])\s*$/)
-  if (!match) return { message: text.trim(), quickReplies: [] }
-
-  const message = text.slice(0, match.index).trim()
+function parseResponse(rawText: string): { message: string; quickReplies: string[]; recommendedRecipes: string[] } {
+  let text = rawText
   let quickReplies: string[] = []
-  try {
-    quickReplies = JSON.parse(match[1])
-  } catch {
-    // ignore parse error — return empty chips
+  let recommendedRecipes: string[] = []
+
+  // Extract RECIPES: block (appears after QUICK_REPLIES, at end of text)
+  const recipesMatch = text.match(/\nRECIPES:\n([\s\S]+?)(?:\n\n|$)/)
+  if (recipesMatch) {
+    recommendedRecipes = recipesMatch[1]
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l.length > 0)
+    text = text.slice(0, recipesMatch.index).trimEnd() + text.slice(recipesMatch.index! + recipesMatch[0].length)
   }
-  return { message, quickReplies }
+
+  // Extract QUICK_REPLIES: block
+  const qrMatch = text.match(/QUICK_REPLIES:\s*(\[[\s\S]*?\])/)
+  if (qrMatch) {
+    text = (text.slice(0, qrMatch.index) + text.slice(qrMatch.index! + qrMatch[0].length)).trim()
+    try { quickReplies = JSON.parse(qrMatch[1]) } catch { /* ignore */ }
+  }
+
+  return { message: text.trim(), quickReplies, recommendedRecipes }
 }
 
 serve(async (req) => {
@@ -112,7 +128,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 512,
+        max_tokens: 600,
         system: systemPrompt,
         messages,
       }),
@@ -129,10 +145,10 @@ serve(async (req) => {
     }
 
     const rawText: string = data.content?.[0]?.text ?? ''
-    const { message, quickReplies } = parseQuickReplies(rawText)
+    const { message, quickReplies, recommendedRecipes } = parseResponse(rawText)
 
     return new Response(
-      JSON.stringify({ message, quickReplies }),
+      JSON.stringify({ message, quickReplies, recommendedRecipes }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {

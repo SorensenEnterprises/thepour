@@ -1,0 +1,246 @@
+/* ── Vesper Recipe Card ───────────────────────────────────────────────────── */
+
+.vrc-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border-teal);
+  border-left: 3px solid var(--teal);
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+/* ── Header ── */
+
+.vrc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.vrc-header:hover {
+  background: rgba(74, 187, 196, 0.05);
+}
+
+.vrc-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.vrc-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1.3;
+}
+
+.vrc-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.vrc-glass,
+.vrc-cal {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.vrc-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Status badge ── */
+
+.vrc-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.vrc-status--ready {
+  background: rgba(74, 187, 196, 0.15);
+  color: var(--teal);
+}
+
+.vrc-status--missing {
+  background: rgba(201, 168, 76, 0.15);
+  color: var(--gold);
+}
+
+/* ── Chevron ── */
+
+.vrc-chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.vrc-chevron--up {
+  transform: rotate(180deg);
+}
+
+/* ── Collapsed ingredient preview ── */
+
+.vrc-ingredients-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  padding: 0 13px 11px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.vrc-ing {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.vrc-ing--missing {
+  color: var(--gold);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.vrc-ing::after {
+  content: '·';
+  margin-left: 8px;
+  color: var(--border-light);
+}
+
+.vrc-ing:last-child::after,
+.vrc-ing-more::before {
+  content: '';
+  margin: 0;
+}
+
+.vrc-ing-more {
+  font-size: 12px;
+  color: var(--teal);
+  font-weight: 600;
+}
+
+/* ── Expanded details ── */
+
+.vrc-details {
+  border-top: 1px solid var(--border);
+  padding: 12px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.vrc-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vrc-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── Ingredients list ── */
+
+.vrc-ing-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vrc-ing-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.vrc-ing-item--missing {
+  color: var(--gold);
+}
+
+.vrc-ing-amount {
+  flex-shrink: 0;
+  min-width: 44px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.vrc-ing-name {
+  flex: 1;
+}
+
+.vrc-optional {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.vrc-need {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--gold);
+  background: rgba(201, 168, 76, 0.1);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+/* ── Steps ── */
+
+.vrc-steps {
+  padding-left: 18px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.vrc-steps li {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+/* ── Garnish ── */
+
+.vrc-garnish {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── Missing alert ── */
+
+.vrc-missing-alert {
+  font-size: 12px;
+  color: var(--gold);
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+}

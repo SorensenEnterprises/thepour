@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { InventoryItem } from '../types';
+import { Recipe, InventoryItem } from '../types';
 import { PANTRY_CATEGORIES } from '../data/pantryItems';
 import { UnlockSuggestion } from '../utils/unlockCalculator';
+import { VesperRecipeCard } from './VesperRecipeCard';
 import './ChatBartender.css';
 
 type BarMode = 'my-bar' | 'im-out' | 'explore';
@@ -10,6 +11,7 @@ type BarMode = 'my-bar' | 'im-out' | 'explore';
 interface Message {
   role: 'bartender' | 'user';
   text: string;
+  recommendedRecipes?: string[];
 }
 
 interface Props {
@@ -18,6 +20,7 @@ interface Props {
   checkedPantryIds?: Set<string>;
   onGoToInventory?: () => void;
   unlockSuggestions?: UnlockSuggestion[];
+  recipes?: Recipe[];
 }
 
 function renderMarkdown(text: string): React.ReactElement {
@@ -109,9 +112,13 @@ function getOpeningMessage(
   return base;
 }
 
-export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInventory, unlockSuggestions = [] }: Props) {
+export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInventory, unlockSuggestions = [], recipes = [] }: Props) {
   const topUnlock   = unlockSuggestions[0];
   const openingText = getOpeningMessage(mode, inventory.length, checkedPantryIds, topUnlock);
+
+  // Case-insensitive lookup: normalized name → Recipe
+  const recipeByName = useRef<Map<string, Recipe>>(new Map());
+  recipeByName.current = new Map(recipes.map(r => [r.name.toLowerCase().trim(), r]));
 
   const [messages, setMessages] = useState<Message[]>([
     { role: 'bartender', text: openingText },
@@ -175,11 +182,16 @@ export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInvento
         throw new Error(error?.message ?? data?.error ?? 'Unknown error');
       }
 
-      const reply: string       = data?.message ?? "Sorry, I lost my train of thought. Try again?";
-      const chips: string[]     = data?.quickReplies ?? [];
+      const reply: string            = data?.message ?? "Sorry, I lost my train of thought. Try again?";
+      const chips: string[]          = data?.quickReplies ?? [];
+      const recNames: string[]       = data?.recommendedRecipes ?? [];
 
       apiHistory.current.push({ role: 'assistant', content: reply });
-      setMessages(prev => [...prev, { role: 'bartender', text: reply }]);
+      setMessages(prev => [...prev, {
+        role: 'bartender',
+        text: reply,
+        recommendedRecipes: recNames.length > 0 ? recNames : undefined,
+      }]);
       setQuickReplies(chips);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -203,16 +215,36 @@ export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInvento
   return (
     <div className="cb-wrap">
       <div className="cb-messages">
-        {messages.map((msg, i) => (
-          <div key={i} className={`cb-row cb-row--${msg.role}`}>
-            {msg.role === 'bartender' && (
-              <div className="cb-avatar">V</div>
-            )}
-            <div className={`cb-bubble cb-bubble--${msg.role}`}>
-              {msg.role === 'bartender' ? renderMarkdown(msg.text) : msg.text}
+        {messages.map((msg, i) => {
+          const cards = msg.recommendedRecipes
+            ?.map(name => recipeByName.current.get(name.toLowerCase().trim()))
+            .filter((r): r is Recipe => r !== undefined) ?? [];
+
+          return (
+            <div key={i} className="cb-message-group">
+              <div className={`cb-row cb-row--${msg.role}`}>
+                {msg.role === 'bartender' && (
+                  <div className="cb-avatar">V</div>
+                )}
+                <div className={`cb-bubble cb-bubble--${msg.role}`}>
+                  {msg.role === 'bartender' ? renderMarkdown(msg.text) : msg.text}
+                </div>
+              </div>
+              {cards.length > 0 && (
+                <div className="cb-recipe-cards">
+                  {cards.map(recipe => (
+                    <VesperRecipeCard
+                      key={recipe.id}
+                      recipe={recipe}
+                      inventory={inventory}
+                      checkedPantryIds={checkedPantryIds ?? new Set()}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {typing && (
           <div className="cb-row cb-row--bartender">

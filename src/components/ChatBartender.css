@@ -16,9 +16,23 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.cb-message-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .cb-row {
   display: flex;
   align-items: flex-end;
+  gap: 8px;
+}
+
+/* Recipe cards aligned with bubble (offset by avatar width + gap) */
+.cb-recipe-cards {
+  padding-left: 40px;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 

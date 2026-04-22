@@ -8,6 +8,7 @@ import { ChatBartender } from './ChatBartender';
 import { RecognizedBottle, bottleToIngredientIds } from '../lib/bottleRecognition';
 import { InventoryItem } from '../types';
 import { UnlockSuggestion } from '../utils/unlockCalculator';
+import { sampleRecipes } from '../data/sampleRecipes';
 import './BartenderModal.css';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -1358,6 +1359,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
               checkedPantryIds={barMode === 'im-out' ? new Set() : checkedPantryIds}
               onGoToInventory={onGoToInventory ? () => { cancelPendingTimer(); fadeOutMusic(() => onGoToInventory!()); } : undefined}
               unlockSuggestions={barMode === 'im-out' ? [] : unlockSuggestions}
+              recipes={sampleRecipes}
             />
           </>
         )}
