@@ -31,13 +31,18 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(74, 187, 196, 0.15);
-  border: 1px solid rgba(74, 187, 196, 0.3);
+  background: var(--teal);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #091a1c;
+  letter-spacing: 0;
   flex-shrink: 0;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
 }
 
 /* ── Bubbles ── */

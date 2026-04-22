@@ -91,7 +91,7 @@ function AppContent() {
           className="bartender-fab"
           onClick={() => { setBartenderInitialMode('my-bar'); setBartenderOpen(true); }}
         >
-          🍸 Ask Bartender
+          🍸 Ask Vesper
         </button>
       </div>
 

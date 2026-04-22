@@ -26,18 +26,15 @@ const QUICK_REPLIES_INITIAL = [
 
 function getOpeningMessage(mode: BarMode, count: number): string {
   if (mode === 'im-out') {
-    return "Tell me what's in front of you tonight — what are you working with?";
+    return "Ooh, not a bad selection. Let's see what we can do with what's in front of you.";
   }
   if (mode === 'explore') {
-    return "The world's your oyster tonight. I can recommend anything — what's calling to you?";
+    return "No limits tonight? My favorite kind of conversation. Tell me what you're in the mood for.";
   }
   if (count === 0) {
-    return "Looks like we're starting from scratch — head over to My Bar to stock it up. In the meantime, want me to suggest something you could grab?";
+    return "Okay, we need to talk. Your bar is empty and I'm concerned. Want to scan some bottles first, or should I show you what you're missing out on?";
   }
-  if (count < 5) {
-    return `You've got ${count} bottle${count !== 1 ? 's' : ''} to work with. Not a lot, but I can work with that. What are you in the mood for tonight?`;
-  }
-  return `Nice setup — ${count} bottles to work with. What are you in the mood for tonight?`;
+  return `Well, well. ${count} bottle${count !== 1 ? 's' : ''} and you still can't decide what to make. Lucky you found me. What are we working with tonight?`;
 }
 
 export function ChatBartender({ mode, inventory, onGoToInventory }: Props) {
@@ -120,7 +117,7 @@ export function ChatBartender({ mode, inventory, onGoToInventory }: Props) {
         {messages.map((msg, i) => (
           <div key={i} className={`cb-row cb-row--${msg.role}`}>
             {msg.role === 'bartender' && (
-              <div className="cb-avatar">🍸</div>
+              <div className="cb-avatar">V</div>
             )}
             <div className={`cb-bubble cb-bubble--${msg.role}`}>
               {msg.text}
@@ -130,7 +127,7 @@ export function ChatBartender({ mode, inventory, onGoToInventory }: Props) {
 
         {typing && (
           <div className="cb-row cb-row--bartender">
-            <div className="cb-avatar">🍸</div>
+            <div className="cb-avatar">V</div>
             <div className="cb-bubble cb-bubble--bartender cb-bubble--typing">
               <span className="cb-dot" />
               <span className="cb-dot" />

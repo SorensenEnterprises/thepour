@@ -1341,11 +1341,20 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
 
         {/* ── Chat ── */}
         {phase === 'chat' && (
-          <ChatBartender
-            mode={barMode}
-            inventory={barMode === 'im-out' ? [] : inventory}
-            onGoToInventory={onGoToInventory ? () => { cancelPendingTimer(); fadeOutMusic(() => onGoToInventory!()); } : undefined}
-          />
+          <>
+            <div className="bm-vesper-header">
+              <div className="bm-vesper-avatar">V</div>
+              <div className="bm-vesper-name-wrap">
+                <span className="bm-vesper-name">Vesper</span>
+                <span className="bm-vesper-title">Your Bartender</span>
+              </div>
+            </div>
+            <ChatBartender
+              mode={barMode}
+              inventory={barMode === 'im-out' ? [] : inventory}
+              onGoToInventory={onGoToInventory ? () => { cancelPendingTimer(); fadeOutMusic(() => onGoToInventory!()); } : undefined}
+            />
+          </>
         )}
 
         {/* ── Category pick ── */}
