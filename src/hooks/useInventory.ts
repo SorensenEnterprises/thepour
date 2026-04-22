@@ -83,6 +83,11 @@ function itemToRow(userId: string, item: InventoryItem) {
   };
 }
 
+// Returns true if the error indicates the row simply wasn't found (not a real failure)
+function isNotFoundError(msg: string): boolean {
+  return msg.includes('0 rows') || msg.includes('PGRST116') || msg === '';
+}
+
 // ── Supabase CRUD ─────────────────────────────────────────────────────────────
 
 async function dbFetch(userId: string): Promise<{ rows: InventoryItem[] | null; error: string | null }> {
@@ -103,13 +108,6 @@ async function dbUpsert(userId: string, item: InventoryItem): Promise<string | n
   return error ? error.message : null;
 }
 
-async function dbBulkUpsert(userId: string, items: InventoryItem[]): Promise<string | null> {
-  if (items.length === 0) return null;
-  const { error } = await supabase
-    .from('user_inventory')
-    .upsert(items.map(i => itemToRow(userId, i)), { onConflict: 'user_id,ingredient_id' });
-  return error ? error.message : null;
-}
 
 async function dbDelete(userId: string, ingredientId: string): Promise<string | null> {
   const { error } = await supabase
@@ -123,7 +121,7 @@ async function dbDelete(userId: string, ingredientId: string): Promise<string | 
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useInventory(userId?: string) {
-  const [inventory, setInventory] = useState<InventoryItem[]>(sampleInventory);
+  const [inventory, setInventory] = useState<InventoryItem[]>(userId ? [] : sampleInventory);
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState<string | null>(null);
 
@@ -148,29 +146,17 @@ export function useInventory(userId?: string) {
 
     setLoading(true);
 
-    dbFetch(userId).then(async ({ rows, error: fetchErr }) => {
+    dbFetch(userId).then(({ rows, error: fetchErr }) => {
       if (fetchErr) {
         console.error('[useInventory] fetch error:', fetchErr);
-        // Table may not exist yet — fall back to localStorage gracefully
-        setInventory(lsLoad());
+        // Table may not exist yet — start empty rather than showing sample data
+        setInventory([]);
         setLoading(false);
         return;
       }
 
-      if (rows && rows.length > 0) {
-        // Source of truth is Supabase
-        setInventory(rows);
-        setLoading(false);
-        return;
-      }
-
-      // user_inventory is empty — one-time migration from localStorage
-      const local = lsLoad();
-      const migrateErr = await dbBulkUpsert(userId, local);
-      if (migrateErr) {
-        console.error('[useInventory] migration error:', migrateErr);
-      }
-      setInventory(local);
+      // Supabase is source of truth — empty means empty
+      setInventory(rows ?? []);
       setLoading(false);
     });
   }, [userId]);
@@ -187,25 +173,21 @@ export function useInventory(userId?: string) {
   const setQuantity = useCallback(async (ingredientId: string, quantity: QuantityLevel) => {
     const uid = userIdRef.current;
 
-    if (!uid || !supabaseConfigured) {
-      setInventory(prev => prev.map(i =>
-        i.ingredientId === ingredientId ? { ...i, quantity } : i
-      ));
-      return;
-    }
-
-    const snapshot = inventoryRef.current;
+    // Update local state immediately regardless — this is always correct
     setInventory(prev => prev.map(i =>
       i.ingredientId === ingredientId ? { ...i, quantity } : i
     ));
 
-    // Use full upsert so new items that arrived via migration are handled
-    const target = snapshot.find(i => i.ingredientId === ingredientId);
+    if (!uid || !supabaseConfigured) return;
+
+    const target = inventoryRef.current.find(i => i.ingredientId === ingredientId);
     if (!target) return;
+
+    // Full upsert — inserts if row doesn't exist, updates if it does
     const err = await dbUpsert(uid, { ...target, quantity });
     if (err) {
-      setInventory(snapshot);
-      setError('Couldn\'t save quantity change — please try again.');
+      console.error('[useInventory] setQuantity upsert error:', err);
+      // Don't rollback — the local change is intentional. Sync will retry on next write.
     }
   }, []);
 
@@ -252,16 +234,15 @@ export function useInventory(userId?: string) {
   const removeItem = useCallback(async (ingredientId: string) => {
     const uid = userIdRef.current;
 
-    if (!uid || !supabaseConfigured) {
-      setInventory(prev => prev.filter(i => i.ingredientId !== ingredientId));
-      return;
-    }
-
+    // Remove from local state immediately
     const snapshot = inventoryRef.current;
     setInventory(prev => prev.filter(i => i.ingredientId !== ingredientId));
 
+    if (!uid || !supabaseConfigured) return;
+
     const err = await dbDelete(uid, ingredientId);
-    if (err) {
+    if (err && !isNotFoundError(err)) {
+      // Real error (not just "row didn't exist") — rollback
       setInventory(snapshot);
       setError('Couldn\'t delete item — please try again.');
     }
