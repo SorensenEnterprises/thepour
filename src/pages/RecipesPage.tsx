@@ -51,6 +51,52 @@ interface Props {
   onRecipeMade?:     (recipeName: string, count: number) => void;
 }
 
+// ── Collapsible recipe section ────────────────────────────────────────────────
+
+type RecipeSectionKey = 'ready' | 'almost' | 'missing';
+
+interface RecipeSectionProps {
+  sectionKey: RecipeSectionKey;
+  label: string;
+  countColor: 'teal' | 'amber' | 'muted';
+  matches: RecipeMatch[];
+  open: boolean;
+  onToggle: () => void;
+  onRenderCard: (m: RecipeMatch) => React.ReactNode;
+}
+
+function RecipeSection({ label, countColor, matches, open, onToggle, onRenderCard }: RecipeSectionProps) {
+  if (matches.length === 0) return null;
+  return (
+    <div className={`rp-section${open ? ' rp-section--open' : ''}`}>
+      <button className="rp-section-header" onClick={onToggle} aria-expanded={open}>
+        <span className="rp-section-name">{label}</span>
+        <span className="rp-section-meta">
+          <span className={`rp-section-count rp-section-count--${countColor}`}>
+            {matches.length} {matches.length === 1 ? 'recipe' : 'recipes'}
+          </span>
+          <svg
+            className={`rp-section-chevron${open ? ' rp-section-chevron--open' : ''}`}
+            width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </span>
+      </button>
+      <div className="rp-section-body">
+        <div className="rp-section-body-inner">
+          <div className="recipe-list recipe-list--section">
+            {matches.map(m => onRenderCard(m))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
+
 export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuantity, onRecipeMade }: Props) {
   const { user } = useAuth();
 
@@ -60,6 +106,13 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
   const [search,        setSearch]        = useState('');
   const [toasts,        setToasts]        = useState<Toast[]>([]);
   const [toastCounter,  setToastCounter]  = useState(0);
+
+  // Recipe section open state — ready starts open, others collapsed
+  const [recipeSections, setRecipeSections] = useState<Record<RecipeSectionKey, boolean>>({
+    ready:   true,
+    almost:  false,
+    missing: false,
+  });
 
   function pushToast(text: string, variant: 'normal' | 'amber' = 'normal') {
     const id = toastCounter + 1;
@@ -71,7 +124,6 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
   const handleMadeThis = useCallback((recipe: Recipe, count: number): MadeThisResult => {
     const { updated, lowBottles, adjustedCount } = decrementInventory(inventory, recipe, count);
 
-    // Apply each changed item back via setQuantity
     updated.forEach(item => {
       const original = inventory.find(i => i.ingredientId === item.ingredientId);
       if (original && original.quantity !== item.quantity) {
@@ -79,7 +131,6 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
       }
     });
 
-    // Normal confirmation toast
     const drinksLabel = count === 1 ? 'drink' : 'drinks';
     if (adjustedCount > 0) {
       pushToast(`Bar updated — ${count} ${drinksLabel} made, ${adjustedCount} bottle${adjustedCount !== 1 ? 's' : ''} adjusted`);
@@ -87,12 +138,10 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
       pushToast(`Logged ${count} ${drinksLabel} of ${recipe.name} 🍸`);
     }
 
-    // Low-stock toasts (amber)
     lowBottles.forEach(name => {
       setTimeout(() => pushToast(`${name} is running low — time to restock`, 'amber'), 500);
     });
 
-    // Vesper context (Step 5)
     onRecipeMade?.(recipe.name, count);
 
     return { lowBottles, adjustedCount };
@@ -130,12 +179,37 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
 
   const readyCount = categoryMatches.filter(m => m.canMake).length;
 
+  // Whether to show collapsible sections vs flat list
+  const useSections = spiritFilter === 'all' && readyFilter === 'all' && !search.trim();
+
+  const sectionReady   = useMemo(() => displayed.filter(m => m.canMake).sort((a, b) => a.recipe.name.localeCompare(b.recipe.name)), [displayed]);
+  const sectionAlmost  = useMemo(() => displayed.filter(m => !m.canMake && m.missingIngredients.length === 1).sort((a, b) => a.recipe.name.localeCompare(b.recipe.name)), [displayed]);
+  const sectionMissing = useMemo(() => displayed.filter(m => !m.canMake && m.missingIngredients.length > 1).sort((a, b) => a.recipe.name.localeCompare(b.recipe.name)), [displayed]);
+
   const PAGE_TITLES: Record<DrinkCategory, string> = {
     cocktail:     'Recipe Suggestions',
     mocktail:     'Mocktail Recipes',
     'dirty-soda': 'Dirty Soda Recipes',
     shot:         'Shot Recipes',
   };
+
+  function renderCard(m: RecipeMatch) {
+    const { recipe, canMake, missingIngredients, splashWarnings, haveCount, totalCount } = m;
+    return (
+      <RecipeCard
+        key={recipe.id}
+        recipe={recipe}
+        canMake={canMake}
+        missingIngredients={missingIngredients}
+        splashWarnings={splashWarnings}
+        haveCount={haveCount}
+        totalCount={totalCount}
+        exploreMode={false}
+        onMadeThis={count => handleMadeThis(recipe, count)}
+        userId={user?.id ?? null}
+      />
+    );
+  }
 
   return (
     <div className="page">
@@ -211,27 +285,50 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
 
       <OneIngredientAway suggestions={unlockSuggestions} />
 
-      <div className="recipe-list">
-        {displayed.map(({ recipe, canMake, missingIngredients, splashWarnings, haveCount, totalCount }) => (
-          <RecipeCard
-            key={recipe.id}
-            recipe={recipe}
-            canMake={canMake}
-            missingIngredients={missingIngredients}
-            splashWarnings={splashWarnings}
-            haveCount={haveCount}
-            totalCount={totalCount}
-            exploreMode={false}
-            onMadeThis={count => handleMadeThis(recipe, count)}
-            userId={user?.id ?? null}
+      {useSections ? (
+        <div className="rp-sections">
+          <RecipeSection
+            sectionKey="ready"
+            label="Ready to Make"
+            countColor="teal"
+            matches={sectionReady}
+            open={recipeSections.ready}
+            onToggle={() => setRecipeSections(p => ({ ...p, ready: !p.ready }))}
+            onRenderCard={renderCard}
           />
-        ))}
-        {displayed.length === 0 && (
-          <p className="empty-state">
-            {search ? `No recipes matching "${search}"` : 'No recipes match your current filters.'}
-          </p>
-        )}
-      </div>
+          <RecipeSection
+            sectionKey="almost"
+            label="Almost There"
+            countColor="amber"
+            matches={sectionAlmost}
+            open={recipeSections.almost}
+            onToggle={() => setRecipeSections(p => ({ ...p, almost: !p.almost }))}
+            onRenderCard={renderCard}
+          />
+          <RecipeSection
+            sectionKey="missing"
+            label="Missing More"
+            countColor="muted"
+            matches={sectionMissing}
+            open={recipeSections.missing}
+            onToggle={() => setRecipeSections(p => ({ ...p, missing: !p.missing }))}
+            onRenderCard={renderCard}
+          />
+          {displayed.length === 0 && (
+            <p className="empty-state">No recipes match your current filters.</p>
+          )}
+        </div>
+      ) : (
+        <div className="recipe-list">
+          {displayed.map(m => renderCard(m))}
+          {displayed.length === 0 && (
+            <p className="empty-state">
+              {search ? `No recipes matching "${search}"` : 'No recipes match your current filters.'}
+            </p>
+          )}
+        </div>
+      )}
+
       <ResponsibleFooter />
 
       {/* ── Toasts ── */}
