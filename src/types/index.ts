@@ -109,7 +109,8 @@ export const BOTTLE_SIZES: { value: BottleSize; label: string }[] = [
 ];
 
 export interface InventoryItem {
-  ingredientId: string;
+  id?: string;          // Supabase UUID — present for rows loaded from DB
+  ingredientId: string; // app-level identifier used for recipe matching
   name: string;
   category: Ingredient['category'];
   quantity: QuantityLevel;

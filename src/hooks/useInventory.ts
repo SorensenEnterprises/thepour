@@ -48,20 +48,21 @@ function lsSave(inventory: InventoryItem[]) {
   try { localStorage.setItem(LS_KEY, JSON.stringify(inventory)); } catch {}
 }
 
-// ── Supabase row types ────────────────────────────────────────────────────────
+// ── Supabase row type (actual table schema — no ingredient_id column) ─────────
 
 interface DbRow {
-  ingredient_id: string;
-  name:          string;
-  category:      string;
-  spirit_type:   string | null;
-  quantity:      string;
-  size_ml:       number;
+  id:          string;
+  name:        string;
+  category:    string;
+  spirit_type: string | null;
+  quantity:    string;
+  size_ml:     number;
 }
 
 function rowToItem(row: DbRow): InventoryItem {
   return {
-    ingredientId: row.ingredient_id,
+    id:           row.id,
+    ingredientId: row.id, // UUID used as the app identifier for DB-loaded items
     name:         row.name,
     category:     row.category as Ingredient['category'],
     spiritType:   row.spirit_type ?? undefined,
@@ -70,30 +71,12 @@ function rowToItem(row: DbRow): InventoryItem {
   };
 }
 
-function itemToRow(userId: string, item: InventoryItem) {
-  return {
-    user_id:       userId,
-    ingredient_id: item.ingredientId,
-    name:          item.name,
-    category:      item.category,
-    spirit_type:   item.spiritType ?? null,
-    quantity:      item.quantity,
-    size_ml:       item.size ?? 750,
-    updated_at:    new Date().toISOString(),
-  };
-}
-
-// Returns true if the error indicates the row simply wasn't found (not a real failure)
-function isNotFoundError(msg: string): boolean {
-  return msg.includes('0 rows') || msg.includes('PGRST116') || msg === '';
-}
-
 // ── Supabase CRUD ─────────────────────────────────────────────────────────────
 
 async function dbFetch(userId: string): Promise<{ rows: InventoryItem[] | null; error: string | null }> {
   const { data, error } = await supabase
     .from('user_inventory')
-    .select('ingredient_id, name, category, spirit_type, quantity, size_ml')
+    .select('id, name, category, spirit_type, quantity, size_ml')
     .eq('user_id', userId)
     .order('created_at');
 
@@ -101,20 +84,86 @@ async function dbFetch(userId: string): Promise<{ rows: InventoryItem[] | null; 
   return { rows: (data as DbRow[]).map(rowToItem), error: null };
 }
 
-async function dbUpsert(userId: string, item: InventoryItem): Promise<string | null> {
-  const { error } = await supabase
+// Check if a row exists by id, then UPDATE; if not, INSERT.
+// Returns the row's id (may differ from item.id if a new UUID was assigned by DB).
+async function dbSave(userId: string, item: InventoryItem): Promise<{ id: string | null; error: string | null }> {
+  // If item has a DB id, check whether the row still exists
+  if (item.id) {
+    const { data: existing } = await supabase
+      .from('user_inventory')
+      .select('id')
+      .eq('id', item.id)
+      .eq('user_id', userId)
+      .single();
+
+    if (existing) {
+      const { error } = await supabase
+        .from('user_inventory')
+        .update({
+          name:        item.name,
+          category:    item.category,
+          spirit_type: item.spiritType ?? null,
+          quantity:    item.quantity,
+          size_ml:     item.size ?? 750,
+          updated_at:  new Date().toISOString(),
+        })
+        .eq('id', item.id)
+        .eq('user_id', userId);
+      return { id: item.id, error: error?.message ?? null };
+    }
+  }
+
+  // INSERT — let Supabase generate the UUID
+  const { data, error } = await supabase
     .from('user_inventory')
-    .upsert(itemToRow(userId, item), { onConflict: 'user_id,ingredient_id' });
-  return error ? error.message : null;
+    .insert({
+      user_id:     userId,
+      name:        item.name,
+      category:    item.category,
+      spirit_type: item.spiritType ?? null,
+      quantity:    item.quantity,
+      size_ml:     item.size ?? 750,
+    })
+    .select('id')
+    .single();
+
+  return { id: (data as { id: string } | null)?.id ?? null, error: error?.message ?? null };
 }
 
+// Quantity-only update path — faster than full dbSave when the row is known to exist.
+// Falls back to full dbSave if the row is missing.
+async function dbUpdateQuantity(userId: string, item: InventoryItem, quantity: QuantityLevel): Promise<{ id: string | null; error: string | null }> {
+  if (item.id) {
+    const { data: existing } = await supabase
+      .from('user_inventory')
+      .select('id')
+      .eq('id', item.id)
+      .eq('user_id', userId)
+      .single();
 
-async function dbDelete(userId: string, ingredientId: string): Promise<string | null> {
+    if (existing) {
+      const { error } = await supabase
+        .from('user_inventory')
+        .update({ quantity, updated_at: new Date().toISOString() })
+        .eq('id', item.id)
+        .eq('user_id', userId);
+      return { id: item.id, error: error?.message ?? null };
+    }
+  }
+
+  // Row doesn't exist yet — insert full item with new quantity
+  return dbSave(userId, { ...item, quantity });
+}
+
+async function dbDelete(userId: string, item: InventoryItem): Promise<string | null> {
+  if (!item.id) return null; // never persisted — nothing to delete
+
   const { error } = await supabase
     .from('user_inventory')
     .delete()
-    .eq('user_id', userId)
-    .eq('ingredient_id', ingredientId);
+    .eq('id', item.id)
+    .eq('user_id', userId);
+
   return error ? error.message : null;
 }
 
@@ -149,13 +198,10 @@ export function useInventory(userId?: string) {
     dbFetch(userId).then(({ rows, error: fetchErr }) => {
       if (fetchErr) {
         console.error('[useInventory] fetch error:', fetchErr);
-        // Table may not exist yet — start empty rather than showing sample data
         setInventory([]);
         setLoading(false);
         return;
       }
-
-      // Supabase is source of truth — empty means empty
       setInventory(rows ?? []);
       setLoading(false);
     });
@@ -173,7 +219,7 @@ export function useInventory(userId?: string) {
   const setQuantity = useCallback(async (ingredientId: string, quantity: QuantityLevel) => {
     const uid = userIdRef.current;
 
-    // Update local state immediately regardless — this is always correct
+    // Apply locally immediately — never blocked by network
     setInventory(prev => prev.map(i =>
       i.ingredientId === ingredientId ? { ...i, quantity } : i
     ));
@@ -183,11 +229,16 @@ export function useInventory(userId?: string) {
     const target = inventoryRef.current.find(i => i.ingredientId === ingredientId);
     if (!target) return;
 
-    // Full upsert — inserts if row doesn't exist, updates if it does
-    const err = await dbUpsert(uid, { ...target, quantity });
+    const { id: returnedId, error: err } = await dbUpdateQuantity(uid, target, quantity);
     if (err) {
-      console.error('[useInventory] setQuantity upsert error:', err);
-      // Don't rollback — the local change is intentional. Sync will retry on next write.
+      console.error('[useInventory] setQuantity error:', err);
+      return;
+    }
+    // If a new DB row was created, backfill its id into local state
+    if (returnedId && returnedId !== target.id) {
+      setInventory(prev => prev.map(i =>
+        i.ingredientId === ingredientId ? { ...i, id: returnedId, ingredientId: returnedId } : i
+      ));
     }
   }, []);
 
@@ -200,13 +251,16 @@ export function useInventory(userId?: string) {
       return;
     }
 
-    // Write first, then update local state on success
-    const err = await dbUpsert(uid, item);
+    const { id: newId, error: err } = await dbSave(uid, item);
     if (err) {
       setError('Couldn\'t save bottle — please try again.');
       return;
     }
-    setInventory(prev => [...prev, item]);
+    // Store the DB-assigned id so future edits/deletes can find the row
+    const saved: InventoryItem = newId
+      ? { ...item, id: newId, ingredientId: newId }
+      : item;
+    setInventory(prev => [...prev, saved]);
   }, []);
 
   // ── editItem ───────────────────────────────────────────────────────────────
@@ -220,13 +274,16 @@ export function useInventory(userId?: string) {
       return;
     }
 
-    const err = await dbUpsert(uid, updated);
+    const { id: returnedId, error: err } = await dbSave(uid, updated);
     if (err) {
       setError('Couldn\'t save changes — please try again.');
       return;
     }
+    const saved: InventoryItem = returnedId
+      ? { ...updated, id: returnedId, ingredientId: returnedId }
+      : updated;
     setInventory(prev => prev.map(i =>
-      i.ingredientId === updated.ingredientId ? updated : i
+      i.ingredientId === updated.ingredientId ? saved : i
     ));
   }, []);
 
@@ -234,15 +291,14 @@ export function useInventory(userId?: string) {
   const removeItem = useCallback(async (ingredientId: string) => {
     const uid = userIdRef.current;
 
-    // Remove from local state immediately
+    const target = inventoryRef.current.find(i => i.ingredientId === ingredientId);
     const snapshot = inventoryRef.current;
     setInventory(prev => prev.filter(i => i.ingredientId !== ingredientId));
 
-    if (!uid || !supabaseConfigured) return;
+    if (!uid || !supabaseConfigured || !target) return;
 
-    const err = await dbDelete(uid, ingredientId);
-    if (err && !isNotFoundError(err)) {
-      // Real error (not just "row didn't exist") — rollback
+    const err = await dbDelete(uid, target);
+    if (err) {
       setInventory(snapshot);
       setError('Couldn\'t delete item — please try again.');
     }
