@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NavBar } from './components/NavBar';
 import { BartenderModal } from './components/BartenderModal';
@@ -22,6 +22,7 @@ function AppContent() {
   const [pendingView, setPendingView] = useState<'recipes' | 'inventory'>('recipes');
   const [bartenderOpen, setBartenderOpen] = useState(false);
   const [bartenderInitialMode, setBartenderInitialMode] = useState<'my-bar' | 'im-out' | 'explore'>('my-bar');
+  const [lastMadeNote, setLastMadeNote] = useState<string | undefined>(undefined);
 
   const {
     inventory, inStockIds, splashIds,
@@ -81,7 +82,15 @@ function AppContent() {
       />
       <main className="main-content">
         {view === 'recipes' ? (
-          <RecipesPage matches={matches} unlockSuggestions={unlockSuggestions} />
+          <RecipesPage
+              matches={matches}
+              unlockSuggestions={unlockSuggestions}
+              inventory={inventory}
+              onSetQuantity={(id, qty) => setQuantity(id, qty)}
+              onRecipeMade={(recipeName, count) => {
+                setLastMadeNote(`User just made ${count} ${count === 1 ? 'serving' : 'servings'} of ${recipeName}. Bar inventory has been updated.`);
+              }}
+            />
         ) : (
           <InventoryPage
             inventory={inventory}
@@ -124,6 +133,8 @@ function AppContent() {
           onGoToInventory={() => { setBartenderOpen(false); setView('inventory'); }}
           initialMode={bartenderInitialMode}
           unlockSuggestions={unlockSuggestions}
+          contextNote={lastMadeNote}
+          onContextNoteConsumed={() => setLastMadeNote(undefined)}
         />
       )}
     </div>

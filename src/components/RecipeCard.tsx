@@ -3,19 +3,35 @@ import { Recipe } from '../types';
 import { calculateCalories } from '../utils/calorieUtils';
 import { getGlassInfo } from '../utils/glasswareUtils';
 import { getRequiredEquipment } from '../utils/equipmentUtils';
+import { IMadeThisModal } from './IMadeThisModal';
+import { DrinkSurvey } from './DrinkSurvey';
 
-interface Props {
-  recipe: Recipe;
-  canMake: boolean;
-  missingIngredients: string[];
-  splashWarnings: string[];
-  haveCount?: number;
-  totalCount?: number;
-  exploreMode?: boolean;
+export interface MadeThisResult {
+  lowBottles:    string[];
+  adjustedCount: number;
 }
 
-export function RecipeCard({ recipe, canMake, missingIngredients, splashWarnings, haveCount = 0, totalCount = 0, exploreMode = false }: Props) {
-  const [expanded, setExpanded] = useState(false);
+interface Props {
+  recipe:              Recipe;
+  canMake:             boolean;
+  missingIngredients:  string[];
+  splashWarnings:      string[];
+  haveCount?:          number;
+  totalCount?:         number;
+  exploreMode?:        boolean;
+  onMadeThis?:         (count: number) => MadeThisResult;
+  userId?:             string | null;
+}
+
+export function RecipeCard({
+  recipe, canMake, missingIngredients, splashWarnings,
+  haveCount = 0, totalCount = 0, exploreMode = false,
+  onMadeThis, userId,
+}: Props) {
+  const [expanded,     setExpanded]     = useState(false);
+  const [showModal,    setShowModal]    = useState(false);
+  const [showSurvey,   setShowSurvey]   = useState(false);
+  const [surveyDone,   setSurveyDone]   = useState(false);
 
   const headerClass = exploreMode
     ? haveCount === totalCount ? 'can-make' : haveCount > 0 ? 'explore-partial' : 'explore-none'
@@ -37,110 +53,149 @@ export function RecipeCard({ recipe, canMake, missingIngredients, splashWarnings
     return { cls: 'badge-orange', text: `Missing ${missingIngredients.length}` };
   }
 
-  const badge = getBadge();
+  const badge    = getBadge();
   const calories = calculateCalories(recipe.ingredients);
-  const glass = getGlassInfo(recipe.glassType);
+  const glass    = getGlassInfo(recipe.glassType);
   const equipment = getRequiredEquipment(recipe.name, recipe.tags);
 
+  function handleMadeThisConfirm(count: number) {
+    setShowModal(false);
+    if (!onMadeThis) return;
+    onMadeThis(count);
+    // After a short pause, prompt for rating (once per recipe expansion)
+    if (!surveyDone) {
+      setTimeout(() => setShowSurvey(true), 2200);
+    }
+  }
+
   return (
-    <div className={`recipe-card ${headerClass}`}>
-      <div className="recipe-card-header" onClick={() => setExpanded(!expanded)}>
-        <div className="recipe-title-row">
-          <h3>{recipe.name}</h3>
-          <span className={`badge ${badge.cls}`}>{badge.text}</span>
+    <>
+      <div className={`recipe-card ${headerClass}`}>
+        <div className="recipe-card-header" onClick={() => setExpanded(!expanded)}>
+          <div className="recipe-title-row">
+            <h3>{recipe.name}</h3>
+            <span className={`badge ${badge.cls}`}>{badge.text}</span>
+          </div>
+          <p className="recipe-description">{recipe.description}</p>
+          <div className="recipe-meta">
+            <span className="tag">{recipe.glassType} glass</span>
+            <span className={`tag difficulty-${recipe.difficulty}`}>{recipe.difficulty}</span>
+            {recipe.tags.map(tag => (
+              <span key={tag} className="tag">{tag}</span>
+            ))}
+            <span className="tag recipe-calories">~{calories} cal</span>
+          </div>
         </div>
-        <p className="recipe-description">{recipe.description}</p>
-        <div className="recipe-meta">
-          <span className="tag">{recipe.glassType} glass</span>
-          <span className={`tag difficulty-${recipe.difficulty}`}>{recipe.difficulty}</span>
-          {recipe.tags.map(tag => (
-            <span key={tag} className="tag">{tag}</span>
-          ))}
-          <span className="tag recipe-calories">~{calories} cal</span>
-        </div>
-      </div>
 
-      {expanded && (
-        <div className="recipe-details">
-          <div className="recipe-section">
-            <h4>Ingredients</h4>
-            <ul>
-              {recipe.ingredients.map(ing => (
-                <li key={ing.ingredientId} className="ingredient-item">
-                  <span className="ingredient-amount">{ing.amount} {ing.unit}</span>
-                  <span className="ingredient-name">{ing.name}</span>
-                  {ing.optional && <span className="optional-label">optional</span>}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="recipe-section">
-            <h4>Instructions</h4>
-            <ol>
-              {recipe.instructions.map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </div>
-          {recipe.garnish && (
-            <p className="garnish-note">Garnish: {recipe.garnish}</p>
-          )}
-
-          {/* ── Glassware ── */}
-          <div className="recipe-section recipe-glassware">
-            <h4>Glassware</h4>
-            <div className="glassware-row">
-              <span className="glassware-emoji">{glass.emoji}</span>
-              <div className="glassware-info">
-                <span className="glassware-label">{glass.label}</span>
-                <span className="glassware-reason">{glass.reason}</span>
-              </div>
-              <a
-                className="glassware-shop"
-                href="https://www.amazon.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Shop →
-              </a>
-            </div>
-          </div>
-
-          {/* ── Equipment ── */}
-          {equipment.length > 0 && (
-            <div className="equipment-alert">
-              <strong>Special equipment needed</strong>
-              <ul className="equipment-list">
-                {equipment.map(eq => (
-                  <li key={eq.name} className="equipment-item">
-                    <span className="equipment-name">{eq.name}</span>
-                    <span className="equipment-reason"> — {eq.reason}</span>
-                    <a
-                      className="equipment-shop"
-                      href="https://www.amazon.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Shop on Amazon →
-                    </a>
+        {expanded && (
+          <div className="recipe-details">
+            <div className="recipe-section">
+              <h4>Ingredients</h4>
+              <ul>
+                {recipe.ingredients.map(ing => (
+                  <li key={ing.ingredientId} className="ingredient-item">
+                    <span className="ingredient-amount">{ing.amount} {ing.unit}</span>
+                    <span className="ingredient-name">{ing.name}</span>
+                    {ing.optional && <span className="optional-label">optional</span>}
                   </li>
                 ))}
               </ul>
             </div>
-          )}
+            <div className="recipe-section">
+              <h4>Instructions</h4>
+              <ol>
+                {recipe.instructions.map((step, i) => (
+                  <li key={i}>{step}</li>
+                ))}
+              </ol>
+            </div>
+            {recipe.garnish && (
+              <p className="garnish-note">Garnish: {recipe.garnish}</p>
+            )}
 
-          {!exploreMode && splashWarnings.length > 0 && (
-            <div className="splash-alert">
-              <strong>Running low:</strong> {splashWarnings.join(', ')} — you may not have enough
+            {/* ── Glassware ── */}
+            <div className="recipe-section recipe-glassware">
+              <h4>Glassware</h4>
+              <div className="glassware-row">
+                <span className="glassware-emoji">{glass.emoji}</span>
+                <div className="glassware-info">
+                  <span className="glassware-label">{glass.label}</span>
+                  <span className="glassware-reason">{glass.reason}</span>
+                </div>
+                <a
+                  className="glassware-shop"
+                  href="https://www.amazon.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Shop →
+                </a>
+              </div>
             </div>
-          )}
-          {missingIngredients.length > 0 && (
-            <div className={exploreMode ? 'missing-alert missing-alert--explore' : 'missing-alert'}>
-              <strong>{exploreMode ? 'Still need:' : "You're missing:"}</strong> {missingIngredients.join(', ')}
-            </div>
-          )}
-        </div>
+
+            {/* ── Equipment ── */}
+            {equipment.length > 0 && (
+              <div className="equipment-alert">
+                <strong>Special equipment needed</strong>
+                <ul className="equipment-list">
+                  {equipment.map(eq => (
+                    <li key={eq.name} className="equipment-item">
+                      <span className="equipment-name">{eq.name}</span>
+                      <span className="equipment-reason"> — {eq.reason}</span>
+                      <a
+                        className="equipment-shop"
+                        href="https://www.amazon.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Shop on Amazon →
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {!exploreMode && splashWarnings.length > 0 && (
+              <div className="splash-alert">
+                <strong>Running low:</strong> {splashWarnings.join(', ')} — you may not have enough
+              </div>
+            )}
+            {missingIngredients.length > 0 && (
+              <div className={exploreMode ? 'missing-alert missing-alert--explore' : 'missing-alert'}>
+                <strong>{exploreMode ? 'Still need:' : "You're missing:"}</strong> {missingIngredients.join(', ')}
+              </div>
+            )}
+
+            {/* ── I Made This ── */}
+            {onMadeThis && (
+              <button
+                className="recipe-made-this-btn"
+                onClick={() => setShowModal(true)}
+              >
+                I Made This 🍸
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Modals (portalled via sibling fragments) ── */}
+      {showModal && (
+        <IMadeThisModal
+          recipeName={recipe.name}
+          onConfirm={handleMadeThisConfirm}
+          onCancel={() => setShowModal(false)}
+        />
       )}
-    </div>
+
+      {showSurvey && !surveyDone && (
+        <DrinkSurvey
+          recipeName={recipe.name}
+          userId={userId ?? null}
+          onDismiss={() => { setShowSurvey(false); setSurveyDone(true); }}
+        />
+      )}
+    </>
   );
 }

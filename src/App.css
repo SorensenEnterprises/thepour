@@ -658,6 +658,25 @@ body {
   border-color: var(--gold);
 }
 
+/* ── I Made This button ── */
+.recipe-made-this-btn {
+  width: 100%;
+  background: var(--teal);
+  border: none;
+  border-radius: 12px;
+  color: #091a1c;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 13px;
+  margin-top: 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  letter-spacing: 0.1px;
+}
+
+.recipe-made-this-btn:hover { background: #5dcdd6; }
+
 /* ── Inventory ── */
 .inventory-list { display: flex; flex-direction: column; gap: 32px; }
 
@@ -1315,4 +1334,41 @@ body {
 .inv-loading-text {
   font-size: 14px;
   color: var(--text-muted);
+}
+
+/* ── Recipe page toasts ─────────────────────────────────────────────────────── */
+.rp-toasts {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  z-index: 500;
+  pointer-events: none;
+}
+
+.rp-toast {
+  background: var(--surface-3);
+  border: 1px solid var(--border-teal);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 12px 20px;
+  white-space: nowrap;
+  animation: rp-toast-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.rp-toast--amber {
+  border-color: rgba(201, 168, 76, 0.45);
+  color: var(--gold);
+}
+
+@keyframes rp-toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

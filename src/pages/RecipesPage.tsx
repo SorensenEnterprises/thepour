@@ -1,9 +1,12 @@
-import React, { useState, useMemo } from 'react';
-import { RecipeCard } from '../components/RecipeCard';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { RecipeCard, MadeThisResult } from '../components/RecipeCard';
 import { OneIngredientAway } from '../components/OneIngredientAway';
 import { RecipeMatch } from '../utils/recipeUtils';
 import { UnlockSuggestion } from '../utils/unlockCalculator';
+import { decrementInventory } from '../utils/inventoryDecrement';
 import { ResponsibleFooter } from '../components/ResponsibleFooter';
+import { Recipe, InventoryItem, QuantityLevel } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
 type ReadyFilter  = 'all' | 'ready';
@@ -19,7 +22,6 @@ const SPIRIT_FILTERS: { value: SpiritFilter; label: string }[] = [
   { value: 'other',   label: 'Other' },
 ];
 
-// Tags in sampleRecipes that map to each spirit bucket
 const SPIRIT_TAG_MAP: Record<Exclude<SpiritFilter, 'all' | 'other'>, string[]> = {
   whiskey: ['whiskey', 'bourbon', 'rye', 'scotch'],
   gin:     ['gin'],
@@ -28,23 +30,73 @@ const SPIRIT_TAG_MAP: Record<Exclude<SpiritFilter, 'all' | 'other'>, string[]> =
   rum:     ['rum'],
 };
 
-interface Props {
-  matches: RecipeMatch[];
-  unlockSuggestions: UnlockSuggestion[];
-}
-
 const CATEGORY_TAG: Record<DrinkCategory, string> = {
-  cocktail:    '',
-  mocktail:    'mocktail',
+  cocktail:     '',
+  mocktail:     'mocktail',
   'dirty-soda': 'dirty-soda',
-  shot:        'shot',
+  shot:         'shot',
 };
 
-export function RecipesPage({ matches, unlockSuggestions }: Props) {
-  const [category, setCategory]       = useState<DrinkCategory>('cocktail');
-  const [readyFilter, setReadyFilter] = useState<ReadyFilter>('all');
-  const [spiritFilter, setSpiritFilter] = useState<SpiritFilter>('all');
-  const [search, setSearch] = useState('');
+interface Toast {
+  id:      number;
+  text:    string;
+  variant: 'normal' | 'amber';
+}
+
+interface Props {
+  matches:           RecipeMatch[];
+  unlockSuggestions: UnlockSuggestion[];
+  inventory:         InventoryItem[];
+  onSetQuantity:     (ingredientId: string, qty: QuantityLevel) => void;
+  onRecipeMade?:     (recipeName: string, count: number) => void;
+}
+
+export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuantity, onRecipeMade }: Props) {
+  const { user } = useAuth();
+
+  const [category,      setCategory]      = useState<DrinkCategory>('cocktail');
+  const [readyFilter,   setReadyFilter]   = useState<ReadyFilter>('all');
+  const [spiritFilter,  setSpiritFilter]  = useState<SpiritFilter>('all');
+  const [search,        setSearch]        = useState('');
+  const [toasts,        setToasts]        = useState<Toast[]>([]);
+  const [toastCounter,  setToastCounter]  = useState(0);
+
+  function pushToast(text: string, variant: 'normal' | 'amber' = 'normal') {
+    const id = toastCounter + 1;
+    setToastCounter(id);
+    setToasts(prev => [...prev, { id, text, variant }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+  }
+
+  const handleMadeThis = useCallback((recipe: Recipe, count: number): MadeThisResult => {
+    const { updated, lowBottles, adjustedCount } = decrementInventory(inventory, recipe, count);
+
+    // Apply each changed item back via setQuantity
+    updated.forEach(item => {
+      const original = inventory.find(i => i.ingredientId === item.ingredientId);
+      if (original && original.quantity !== item.quantity) {
+        onSetQuantity(item.ingredientId, item.quantity);
+      }
+    });
+
+    // Normal confirmation toast
+    const drinksLabel = count === 1 ? 'drink' : 'drinks';
+    if (adjustedCount > 0) {
+      pushToast(`Bar updated — ${count} ${drinksLabel} made, ${adjustedCount} bottle${adjustedCount !== 1 ? 's' : ''} adjusted`);
+    } else {
+      pushToast(`Logged ${count} ${drinksLabel} of ${recipe.name} 🍸`);
+    }
+
+    // Low-stock toasts (amber)
+    lowBottles.forEach(name => {
+      setTimeout(() => pushToast(`${name} is running low — time to restock`, 'amber'), 500);
+    });
+
+    // Vesper context (Step 5)
+    onRecipeMade?.(recipe.name, count);
+
+    return { lowBottles, adjustedCount };
+  }, [inventory, onSetQuantity, onRecipeMade, toastCounter]);
 
   const categoryMatches = useMemo(() => {
     if (category === 'cocktail') {
@@ -61,7 +113,6 @@ export function RecipesPage({ matches, unlockSuggestions }: Props) {
     const q = search.trim().toLowerCase();
     return categoryMatches.filter(({ recipe, canMake }) => {
       if (readyFilter === 'ready' && !canMake) return false;
-
       if (category === 'cocktail' && spiritFilter !== 'all') {
         const tags = recipe.tags;
         if (spiritFilter === 'other') {
@@ -72,7 +123,6 @@ export function RecipesPage({ matches, unlockSuggestions }: Props) {
           if (!tags.some(t => allowed.includes(t))) return false;
         }
       }
-
       if (q && !recipe.name.toLowerCase().includes(q)) return false;
       return true;
     });
@@ -81,16 +131,15 @@ export function RecipesPage({ matches, unlockSuggestions }: Props) {
   const readyCount = categoryMatches.filter(m => m.canMake).length;
 
   const PAGE_TITLES: Record<DrinkCategory, string> = {
-    cocktail:    'Recipe Suggestions',
-    mocktail:    'Mocktail Recipes',
+    cocktail:     'Recipe Suggestions',
+    mocktail:     'Mocktail Recipes',
     'dirty-soda': 'Dirty Soda Recipes',
-    shot:        'Shot Recipes',
+    shot:         'Shot Recipes',
   };
 
   return (
     <div className="page">
       <div className="page-header">
-
         <div className="category-toggle">
           {(['cocktail', 'mocktail', 'dirty-soda', 'shot'] as DrinkCategory[]).map(cat => (
             <button
@@ -144,18 +193,18 @@ export function RecipesPage({ matches, unlockSuggestions }: Props) {
             </div>
           )}
           <div className="filter-tabs ready-filter">
-              <button
-                className={`filter-tab ${readyFilter === 'all' ? 'active' : ''}`}
-                onClick={() => setReadyFilter('all')}
-              >
-                All
-              </button>
-              <button
-                className={`filter-tab filter-tab--ready ${readyFilter === 'ready' ? 'active' : ''}`}
-                onClick={() => setReadyFilter('ready')}
-              >
-                Ready ({readyCount})
-              </button>
+            <button
+              className={`filter-tab ${readyFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setReadyFilter('all')}
+            >
+              All
+            </button>
+            <button
+              className={`filter-tab filter-tab--ready ${readyFilter === 'ready' ? 'active' : ''}`}
+              onClick={() => setReadyFilter('ready')}
+            >
+              Ready ({readyCount})
+            </button>
           </div>
         </div>
       </div>
@@ -173,6 +222,8 @@ export function RecipesPage({ matches, unlockSuggestions }: Props) {
             haveCount={haveCount}
             totalCount={totalCount}
             exploreMode={false}
+            onMadeThis={count => handleMadeThis(recipe, count)}
+            userId={user?.id ?? null}
           />
         ))}
         {displayed.length === 0 && (
@@ -182,6 +233,15 @@ export function RecipesPage({ matches, unlockSuggestions }: Props) {
         )}
       </div>
       <ResponsibleFooter />
+
+      {/* ── Toasts ── */}
+      <div className="rp-toasts" aria-live="polite">
+        {toasts.map(t => (
+          <div key={t.id} className={`rp-toast rp-toast--${t.variant}`}>
+            {t.text}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

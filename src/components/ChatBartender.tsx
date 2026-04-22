@@ -21,6 +21,8 @@ interface Props {
   onGoToInventory?: () => void;
   unlockSuggestions?: UnlockSuggestion[];
   recipes?: Recipe[];
+  contextNote?: string;
+  onContextNoteConsumed?: () => void;
 }
 
 function renderMarkdown(text: string): React.ReactElement {
@@ -112,7 +114,7 @@ function getOpeningMessage(
   return base;
 }
 
-export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInventory, unlockSuggestions = [], recipes = [] }: Props) {
+export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInventory, unlockSuggestions = [], recipes = [], contextNote, onContextNoteConsumed }: Props) {
   const topUnlock   = unlockSuggestions[0];
   const openingText = getOpeningMessage(mode, inventory.length, checkedPantryIds, topUnlock);
 
@@ -134,6 +136,12 @@ export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInvento
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, typing]);
+
+  useEffect(() => {
+    if (!contextNote) return;
+    apiHistory.current.push({ role: 'user', content: contextNote });
+    onContextNoteConsumed?.();
+  }, [contextNote]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function sendMessage(text: string) {
     if (!text.trim() || typing) return;

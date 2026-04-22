@@ -935,9 +935,11 @@ interface Props {
   onGoToInventory?: () => void;
   initialMode?: BarMode;
   unlockSuggestions?: UnlockSuggestion[];
+  contextNote?: string;
+  onContextNoteConsumed?: () => void;
 }
 
-export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode, unlockSuggestions = [] }: Props) {
+export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode, unlockSuggestions = [], contextNote, onContextNoteConsumed }: Props) {
   const { user } = useAuth();
   const [phase, setPhase]           = useState<Phase>(
     initialMode === 'im-out' ? 'scan-prompt' :
@@ -1360,6 +1362,8 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
               onGoToInventory={onGoToInventory ? () => { cancelPendingTimer(); fadeOutMusic(() => onGoToInventory!()); } : undefined}
               unlockSuggestions={barMode === 'im-out' ? [] : unlockSuggestions}
               recipes={sampleRecipes}
+              contextNote={contextNote}
+              onContextNoteConsumed={onContextNoteConsumed}
             />
           </>
         )}
