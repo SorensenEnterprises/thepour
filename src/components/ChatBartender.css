@@ -53,7 +53,31 @@
   font-size: 15px;
   line-height: 1.5;
   word-break: break-word;
-  white-space: pre-wrap;
+}
+
+/* Parsed paragraph blocks inside bartender bubbles */
+.cb-bubble--bartender .cb-p {
+  margin: 0 0 6px;
+}
+.cb-bubble--bartender .cb-p:last-child {
+  margin-bottom: 0;
+}
+
+/* Bullet list items */
+.cb-bullet {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 3px 0;
+}
+.cb-bullet:first-child { margin-top: 0; }
+.cb-bullet:last-child  { margin-bottom: 0; }
+
+.cb-bullet-dot {
+  color: var(--teal);
+  font-size: 13px;
+  flex-shrink: 0;
+  line-height: 1.5;
 }
 
 .cb-bubble--bartender {

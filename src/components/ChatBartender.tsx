@@ -20,6 +20,56 @@ interface Props {
   unlockSuggestions?: UnlockSuggestion[];
 }
 
+function renderMarkdown(text: string): React.ReactElement {
+  const lines = text.split('\n');
+  const elements: React.ReactElement[] = [];
+
+  lines.forEach((line, i) => {
+    if (line.trim() === '') {
+      elements.push(<br key={i} />);
+      return;
+    }
+
+    const parseInline = (str: string): (string | React.ReactElement)[] => {
+      const parts: (string | React.ReactElement)[] = [];
+      let remaining = str;
+      let key = 0;
+
+      while (remaining.length > 0) {
+        const boldMatch   = remaining.match(/\*\*(.+?)\*\*/);
+        const italicMatch = remaining.match(/\*(.+?)\*/);
+
+        if (boldMatch && (!italicMatch || boldMatch.index! <= italicMatch.index!)) {
+          if (boldMatch.index! > 0) parts.push(remaining.slice(0, boldMatch.index));
+          parts.push(<strong key={key++}>{boldMatch[1]}</strong>);
+          remaining = remaining.slice(boldMatch.index! + boldMatch[0].length);
+        } else if (italicMatch) {
+          if (italicMatch.index! > 0) parts.push(remaining.slice(0, italicMatch.index));
+          parts.push(<em key={key++}>{italicMatch[1]}</em>);
+          remaining = remaining.slice(italicMatch.index! + italicMatch[0].length);
+        } else {
+          parts.push(remaining);
+          break;
+        }
+      }
+      return parts;
+    };
+
+    if (line.trim().startsWith('- ')) {
+      elements.push(
+        <div key={i} className="cb-bullet">
+          <span className="cb-bullet-dot">•</span>
+          <span>{parseInline(line.trim().slice(2))}</span>
+        </div>
+      );
+    } else {
+      elements.push(<p key={i} className="cb-p">{parseInline(line)}</p>);
+    }
+  });
+
+  return <>{elements}</>;
+}
+
 const QUICK_REPLIES_INITIAL = [
   'Surprise me 🎲',
   'Something classic',
@@ -159,7 +209,7 @@ export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInvento
               <div className="cb-avatar">V</div>
             )}
             <div className={`cb-bubble cb-bubble--${msg.role}`}>
-              {msg.text}
+              {msg.role === 'bartender' ? renderMarkdown(msg.text) : msg.text}
             </div>
           </div>
         ))}
