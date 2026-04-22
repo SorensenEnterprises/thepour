@@ -786,6 +786,10 @@ export function isGarnish(ingredientId: string): boolean {
   return RECIPE_CANONICAL[ingredientId] === 'GARNISH';
 }
 
+export function getRecipeCanonicalType(ingredientId: string): string | undefined {
+  return RECIPE_CANONICAL[ingredientId];
+}
+
 export function buildInventoryMatcher(
   items: InventoryItem[],
   checkedPantryIds: Set<string> = new Set(),

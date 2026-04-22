@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { InventoryItem } from '../types';
 import { PANTRY_CATEGORIES } from '../data/pantryItems';
+import { UnlockSuggestion } from '../utils/unlockCalculator';
 import './ChatBartender.css';
 
 type BarMode = 'my-bar' | 'im-out' | 'explore';
@@ -16,6 +17,7 @@ interface Props {
   inventory: InventoryItem[];
   checkedPantryIds?: Set<string>;
   onGoToInventory?: () => void;
+  unlockSuggestions?: UnlockSuggestion[];
 }
 
 const QUICK_REPLIES_INITIAL = [
@@ -26,7 +28,12 @@ const QUICK_REPLIES_INITIAL = [
   "I'm feeling adventurous",
 ];
 
-function getOpeningMessage(mode: BarMode, count: number, checkedPantryIds?: Set<string>): string {
+function getOpeningMessage(
+  mode: BarMode,
+  count: number,
+  checkedPantryIds?: Set<string>,
+  topUnlock?: UnlockSuggestion,
+): string {
   if (mode === 'im-out') {
     return "Ooh, not a bad selection. Let's see what we can do with what's in front of you.";
   }
@@ -36,15 +43,25 @@ function getOpeningMessage(mode: BarMode, count: number, checkedPantryIds?: Set<
   if (count === 0) {
     return "Okay, we need to talk. Your bar is empty and I'm concerned. Want to scan some bottles first, or should I show you what you're missing out on?";
   }
+
+  let base: string;
   const hasCitrus = checkedPantryIds?.has('fresh-lime') || checkedPantryIds?.has('fresh-lemon');
   if (hasCitrus) {
-    return `Well, well. ${count} bottle${count !== 1 ? 's' : ''} and fresh citrus on deck — we have real options tonight. What are we making?`;
+    base = `Well, well. ${count} bottle${count !== 1 ? 's' : ''} and fresh citrus on deck — we have real options tonight. What are we making?`;
+  } else {
+    base = `Well, well. ${count} bottle${count !== 1 ? 's' : ''} and you still can't decide what to make. Lucky you found me. What are we working with tonight?`;
   }
-  return `Well, well. ${count} bottle${count !== 1 ? 's' : ''} and you still can't decide what to make. Lucky you found me. What are we working with tonight?`;
+
+  if (topUnlock && topUnlock.unlockCount >= 8) {
+    base += ` Oh — and grab some ${topUnlock.ingredientDisplayName} next time you're out. It would unlock ${topUnlock.unlockCount} more recipes with what you've already got.`;
+  }
+
+  return base;
 }
 
-export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInventory }: Props) {
-  const openingText = getOpeningMessage(mode, inventory.length, checkedPantryIds);
+export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInventory, unlockSuggestions = [] }: Props) {
+  const topUnlock   = unlockSuggestions[0];
+  const openingText = getOpeningMessage(mode, inventory.length, checkedPantryIds, topUnlock);
 
   const [messages, setMessages] = useState<Message[]>([
     { role: 'bartender', text: openingText },
@@ -88,12 +105,19 @@ export function ChatBartender({ mode, inventory, checkedPantryIds, onGoToInvento
             .join(', ')
         : '';
 
+      const unlockContext = unlockSuggestions.slice(0, 3).map(s => ({
+        ingredient: s.ingredientDisplayName,
+        count:      s.unlockCount,
+        recipes:    s.recipes.slice(0, 4).map(r => r.name),
+      }));
+
       const { data, error } = await supabase.functions.invoke('chat-bartender', {
         body: {
           messages: apiHistory.current,
           inventoryList,
           mode,
           pantryList,
+          unlockContext,
         },
       });
 

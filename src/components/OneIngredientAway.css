@@ -1,0 +1,222 @@
+/* ── One Ingredient Away ──────────────────────────────────────────────────── */
+
+.oia-wrap {
+  margin-bottom: 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border-teal);
+  background: var(--surface-1);
+  overflow: hidden;
+}
+
+/* ── Header (collapsed + expanded trigger) ── */
+
+.oia-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.oia-header:hover {
+  background: rgba(74, 187, 196, 0.06);
+}
+
+.oia-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.oia-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.oia-preview {
+  font-size: 14px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.oia-chevron {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--teal);
+  transition: transform 0.2s ease;
+}
+
+.oia-chevron--up {
+  transform: rotate(180deg);
+}
+
+/* ── Expanded body ── */
+
+.oia-body {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Suggestion card ── */
+
+.oia-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.oia-card-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.oia-card-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.oia-card-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--teal);
+  white-space: nowrap;
+}
+
+/* ── Category badge ── */
+
+.oia-card-meta {
+  display: flex;
+  gap: 6px;
+}
+
+.oia-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.oia-badge--spirit  { background: rgba(201, 168, 76, 0.18); color: var(--gold); }
+.oia-badge--liqueur { background: rgba(74, 187, 196, 0.12); color: var(--teal); }
+.oia-badge--mixer   { background: rgba(100, 180, 120, 0.15); color: #7ec89e; }
+.oia-badge--fresh   { background: rgba(120, 200, 100, 0.15); color: #8eda78; }
+.oia-badge--pantry  { background: rgba(180, 140, 100, 0.15); color: #c8a87e; }
+
+/* ── Vesper quip ── */
+
+.oia-card-quip {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Actions row ── */
+
+.oia-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 2px;
+}
+
+.oia-see-recipes {
+  background: none;
+  border: none;
+  color: var(--teal);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.15s;
+}
+
+.oia-see-recipes:hover {
+  opacity: 0.75;
+}
+
+.oia-shop-link {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s;
+  margin-left: auto;
+}
+
+.oia-shop-link:hover {
+  color: var(--text-secondary);
+}
+
+/* ── Recipe list (expanded inline) ── */
+
+.oia-recipe-list {
+  list-style: none;
+  padding: 8px 0 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.oia-recipe-item {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 2px 0;
+}
+
+.oia-recipe-item::before {
+  content: '·  ';
+  color: var(--teal);
+}
+
+/* ── How to make it ── */
+
+.oia-how-to {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 8px;
+}
+
+.oia-how-to-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--gold);
+}
+
+.oia-how-to-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}

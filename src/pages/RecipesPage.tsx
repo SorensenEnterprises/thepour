@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { RecipeCard } from '../components/RecipeCard';
+import { OneIngredientAway } from '../components/OneIngredientAway';
 import { RecipeMatch } from '../utils/recipeUtils';
+import { UnlockSuggestion } from '../utils/unlockCalculator';
 import { ResponsibleFooter } from '../components/ResponsibleFooter';
 
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
@@ -28,6 +30,7 @@ const SPIRIT_TAG_MAP: Record<Exclude<SpiritFilter, 'all' | 'other'>, string[]> =
 
 interface Props {
   matches: RecipeMatch[];
+  unlockSuggestions: UnlockSuggestion[];
 }
 
 const CATEGORY_TAG: Record<DrinkCategory, string> = {
@@ -37,7 +40,7 @@ const CATEGORY_TAG: Record<DrinkCategory, string> = {
   shot:        'shot',
 };
 
-export function RecipesPage({ matches }: Props) {
+export function RecipesPage({ matches, unlockSuggestions }: Props) {
   const [category, setCategory]       = useState<DrinkCategory>('cocktail');
   const [readyFilter, setReadyFilter] = useState<ReadyFilter>('all');
   const [spiritFilter, setSpiritFilter] = useState<SpiritFilter>('all');
@@ -156,6 +159,8 @@ export function RecipesPage({ matches }: Props) {
           </div>
         </div>
       </div>
+
+      <OneIngredientAway suggestions={unlockSuggestions} />
 
       <div className="recipe-list">
         {displayed.map(({ recipe, canMake, missingIngredients, splashWarnings, haveCount, totalCount }) => (

@@ -5,7 +5,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-function buildSystemPrompt(inventoryList: string, mode: string, pantryList: string): string {
+interface UnlockItem {
+  ingredient: string
+  count: number
+  recipes: string[]
+}
+
+function buildSystemPrompt(inventoryList: string, mode: string, pantryList: string, unlockContext: UnlockItem[]): string {
   const pantryLine = pantryList ? `\nUser also has in pantry: ${pantryList}` : ''
   const inventorySection = mode === 'im-out'
     ? `The user is out at a bar or restaurant. They may tell you what bottles are available.`
@@ -13,7 +19,14 @@ function buildSystemPrompt(inventoryList: string, mode: string, pantryList: stri
     ? `The user wants to explore cocktails with no restriction on ingredients.`
     : `CURRENT USER INVENTORY (in-stock bottles):\n${inventoryList || 'none'}${pantryLine}\n\nFor My Bar mode, only recommend drinks the user can make with what they have. If their bar is empty, gently encourage them to stock it.`
 
-  return `You are Vesper — a sophisticated, slightly sassy female bartender working inside the thepour cocktail app. You have deep knowledge of classic and modern cocktails, spirits, flavor profiles, and bar technique.
+  const unlockSection = (mode === 'my-bar' && unlockContext.length > 0)
+    ? `\n\nTOP UNLOCK OPPORTUNITIES FOR THIS USER:\n${unlockContext.map((u, i) => {
+        const preview = u.recipes.length > 0 ? ` (${u.recipes.join(', ')}${u.recipes.length < u.count ? ', …' : ''})` : ''
+        return `${i + 1}. ${u.ingredient} → unlocks ${u.count} recipes${preview}`
+      }).join('\n')}\n\nIf the user asks what to buy or how to expand their bar, reference these specifically. Lead with the highest impact suggestion.`
+    : ''
+
+  return `You are Vesper — a sophisticated, slightly sassy female bartender working inside the thepour cocktail app. You have deep knowledge of classic and modern cocktails, spirits, flavor profiles, and bar technique.${unlockSection}
 
 YOUR PERSONALITY:
 - You are Vesper — a sophisticated, slightly sassy female bartender with strong opinions and a warm heart underneath
@@ -68,7 +81,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, inventoryList, mode, pantryList } = await req.json()
+    const { messages, inventoryList, mode, pantryList, unlockContext } = await req.json()
     console.log('chat-bartender mode:', mode, 'messages:', messages?.length ?? 0)
 
     if (!messages || !Array.isArray(messages)) {
@@ -86,7 +99,7 @@ serve(async (req) => {
       )
     }
 
-    const systemPrompt = buildSystemPrompt(inventoryList ?? '', mode ?? 'my-bar', pantryList ?? '')
+    const systemPrompt = buildSystemPrompt(inventoryList ?? '', mode ?? 'my-bar', pantryList ?? '', unlockContext ?? [])
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

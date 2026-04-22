@@ -10,6 +10,7 @@ import { useInventory } from './hooks/useInventory';
 import { usePantry } from './hooks/usePantry';
 import { sampleRecipes } from './data/sampleRecipes';
 import { matchRecipesToInventory } from './utils/recipeUtils';
+import { calculateUnlocks } from './utils/unlockCalculator';
 import { QuantityLevel } from './types';
 import './App.css';
 
@@ -33,6 +34,11 @@ function AppContent() {
   const matches = useMemo(
     () => matchRecipesToInventory(sampleRecipes, inventory, splashIds, checkedPantryIds),
     [inventory, splashIds, checkedPantryIds]
+  );
+
+  const unlockSuggestions = useMemo(
+    () => calculateUnlocks(sampleRecipes, inventory, checkedPantryIds),
+    [inventory, checkedPantryIds]
   );
 
   if (loading) {
@@ -75,7 +81,7 @@ function AppContent() {
       />
       <main className="main-content">
         {view === 'recipes' ? (
-          <RecipesPage matches={matches} />
+          <RecipesPage matches={matches} unlockSuggestions={unlockSuggestions} />
         ) : (
           <InventoryPage
             inventory={inventory}
@@ -117,6 +123,7 @@ function AppContent() {
           checkedPantryIds={checkedPantryIds}
           onGoToInventory={() => { setBartenderOpen(false); setView('inventory'); }}
           initialMode={bartenderInitialMode}
+          unlockSuggestions={unlockSuggestions}
         />
       )}
     </div>

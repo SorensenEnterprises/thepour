@@ -7,6 +7,7 @@ import { PhotoScanModal } from './PhotoScanModal';
 import { ChatBartender } from './ChatBartender';
 import { RecognizedBottle, bottleToIngredientIds } from '../lib/bottleRecognition';
 import { InventoryItem } from '../types';
+import { UnlockSuggestion } from '../utils/unlockCalculator';
 import './BartenderModal.css';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -932,9 +933,10 @@ interface Props {
   checkedPantryIds?: Set<string>;
   onGoToInventory?: () => void;
   initialMode?: BarMode;
+  unlockSuggestions?: UnlockSuggestion[];
 }
 
-export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode }: Props) {
+export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode, unlockSuggestions = [] }: Props) {
   const { user } = useAuth();
   const [phase, setPhase]           = useState<Phase>(
     initialMode === 'im-out' ? 'scan-prompt' :
@@ -1355,6 +1357,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
               inventory={barMode === 'im-out' ? [] : inventory}
               checkedPantryIds={barMode === 'im-out' ? new Set() : checkedPantryIds}
               onGoToInventory={onGoToInventory ? () => { cancelPendingTimer(); fadeOutMusic(() => onGoToInventory!()); } : undefined}
+              unlockSuggestions={barMode === 'im-out' ? [] : unlockSuggestions}
             />
           </>
         )}
