@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { Recipe, InventoryItem, QuantityLevel } from '../types';
 import { PANTRY_CATEGORIES } from '../data/pantryItems';
@@ -7,6 +7,7 @@ import { VesperRecipeCard } from './VesperRecipeCard';
 import { IMadeThisModal } from './IMadeThisModal';
 import { DrinkSurvey } from './DrinkSurvey';
 import { decrementInventory } from '../utils/inventoryDecrement';
+import { useVesperVoice } from '../hooks/useVesperVoice';
 import './ChatBartender.css';
 
 type BarMode = 'my-bar' | 'im-out' | 'explore';
@@ -14,7 +15,20 @@ type BarMode = 'my-bar' | 'im-out' | 'explore';
 interface Message {
   role: 'bartender' | 'user';
   text: string;
+  id: string;
   recommendedRecipes?: string[];
+}
+
+function genId() { return Math.random().toString(36).slice(2) }
+
+const LS_VOICE_ENABLED   = 'vesper_voice_enabled'
+const LS_VOICE_AUTOPLAY  = 'vesper_voice_autoplay'
+
+function getVoicePref(key: string): boolean {
+  try { const v = localStorage.getItem(key); return v === null ? true : v === 'true' } catch { return true }
+}
+function setVoicePref(key: string, val: boolean) {
+  try { localStorage.setItem(key, String(val)) } catch {}
 }
 
 interface Props {
@@ -28,6 +42,7 @@ interface Props {
   onContextNoteConsumed?: () => void;
   onSetQuantity?: (id: string, qty: QuantityLevel) => void;
   userId?: string | null;
+  onClose?: () => void;
 }
 
 function renderMarkdown(text: string): React.ReactElement {
@@ -123,10 +138,11 @@ export function ChatBartender({
   mode, inventory, checkedPantryIds, onGoToInventory,
   unlockSuggestions = [], recipes = [],
   contextNote, onContextNoteConsumed,
-  onSetQuantity, userId,
+  onSetQuantity, userId, onClose,
 }: Props) {
-  const topUnlock   = unlockSuggestions[0];
-  const openingText = getOpeningMessage(mode, inventory.length, checkedPantryIds, topUnlock);
+  const topUnlock    = unlockSuggestions[0];
+  const openingText  = getOpeningMessage(mode, inventory.length, checkedPantryIds, topUnlock);
+  const openingId    = useRef(genId()).current;
 
   const recipeByName = useRef<Map<string, Recipe>>(new Map());
   recipeByName.current = new Map(recipes.map(r => [r.name.toLowerCase().trim(), r]));
@@ -143,8 +159,12 @@ export function ChatBartender({
     return found;
   }
 
+  const { speak, stop, isPlaying, isLoading: voiceLoading, playingId } = useVesperVoice();
+  const [voiceEnabled,  setVoiceEnabled]  = useState(() => getVoicePref(LS_VOICE_ENABLED));
+  const [voiceAutoplay, setVoiceAutoplay] = useState(() => getVoicePref(LS_VOICE_AUTOPLAY));
+
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'bartender', text: openingText },
+    { role: 'bartender', text: openingText, id: openingId },
   ]);
   const [quickReplies, setQuickReplies] = useState<string[]>(QUICK_REPLIES_INITIAL);
   const [input, setInput]   = useState('');
@@ -170,6 +190,23 @@ export function ChatBartender({
     onContextNoteConsumed?.();
   }, [contextNote]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Auto-play opening message after UI settles
+  useEffect(() => {
+    if (!voiceEnabled || !voiceAutoplay) return;
+    const t = setTimeout(() => speak(openingText, openingId), 500);
+    return () => clearTimeout(t);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Stop audio when voice is disabled
+  useEffect(() => {
+    if (!voiceEnabled) stop();
+    setVoicePref(LS_VOICE_ENABLED, voiceEnabled);
+  }, [voiceEnabled, stop]);
+
+  useEffect(() => {
+    setVoicePref(LS_VOICE_AUTOPLAY, voiceAutoplay);
+  }, [voiceAutoplay]);
+
   // Recipes from the most recent bartender message (for Make This chip + card handler)
   const lastBartenderMsg = [...messages].reverse().find(m => m.role === 'bartender');
   const makeThisRecipes: Recipe[] = (lastBartenderMsg?.recommendedRecipes ?? [])
@@ -179,7 +216,7 @@ export function ChatBartender({
   async function sendMessage(text: string) {
     if (!text.trim() || typing) return;
 
-    const userMsg: Message = { role: 'user', text: text.trim() };
+    const userMsg: Message = { role: 'user', text: text.trim(), id: genId() };
     setMessages(prev => [...prev, userMsg]);
     setQuickReplies([]);
     setInput('');
@@ -234,18 +271,23 @@ export function ChatBartender({
       // Cap at 3
       recNames = recNames.slice(0, 3);
 
+      const msgId = genId();
       apiHistory.current.push({ role: 'assistant', content: reply });
       setMessages(prev => [...prev, {
         role: 'bartender',
         text: reply,
+        id: msgId,
         recommendedRecipes: recNames.length > 0 ? recNames : undefined,
       }]);
       setQuickReplies(chips);
+      if (voiceEnabled && voiceAutoplay) {
+        speak(reply, msgId);
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setMessages(prev => [
         ...prev,
-        { role: 'bartender', text: `Something went wrong on my end — sorry about that. (${msg})` },
+        { role: 'bartender', text: `Something went wrong on my end — sorry about that. (${msg})`, id: genId() },
       ]);
     } finally {
       setTyping(false);
@@ -309,17 +351,47 @@ export function ChatBartender({
     if (e.key === 'Enter') handleSend();
   }
 
+  function handleVoiceToggle() {
+    setVoiceEnabled(v => !v);
+  }
+
+  function handleSpeakerClick(msg: Message) {
+    if (!voiceEnabled) return;
+    if (playingId === msg.id) {
+      stop();
+    } else {
+      speak(msg.text, msg.id);
+    }
+  }
+
   return (
     <div className="cb-wrap">
       {makeToast && (
         <div className="cb-make-toast">{makeToast}</div>
       )}
 
+      <div className="cb-header">
+        <div className="cb-header-actions">
+          <button
+            className={`cb-voice-toggle${voiceEnabled ? ' cb-voice-toggle--on' : ' cb-voice-toggle--off'}`}
+            onClick={handleVoiceToggle}
+            aria-label={voiceEnabled ? 'Disable voice' : 'Enable voice'}
+            title={voiceEnabled ? 'Voice on' : 'Voice off'}
+          >
+            {voiceEnabled ? '🔊' : '🔇'}
+          </button>
+          {onClose && (
+            <button className="cb-close-btn" onClick={onClose} aria-label="Close chat">✕</button>
+          )}
+        </div>
+      </div>
+
       <div className="cb-messages">
         {messages.map((msg, i) => {
           const cards = msg.recommendedRecipes
             ?.map(name => recipeByName.current.get(name.toLowerCase().trim()))
             .filter((r): r is Recipe => r !== undefined) ?? [];
+          const isThisPlaying = playingId === msg.id;
 
           return (
             <div key={i} className="cb-message-group">
@@ -329,6 +401,16 @@ export function ChatBartender({
                 )}
                 <div className={`cb-bubble cb-bubble--${msg.role}`}>
                   {msg.role === 'bartender' ? renderMarkdown(msg.text) : msg.text}
+                  {msg.role === 'bartender' && voiceEnabled && (
+                    <button
+                      className={`cb-speaker-btn${isThisPlaying ? ' cb-speaker-btn--playing' : ''}`}
+                      onClick={() => handleSpeakerClick(msg)}
+                      aria-label={isThisPlaying ? 'Stop' : 'Play'}
+                      disabled={voiceLoading && !isThisPlaying}
+                    >
+                      {isThisPlaying ? '■' : '🔊'}
+                    </button>
+                  )}
                 </div>
               </div>
               {cards.length > 0 && (

@@ -6,6 +6,48 @@
   position: relative;
 }
 
+/* ── Header ── */
+.cb-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px 12px 0;
+  flex-shrink: 0;
+}
+
+.cb-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cb-voice-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 6px;
+  transition: opacity 0.15s;
+  opacity: 0.85;
+}
+.cb-voice-toggle--off { opacity: 0.4; }
+.cb-voice-toggle:hover { opacity: 1; }
+
+.cb-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-muted);
+  padding: 4px 6px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.cb-close-btn:hover { color: var(--text-primary); }
+
 /* ── Messages ── */
 .cb-messages {
   flex: 1;
@@ -232,6 +274,40 @@
 
 .cb-send-btn:not(:disabled):hover {
   background: #5dcdd6;
+}
+
+/* ── Speaker button on bartender bubbles ── */
+.cb-bubble--bartender {
+  position: relative;
+  padding-bottom: 28px;
+}
+
+.cb-speaker-btn {
+  position: absolute;
+  bottom: 6px;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: var(--teal);
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+.cb-speaker-btn:hover { opacity: 1; }
+.cb-speaker-btn:disabled { opacity: 0.3; cursor: default; }
+
+.cb-speaker-btn--playing {
+  opacity: 1;
+  animation: cb-speaker-pulse 1s ease-in-out infinite;
+}
+
+@keyframes cb-speaker-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
 }
 
 /* ── Make This chip variant ── */
