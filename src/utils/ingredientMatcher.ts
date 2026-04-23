@@ -296,6 +296,11 @@ const RECIPE_CANONICAL: Record<string, string> = {
   'basil':             'BASIL',
   'thai-basil':        'BASIL',
   'cucumber':          'CUCUMBER',
+  'rosemary':          'ROSEMARY',
+
+  // Specialty aperitifs / fortified
+  'suze':              'SUZE',
+  'port':              'PORT',
 
   // Garnish — always satisfied, never blocks a recipe
   'lime':              'GARNISH',
@@ -749,6 +754,9 @@ const SATISFYING_TYPES: Record<string, string[]> = {
   'MINT':           ['MINT'],
   'BASIL':          ['BASIL'],
   'CUCUMBER':       ['CUCUMBER'],
+  'ROSEMARY':       ['ROSEMARY'],
+  'SUZE':           ['SUZE'],
+  'PORT':           ['PORT'],
 
   // Beer
   'BEER':           ['BEER', 'STOUT'],
@@ -769,6 +777,7 @@ const PANTRY_CANONICAL: Record<string, string[]> = {
   'fresh-mint':        ['MINT'],
   'fresh-basil':       ['BASIL'],
   'fresh-cucumber':    ['CUCUMBER'],
+  'fresh-rosemary':    ['ROSEMARY'],
   'eggs':              ['EGG_WHITE', 'EGG'],
   'heavy-cream':       ['HEAVY_CREAM'],
   'simple-syrup':      ['SIMPLE_SYRUP', 'DEMERARA_SYRUP'],
