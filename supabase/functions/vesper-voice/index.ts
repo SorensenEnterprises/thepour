@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY')
-const VOICE_ID = '6fZce9LFNG3iEITDfqZZ'
+const VOICE_ID = 'uhYnkYTBc711oAY590Ea'
 
 serve(async (req) => {
   const corsHeaders = {
