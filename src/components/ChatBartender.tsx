@@ -131,6 +131,18 @@ export function ChatBartender({
   const recipeByName = useRef<Map<string, Recipe>>(new Map());
   recipeByName.current = new Map(recipes.map(r => [r.name.toLowerCase().trim(), r]));
 
+  function detectRecipesInMessage(text: string): Recipe[] {
+    const found: Recipe[] = [];
+    for (const recipe of recipes) {
+      const escapedName = recipe.name.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escapedName}\\b`, 'i');
+      if (regex.test(text) && found.length < 3) {
+        found.push(recipe);
+      }
+    }
+    return found;
+  }
+
   const [messages, setMessages] = useState<Message[]>([
     { role: 'bartender', text: openingText },
   ]);
@@ -213,7 +225,14 @@ export function ChatBartender({
 
       const reply: string      = data?.message ?? "Sorry, I lost my train of thought. Try again?";
       const chips: string[]    = data?.quickReplies ?? [];
-      const recNames: string[] = data?.recommendedRecipes ?? [];
+      let recNames: string[]   = data?.recommendedRecipes ?? [];
+
+      // Layer 2: fallback auto-detection if RECIPES: tag was missing
+      if (recNames.length === 0) {
+        recNames = detectRecipesInMessage(reply).map(r => r.name);
+      }
+      // Cap at 3
+      recNames = recNames.slice(0, 3);
 
       apiHistory.current.push({ role: 'assistant', content: reply });
       setMessages(prev => [...prev, {
@@ -266,13 +285,22 @@ export function ChatBartender({
   function handleChipClick(chip: string) {
     if (chip === 'Make This 🍸') {
       const target = makeThisRecipes[0] ?? null;
-      if (target) { setMakingRecipe(target); return; }
+      if (target) {
+        setMakingRecipe(target);
+      } else {
+        sendMessage('Make this for me');
+      }
+      return;
     }
     sendMessage(chip);
   }
 
-  // Prepend "Make This 🍸" when the last Vesper message had recipe cards
-  const displayedChips = makeThisRecipes.length > 0 && quickReplies.length > 0
+  // Always prepend "Make This 🍸" when the last Vesper message had recipe cards
+  // or when it mentioned a drink name (cards may appear via auto-detection)
+  const showMakeThis = makeThisRecipes.length > 0 || (
+    lastBartenderMsg != null && detectRecipesInMessage(lastBartenderMsg.text).length > 0
+  );
+  const displayedChips = showMakeThis && quickReplies.length > 0
     ? ['Make This 🍸', ...quickReplies]
     : quickReplies;
 
