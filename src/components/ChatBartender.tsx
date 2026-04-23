@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Recipe, InventoryItem, QuantityLevel } from '../types';
 import { PANTRY_CATEGORIES } from '../data/pantryItems';
@@ -159,9 +159,9 @@ export function ChatBartender({
     return found;
   }
 
-  const { speak, stop, isPlaying, isLoading: voiceLoading, playingId } = useVesperVoice();
+  const { speak, stop, isLoading: voiceLoading, playingId } = useVesperVoice();
   const [voiceEnabled,  setVoiceEnabled]  = useState(() => getVoicePref(LS_VOICE_ENABLED));
-  const [voiceAutoplay, setVoiceAutoplay] = useState(() => getVoicePref(LS_VOICE_AUTOPLAY));
+  const [voiceAutoplay] = useState(() => getVoicePref(LS_VOICE_AUTOPLAY));
 
   const [messages, setMessages] = useState<Message[]>([
     { role: 'bartender', text: openingText, id: openingId },
