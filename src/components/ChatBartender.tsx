@@ -193,7 +193,7 @@ export function ChatBartender({
   // Auto-play opening message after UI settles
   useEffect(() => {
     if (!voiceEnabled || !voiceAutoplay) return;
-    const t = setTimeout(() => speak(openingText, openingId), 500);
+    const t = setTimeout(() => { console.log('Triggering Vesper voice'); speak(openingText, openingId); }, 500);
     return () => clearTimeout(t);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -281,6 +281,7 @@ export function ChatBartender({
       }]);
       setQuickReplies(chips);
       if (voiceEnabled && voiceAutoplay) {
+        console.log('Triggering Vesper voice');
         speak(reply, msgId);
       }
     } catch (err) {
@@ -360,6 +361,7 @@ export function ChatBartender({
     if (playingId === msg.id) {
       stop();
     } else {
+      console.log('Triggering Vesper voice');
       speak(msg.text, msg.id);
     }
   }

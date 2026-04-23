@@ -8,6 +8,7 @@ export const useVesperVoice = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const speak = useCallback(async (text: string, id?: string) => {
+    console.log('Vesper voice speak called with:', text?.substring(0, 50))
     if (audioRef.current) {
       audioRef.current.pause()
       audioRef.current = null
