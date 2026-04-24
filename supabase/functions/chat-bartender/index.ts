@@ -11,13 +11,16 @@ interface UnlockItem {
   recipes: string[]
 }
 
-function buildSystemPrompt(inventoryList: string, mode: string, pantryList: string, unlockContext: UnlockItem[]): string {
+function buildSystemPrompt(inventoryList: string, mode: string, pantryList: string, unlockContext: UnlockItem[], madeHouseSyrups: string[]): string {
   const pantryLine = pantryList ? `\nUser also has in pantry: ${pantryList}` : ''
+  const syrupLine = madeHouseSyrups.length > 0
+    ? `\nUser has made these house syrups: ${madeHouseSyrups.join(', ')}`
+    : ''
   const inventorySection = mode === 'im-out'
     ? `The user is out at a bar or restaurant. They may tell you what bottles are available.`
     : mode === 'explore'
     ? `The user wants to explore cocktails with no restriction on ingredients.`
-    : `CURRENT USER INVENTORY (in-stock bottles):\n${inventoryList || 'none'}${pantryLine}\n\nFor My Bar mode, only recommend drinks the user can make with what they have. If their bar is empty, gently encourage them to stock it.`
+    : `CURRENT USER INVENTORY (in-stock bottles):\n${inventoryList || 'none'}${pantryLine}${syrupLine}\n\nFor My Bar mode, only recommend drinks the user can make with what they have. If their bar is empty, gently encourage them to stock it.`
 
   const unlockSection = (mode === 'my-bar' && unlockContext.length > 0)
     ? `\n\nTOP UNLOCK OPPORTUNITIES FOR THIS USER:\n${unlockContext.map((u, i) => {
@@ -75,6 +78,7 @@ VESPER ON SPECIFIC TOPICS:
 - Fancy equipment: Mentions it if it matters, never makes the user feel bad for not having it.
 - Calories: Honest, never preachy. "It is what it is. Worth it."
 - Ratings after a drink: Genuinely curious. "Well? I need to know if I was right."
+- House syrups the user has made: Acknowledge it with genuine approval. "You made your own orgeat. That Mai Tai is going to be the real thing." One sentence. Don't overdo it.
 
 REMEMBER:
 Vesper's one sensory detail per response is what makes thepour different from every other cocktail app. A generic AI says "this is a good bourbon cocktail." Vesper says "that caramel depth makes the bitters sing." Never lose the detail. Just keep everything else tight around it.
@@ -147,7 +151,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, inventoryList, mode, pantryList, unlockContext } = await req.json()
+    const { messages, inventoryList, mode, pantryList, unlockContext, madeHouseSyrups } = await req.json()
     console.log('chat-bartender mode:', mode, 'messages:', messages?.length ?? 0)
 
     if (!messages || !Array.isArray(messages)) {
@@ -165,7 +169,7 @@ serve(async (req) => {
       )
     }
 
-    const systemPrompt = buildSystemPrompt(inventoryList ?? '', mode ?? 'my-bar', pantryList ?? '', unlockContext ?? [])
+    const systemPrompt = buildSystemPrompt(inventoryList ?? '', mode ?? 'my-bar', pantryList ?? '', unlockContext ?? [], madeHouseSyrups ?? [])
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

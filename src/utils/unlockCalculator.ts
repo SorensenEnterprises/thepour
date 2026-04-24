@@ -165,15 +165,19 @@ function getCategory(canonicalType: string): UnlockSuggestion['ingredientCategor
 // ── howToGet hints ─────────────────────────────────────────────────────────────
 
 const HOW_TO_GET: Record<string, string> = {
-  SIMPLE_SYRUP: 'Equal parts sugar and hot water, stir until dissolved. 2 minutes.',
-  DEMERARA_SYRUP: 'Equal parts demerara sugar and hot water, stir until dissolved.',
-  EGG_WHITE:    'Separate one egg — just the white. Shake hard.',
-  EGG:          'Any egg from your fridge works.',
-  LIME_JUICE:   '2–3 fresh limes, juiced. Or check your pantry.',
-  LEMON_JUICE:  '1–2 fresh lemons, juiced.',
-  HEAVY_CREAM:  'Any heavy or whipping cream works.',
-  HONEY_SYRUP:  'Equal parts honey and warm water, stir to combine.',
-  HONEY:        'Any plain honey from your cupboard works.',
+  SIMPLE_SYRUP:    'Equal parts sugar and hot water, stir until dissolved. 2 minutes.',
+  DEMERARA_SYRUP:  'Equal parts demerara sugar and hot water, stir until dissolved.',
+  EGG_WHITE:       'Separate one egg — just the white. Shake hard.',
+  EGG:             'Any egg from your fridge works.',
+  LIME_JUICE:      '2–3 fresh limes, juiced. Or check your pantry.',
+  LEMON_JUICE:     '1–2 fresh lemons, juiced.',
+  HEAVY_CREAM:     'Any heavy or whipping cream works.',
+  HONEY_SYRUP:     'Make it yourself — 5 min. 2 parts honey, 1 part hot water.',
+  HONEY:           'Any plain honey from your cupboard works.',
+  AGAVE_SYRUP:     'Make it yourself — 5 min. 2 parts agave nectar, 1 part warm water.',
+  GRENADINE:       'Make it yourself — 15 min. Fresh pomegranate juice + sugar. Not the red dye stuff.',
+  ORGEAT:          'Make it yourself — 45 min. Or buy BG Reynolds / Small Hand Foods.',
+  FALERNUM:        'Make it yourself — 24 hr infusion. Or buy John D. Taylor\'s Velvet Falernum.',
 };
 
 // ── Vesper quips ───────────────────────────────────────────────────────────────
@@ -214,6 +218,9 @@ function getVesperQuip(
   const idx = canonicalType.charCodeAt(0) % 3;
 
   if (category === 'pantry' || category === 'fresh') {
+    if (howToGet && howToGet.startsWith('Make it yourself')) {
+      return `${displayName} would unlock ${count} recipes. ${howToGet}.`;
+    }
     if (howToGet) {
       return `${displayName}. If you don't have it, ${howToGet} Problem solved, ${count} recipes unlocked.`;
     }

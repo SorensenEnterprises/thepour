@@ -8,6 +8,7 @@ import { IMadeThisModal } from './IMadeThisModal';
 import { DrinkSurvey } from './DrinkSurvey';
 import { decrementInventory } from '../utils/inventoryDecrement';
 import { useVesperVoice } from '../hooks/useVesperVoice';
+import { houseSyrups } from '../data/houseSyrups';
 import './ChatBartender.css';
 
 type BarMode = 'my-bar' | 'im-out' | 'explore';
@@ -246,6 +247,12 @@ export function ChatBartender({
         recipes:    s.recipes.slice(0, 4).map(r => r.name),
       }));
 
+      const madeHouseSyrups = checkedPantryIds
+        ? houseSyrups
+            .filter(s => checkedPantryIds.has(s.unlockIngredientId))
+            .map(s => s.name)
+        : [];
+
       const { data, error } = await supabase.functions.invoke('chat-bartender', {
         body: {
           messages: apiHistory.current,
@@ -253,6 +260,7 @@ export function ChatBartender({
           mode,
           pantryList,
           unlockContext,
+          madeHouseSyrups,
         },
       });
 
