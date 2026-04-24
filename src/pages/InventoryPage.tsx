@@ -4,6 +4,7 @@ import { AddBottleForm } from '../components/AddBottleForm';
 import { BarcodeScannerModal } from '../components/BarcodeScannerModal';
 import { PhotoScanModal } from '../components/PhotoScanModal';
 import { PantrySection } from '../components/PantrySection';
+import { HouseSyrups } from '../components/HouseSyrups';
 import { ResponsibleFooter } from '../components/ResponsibleFooter';
 import { InventoryItem, QuantityLevel, Ingredient, BottleSize } from '../types';
 import { RecognizedBottle, mapBottleType, mapBottleToSpiritType } from '../lib/bottleRecognition';
@@ -101,6 +102,13 @@ export function InventoryPage({
         <PantrySection
           checkedPantryIds={checkedPantryIds}
           onToggle={onTogglePantry}
+        />
+      )}
+
+      {onTogglePantry && (
+        <HouseSyrups
+          checkedPantryIds={checkedPantryIds}
+          onTogglePantry={onTogglePantry}
         />
       )}
 
