@@ -544,6 +544,211 @@ body {
 
 .splash-alert strong { color: var(--accent); }
 
+/* ── Make It syrup link ── */
+.rc-make-it-link {
+  background: none;
+  border: none;
+  color: var(--teal);
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 0 0 6px;
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.rc-make-it-link:hover { opacity: 1; }
+
+/* ── Syrup bottom sheet overlay ── */
+.rc-syrup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.rc-syrup-sheet {
+  background: var(--surface-1);
+  border: 1px solid var(--border-teal);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 20px 20px 32px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: rc-sheet-up 0.25s ease-out;
+}
+
+@keyframes rc-sheet-up {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.rc-syrup-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  line-height: 1;
+}
+.rc-syrup-close:hover { color: var(--text-primary); }
+
+.rc-syrup-context {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  padding-right: 28px;
+}
+
+.rc-syrup-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.rc-syrup-badges {
+  display: flex;
+  gap: 6px;
+}
+
+.rc-syrup-badge {
+  font-size: 11px;
+  border-radius: 10px;
+  padding: 3px 9px;
+  font-weight: 500;
+}
+
+.rc-syrup-badge--time {
+  background: rgba(74, 187, 196, 0.12);
+  color: var(--teal);
+  border: 1px solid rgba(74, 187, 196, 0.2);
+}
+
+.rc-syrup-badge--diff.rc-syrup-badge--easy   { background: rgba(74,187,196,0.08); color: var(--teal); border: 1px solid rgba(74,187,196,0.18); }
+.rc-syrup-badge--diff.rc-syrup-badge--medium { background: rgba(201,168,76,0.1); color: var(--gold); border: 1px solid rgba(201,168,76,0.2); }
+.rc-syrup-badge--diff.rc-syrup-badge--hard   { background: rgba(220,90,90,0.1); color: #e07070; border: 1px solid rgba(220,90,90,0.2); }
+
+.rc-syrup-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rc-syrup-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.rc-syrup-ings {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rc-syrup-ing {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.rc-syrup-ing-amt {
+  color: var(--teal);
+  font-weight: 600;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.rc-syrup-instructions {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.rc-syrup-tip {
+  background: rgba(201, 168, 76, 0.07);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.rc-syrup-tip-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.rc-syrup-tip p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+}
+
+.rc-syrup-storage {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.rc-syrup-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.rc-syrup-made-btn {
+  background: none;
+  border: 1px solid var(--border-teal);
+  border-radius: 20px;
+  color: var(--teal);
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 600;
+  padding: 9px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.rc-syrup-made-btn:hover { background: rgba(74,187,196,0.1); }
+.rc-syrup-made-btn--on   { background: var(--teal); border-color: var(--teal); color: #091a1c; }
+.rc-syrup-made-btn--on:hover { background: #5dcdd6; }
+
+.rc-syrup-confirm {
+  font-size: 13px;
+  color: var(--teal);
+  font-weight: 500;
+}
+
 /* ── Glassware ── */
 .recipe-glassware h4 { margin-bottom: 10px; }
 

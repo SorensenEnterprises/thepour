@@ -5,6 +5,7 @@ import { getGlassInfo } from '../utils/glasswareUtils';
 import { getRequiredEquipment } from '../utils/equipmentUtils';
 import { IMadeThisModal } from './IMadeThisModal';
 import { DrinkSurvey } from './DrinkSurvey';
+import { houseSyrups, SyrupRecipe } from '../data/houseSyrups';
 
 export interface MadeThisResult {
   lowBottles:    string[];
@@ -21,17 +22,26 @@ interface Props {
   exploreMode?:        boolean;
   onMadeThis?:         (count: number) => MadeThisResult;
   userId?:             string | null;
+  checkedPantryIds?:   Set<string>;
+  onTogglePantry?:     (itemId: string) => void;
 }
 
 export function RecipeCard({
   recipe, canMake, missingIngredients, splashWarnings,
   haveCount = 0, totalCount = 0, exploreMode = false,
-  onMadeThis, userId,
+  onMadeThis, userId, checkedPantryIds, onTogglePantry,
 }: Props) {
   const [expanded,     setExpanded]     = useState(false);
   const [showModal,    setShowModal]    = useState(false);
   const [showSurvey,   setShowSurvey]   = useState(false);
   const [surveyDone,   setSurveyDone]   = useState(false);
+  const [syrupSheet,   setSyrupSheet]   = useState<{ syrup: SyrupRecipe; cocktailName: string } | null>(null);
+  const [syrupConfirm, setSyrupConfirm] = useState(false);
+
+  // Map missing ingredient names → IDs by cross-referencing recipe.ingredients
+  const missingWithIds = recipe.ingredients.filter(
+    ing => missingIngredients.includes(ing.name)
+  );
 
   const headerClass = exploreMode
     ? haveCount === totalCount ? 'can-make' : haveCount > 0 ? 'explore-partial' : 'explore-none'
@@ -163,7 +173,36 @@ export function RecipeCard({
             )}
             {missingIngredients.length > 0 && (
               <div className={exploreMode ? 'missing-alert missing-alert--explore' : 'missing-alert'}>
-                <strong>{exploreMode ? 'Still need:' : "You're missing:"}</strong> {missingIngredients.join(', ')}
+                <strong>{exploreMode ? 'Still need:' : "You're missing:"}</strong>{' '}
+                {missingWithIds.map((ing, i) => {
+                  const syrup = !exploreMode
+                    ? houseSyrups.find(s => s.unlockIngredientId === ing.ingredientId)
+                    : undefined;
+                  return (
+                    <React.Fragment key={ing.ingredientId}>
+                      {i > 0 && ', '}
+                      {ing.name}
+                      {syrup && (
+                        <button
+                          className="rc-make-it-link"
+                          onClick={e => { e.stopPropagation(); setSyrupSheet({ syrup, cocktailName: recipe.name }); }}
+                        >
+                          Make it →
+                        </button>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+                {/* Fallback for any unmatched names */}
+                {missingIngredients
+                  .filter(name => !missingWithIds.some(i => i.name === name))
+                  .map((name, i) => (
+                    <React.Fragment key={name}>
+                      {(missingWithIds.length > 0 || i > 0) && ', '}
+                      {name}
+                    </React.Fragment>
+                  ))
+                }
               </div>
             )}
 
@@ -195,6 +234,77 @@ export function RecipeCard({
           userId={userId ?? null}
           onDismiss={() => { setShowSurvey(false); setSurveyDone(true); }}
         />
+      )}
+
+      {syrupSheet && (
+        <div className="rc-syrup-overlay" onClick={() => { setSyrupSheet(null); setSyrupConfirm(false); }}>
+          <div className="rc-syrup-sheet" onClick={e => e.stopPropagation()}>
+            <button className="rc-syrup-close" onClick={() => { setSyrupSheet(null); setSyrupConfirm(false); }}>✕</button>
+            <p className="rc-syrup-context">
+              To make <strong>{syrupSheet.cocktailName}</strong>, you need{' '}
+              <strong>{syrupSheet.syrup.name}</strong>.
+            </p>
+            <h4 className="rc-syrup-name">{syrupSheet.syrup.name}</h4>
+            <div className="rc-syrup-badges">
+              <span className="rc-syrup-badge rc-syrup-badge--time">
+                {syrupSheet.syrup.timeMinutes < 60
+                  ? `${syrupSheet.syrup.timeMinutes} min`
+                  : syrupSheet.syrup.timeMinutes >= 1440
+                  ? `${Math.round(syrupSheet.syrup.timeMinutes / 1440)}d`
+                  : `${Math.round(syrupSheet.syrup.timeMinutes / 60)} hr`}
+              </span>
+              <span className={`rc-syrup-badge rc-syrup-badge--diff rc-syrup-badge--${syrupSheet.syrup.difficulty}`}>
+                {syrupSheet.syrup.difficulty}
+              </span>
+            </div>
+
+            <div className="rc-syrup-section">
+              <h5 className="rc-syrup-section-title">Ingredients</h5>
+              <ul className="rc-syrup-ings">
+                {syrupSheet.syrup.ingredients.map((ing, i) => (
+                  <li key={i} className="rc-syrup-ing">
+                    <span className="rc-syrup-ing-amt">{ing.amount} {ing.unit}</span>
+                    <span>{ing.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rc-syrup-section">
+              <h5 className="rc-syrup-section-title">Instructions</h5>
+              <p className="rc-syrup-instructions">{syrupSheet.syrup.instructions}</p>
+            </div>
+
+            <div className="rc-syrup-tip">
+              <span className="rc-syrup-tip-label">Vesper's tip</span>
+              <p>{syrupSheet.syrup.vesperTip}</p>
+            </div>
+
+            <p className="rc-syrup-storage">{syrupSheet.syrup.storageNote}</p>
+
+            <div className="rc-syrup-actions">
+              {onTogglePantry && (
+                <button
+                  className={`rc-syrup-made-btn${checkedPantryIds?.has(syrupSheet.syrup.unlockIngredientId) ? ' rc-syrup-made-btn--on' : ''}`}
+                  onClick={() => {
+                    if (onTogglePantry) {
+                      onTogglePantry(syrupSheet.syrup.unlockIngredientId);
+                      setSyrupConfirm(true);
+                      setTimeout(() => { setSyrupSheet(null); setSyrupConfirm(false); }, 1500);
+                    }
+                  }}
+                >
+                  {checkedPantryIds?.has(syrupSheet.syrup.unlockIngredientId)
+                    ? '✓ Already in pantry'
+                    : 'I Made This — Add to Pantry'}
+                </button>
+              )}
+              {syrupConfirm && (
+                <span className="rc-syrup-confirm">Added! Checking recipes…</span>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

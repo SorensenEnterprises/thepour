@@ -49,6 +49,8 @@ interface Props {
   inventory:         InventoryItem[];
   onSetQuantity:     (ingredientId: string, qty: QuantityLevel) => void;
   onRecipeMade?:     (recipeName: string, count: number) => void;
+  checkedPantryIds?: Set<string>;
+  onTogglePantry?:   (itemId: string) => void;
 }
 
 // ── Collapsible recipe section ────────────────────────────────────────────────
@@ -97,7 +99,7 @@ function RecipeSection({ label, countColor, matches, open, onToggle, onRenderCar
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuantity, onRecipeMade }: Props) {
+export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuantity, onRecipeMade, checkedPantryIds, onTogglePantry }: Props) {
   const { user } = useAuth();
 
   const [category,      setCategory]      = useState<DrinkCategory>('cocktail');
@@ -207,6 +209,8 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
         exploreMode={false}
         onMadeThis={count => handleMadeThis(recipe, count)}
         userId={user?.id ?? null}
+        checkedPantryIds={checkedPantryIds}
+        onTogglePantry={onTogglePantry}
       />
     );
   }

@@ -90,6 +90,8 @@ function AppContent() {
               onRecipeMade={(recipeName, count) => {
                 setLastMadeNote(`User just made ${count} ${count === 1 ? 'serving' : 'servings'} of ${recipeName}. Bar inventory has been updated.`);
               }}
+              checkedPantryIds={checkedPantryIds}
+              onTogglePantry={togglePantry}
             />
         ) : (
           <InventoryPage
