@@ -11,13 +11,17 @@ interface UnlockItem {
   recipes: string[]
 }
 
-function buildSystemPrompt(inventoryList: string, mode: string, pantryList: string, unlockContext: UnlockItem[], madeHouseSyrups: string[], lightPreference: boolean): string {
+function buildSystemPrompt(inventoryList: string, mode: string, pantryList: string, unlockContext: UnlockItem[], madeHouseSyrups: string[], lightPreference: boolean, imOutContext: string | null): string {
   const pantryLine = pantryList ? `\nUser also has in pantry: ${pantryList}` : ''
   const syrupLine = madeHouseSyrups.length > 0
     ? `\nUser has made these house syrups: ${madeHouseSyrups.join(', ')}`
     : ''
   const inventorySection = mode === 'im-out'
-    ? `The user is out at a bar or restaurant. They may tell you what bottles are available.`
+    ? imOutContext === 'bar'
+      ? `User is at a bar. Standard mixers are available — tonic water, soda water, simple syrup, lime juice, lemon juice, orange juice, cranberry juice, grenadine, bitters, ginger beer. The user will scan or tell you what spirits are on the shelf. Recommend from what they have plus the assumed mixers. Vesper's energy: knowledgeable friend at the bar with you. She has opinions about the establishment. She might say "not bad for a hotel bar" or "they've got the essentials, which is more than most."${inventoryList !== 'none' ? `\n\nBottles available: ${inventoryList}` : ''}`
+      : imOutContext === 'party'
+      ? `User is at a party or someone's home. Work with exactly what's been scanned — no assumptions about what's available. If they tell you what's there, that is the full picture. Vesper's energy: resourceful, makes the most of what's there. She does not complain about the selection; she finds the angle. "Okay. Let's see what people actually brought." ${inventoryList !== 'none' ? `\n\nWhat's available: ${inventoryList}` : ''}`
+      : `The user is out at a bar or restaurant. They may tell you what bottles are available.`
     : mode === 'explore'
     ? `The user wants to explore cocktails with no restriction on ingredients.`
     : `CURRENT USER INVENTORY (in-stock bottles):\n${inventoryList || 'none'}${pantryLine}${syrupLine}\n\nFor My Bar mode, only recommend drinks the user can make with what they have. If their bar is empty, gently encourage them to stock it.`
@@ -161,7 +165,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, inventoryList, mode, pantryList, unlockContext, madeHouseSyrups, lightPreference } = await req.json()
+    const { messages, inventoryList, mode, pantryList, unlockContext, madeHouseSyrups, lightPreference, imOutContext } = await req.json()
     console.log('chat-bartender mode:', mode, 'messages:', messages?.length ?? 0)
 
     if (!messages || !Array.isArray(messages)) {
@@ -179,7 +183,7 @@ serve(async (req) => {
       )
     }
 
-    const systemPrompt = buildSystemPrompt(inventoryList ?? '', mode ?? 'my-bar', pantryList ?? '', unlockContext ?? [], madeHouseSyrups ?? [], lightPreference === true)
+    const systemPrompt = buildSystemPrompt(inventoryList ?? '', mode ?? 'my-bar', pantryList ?? '', unlockContext ?? [], madeHouseSyrups ?? [], lightPreference === true, imOutContext ?? null)
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

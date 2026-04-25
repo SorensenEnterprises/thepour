@@ -116,7 +116,7 @@ function AppContent() {
           className="im-out-fab"
           onClick={() => { setBartenderInitialMode('im-out'); setBartenderOpen(true); }}
         >
-          🚪 I'm Out
+          🍸 I'm Out
         </button>
         <button
           className="bartender-fab"

@@ -733,6 +733,85 @@
 .bm-mode-option--imout { border-color: rgba(201,168,76,0.25); }
 .bm-mode-option--imout:hover { background: rgba(201,168,76,0.10); border-color: #c9a84c; }
 
+/* ── Where are you? modal ── */
+.bm-where-subtitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  color: #6a8a8c;
+  margin: -8px 0 16px;
+  text-align: center;
+}
+
+.bm-where-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.bm-where-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(74,187,196,0.06);
+  border: 1.5px solid rgba(74,187,196,0.18);
+  border-radius: 16px;
+  padding: 24px 20px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.bm-where-option:hover {
+  background: rgba(74,187,196,0.12);
+  border-color: #4abbc4;
+}
+
+.bm-where-option:active { transform: scale(0.97); }
+
+.bm-where-icon { font-size: 36px; line-height: 1; }
+
+.bm-where-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bm-where-label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f5ead8;
+  line-height: 1.2;
+}
+
+.bm-where-sub {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  color: #6a8a8c;
+  line-height: 1.5;
+}
+
+.bm-where-option--bar { border-color: rgba(201,168,76,0.25); }
+.bm-where-option--bar:hover { background: rgba(201,168,76,0.10); border-color: #c9a84c; }
+.bm-where-option--bar .bm-where-label { color: #c9a84c; }
+
+.bm-where-cancel {
+  background: none;
+  border: none;
+  color: #4a6a6c;
+  font-size: 13px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer;
+  padding: 8px 16px;
+  margin-top: 4px;
+  border-radius: 8px;
+  transition: color 0.15s;
+}
+.bm-where-cancel:hover { color: #f5ead8; }
+
 /* ── I'm Out scan prompt ── */
 .bm-scan-prompt-area {
   display: flex;

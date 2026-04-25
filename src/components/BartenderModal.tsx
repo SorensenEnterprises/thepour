@@ -18,7 +18,8 @@ type Spirit        = 'brown' | 'clear' | 'agave'  | 'any';
 type Style         = 'classic' | 'adventurous';
 type LightPref     = 'light-pref' | 'no-pref';
 type Strength      = 'light'   | 'balanced' | 'bold';
-type Phase         = 'mode-pick' | 'scan-prompt' | 'chat' | 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
+type Phase         = 'mode-pick' | 'im-out-where' | 'scan-prompt' | 'chat' | 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
+type ImOutContext  = 'bar' | 'party' | null;
 type BarMode       = 'my-bar' | 'im-out' | 'explore';
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
 type ShotSpirit    = 'tequila' | 'whiskey' | 'vodka' | 'any';
@@ -943,11 +944,12 @@ interface Props {
 export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode, unlockSuggestions = [], contextNote, onContextNoteConsumed, onSetQuantity }: Props) {
   const { user } = useAuth();
   const [phase, setPhase]           = useState<Phase>(
-    initialMode === 'im-out' ? 'scan-prompt' :
+    initialMode === 'im-out' ? 'im-out-where' :
     initialMode === 'my-bar' || initialMode === 'explore' ? 'chat' :
     'mode-pick'
   );
   const [barMode, setBarMode]       = useState<BarMode>(initialMode ?? 'my-bar');
+  const [imOutContext, setImOutContext] = useState<ImOutContext>(null);
   const [sessionInStockIds, setSessionInStockIds] = useState<Set<string>>(new Set());
   const [showPhotoScan, setShowPhotoScan] = useState(false);
   const [category, setCategory]     = useState<DrinkCategory | null>(null);
@@ -1016,11 +1018,25 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
     return () => clearTimeout(t);
   }, [phase, rec]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const STANDARD_BAR_MIXER_IDS = [
+    'tonic-water', 'soda-water', 'simple-syrup', 'lime-juice', 'lemon-juice',
+    'orange-juice', 'cranberry-juice', 'grenadine', 'angostura-bitters', 'ginger-beer',
+  ];
+
   function handleModePick(mode: BarMode) {
     setBarMode(mode);
     setAnimKey(k => k + 1);
-    if (mode === 'im-out') setPhase('scan-prompt');
+    if (mode === 'im-out') setPhase('im-out-where');
     else setPhase('chat');
+  }
+
+  function handleWhereSelect(context: ImOutContext) {
+    setImOutContext(context);
+    if (context === 'bar') {
+      setSessionInStockIds(new Set(STANDARD_BAR_MIXER_IDS));
+    }
+    setAnimKey(k => k + 1);
+    setPhase('scan-prompt');
   }
 
   function handleScanComplete(bottles: RecognizedBottle[]) {
@@ -1301,7 +1317,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
                 </div>
               </button>
               <button className="bm-mode-option bm-mode-option--imout" onClick={() => handleModePick('im-out')}>
-                <span className="bm-mode-icon">🚪</span>
+                <span className="bm-mode-icon">🍸</span>
                 <div className="bm-mode-text">
                   <span className="bm-mode-label">I'm Out</span>
                   <span className="bm-mode-sub">Scan what's in front of you</span>
@@ -1318,13 +1334,39 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
           </div>
         )}
 
+        {/* ── Where are you? (I'm Out entry) ── */}
+        {phase === 'im-out-where' && (
+          <div className="bm-question-wrap" key="im-out-where">
+            <p className="bm-voice">"First things first."</p>
+            <h2 className="bm-question">Where are you?</h2>
+            <p className="bm-where-subtitle">I'll adjust what I assume is available.</p>
+            <div className="bm-where-options">
+              <button className="bm-where-option bm-where-option--bar" onClick={() => handleWhereSelect('bar')}>
+                <span className="bm-where-icon">🍸</span>
+                <div className="bm-where-text">
+                  <span className="bm-where-label">At a bar</span>
+                  <span className="bm-where-sub">I'll assume they have mixers, citrus, and sodas. Just scan the spirits.</span>
+                </div>
+              </button>
+              <button className="bm-where-option bm-where-option--party" onClick={() => handleWhereSelect('party')}>
+                <span className="bm-where-icon">🎉</span>
+                <div className="bm-where-text">
+                  <span className="bm-where-label">At a party or someone's place</span>
+                  <span className="bm-where-sub">I'll work with exactly what's here. Scan everything.</span>
+                </div>
+              </button>
+            </div>
+            <button className="bm-where-cancel" onClick={handleClose}>Cancel</button>
+          </div>
+        )}
+
         {/* ── Scan prompt (I'm Out mode) ── */}
         {phase === 'scan-prompt' && (
           <div className="bm-question-wrap" key="scan-prompt">
             <p className="bm-voice">"Tell me what you're working with."</p>
             <h2 className="bm-question">Point your camera at the bottles in front of you</h2>
             <div className="bm-scan-prompt-area">
-              <div className="bm-scan-illustration">🍶</div>
+              <div className="bm-scan-illustration">🍸</div>
               <button className="bm-scan-btn" onClick={() => setShowPhotoScan(true)}>
                 📷 Scan Bottles
               </button>
@@ -1367,6 +1409,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
               onContextNoteConsumed={onContextNoteConsumed}
               onSetQuantity={barMode !== 'im-out' ? onSetQuantity : undefined}
               userId={user?.id ?? null}
+              imOutContext={barMode === 'im-out' ? imOutContext : null}
             />
           </>
         )}

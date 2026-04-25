@@ -45,6 +45,7 @@ interface Props {
   onSetQuantity?: (id: string, qty: QuantityLevel) => void;
   userId?: string | null;
   onClose?: () => void;
+  imOutContext?: 'bar' | 'party' | null;
 }
 
 function renderMarkdown(text: string): React.ReactElement {
@@ -146,7 +147,7 @@ export function ChatBartender({
   mode, inventory, checkedPantryIds, onGoToInventory,
   unlockSuggestions = [], recipes = [],
   contextNote, onContextNoteConsumed,
-  onSetQuantity, userId, onClose,
+  onSetQuantity, userId, onClose, imOutContext,
 }: Props) {
   const { lightPreference, updateLightPreference } = useTasteProfile();
   const topUnlock    = unlockSuggestions[0];
@@ -271,6 +272,7 @@ export function ChatBartender({
           unlockContext,
           madeHouseSyrups,
           lightPreference: effectiveLightPref,
+          imOutContext: mode === 'im-out' ? (imOutContext ?? null) : null,
         },
       });
 
