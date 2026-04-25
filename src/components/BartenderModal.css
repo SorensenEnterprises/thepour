@@ -733,6 +733,21 @@
 .bm-mode-option--imout { border-color: rgba(201,168,76,0.25); }
 .bm-mode-option--imout:hover { background: rgba(201,168,76,0.10); border-color: #c9a84c; }
 
+/* ── Shaker image ── */
+.bm-shaker-img {
+  display: block;
+  object-fit: contain;
+}
+.bm-shaker-img--lg {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 8px;
+}
+.bm-shaker-img--sm {
+  width: 60px;
+  height: 60px;
+}
+
 /* ── Where are you? modal ── */
 .bm-where-subtitle {
   font-family: 'Plus Jakarta Sans', sans-serif;
