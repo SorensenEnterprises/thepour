@@ -165,7 +165,8 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, inventoryList, mode, pantryList, unlockContext, madeHouseSyrups, lightPreference, imOutContext } = await req.json()
+    const body = await req.json()
+    const { messages, inventoryList, mode, pantryList, unlockContext, madeHouseSyrups, lightPreference, imOutContext } = body
     console.log('chat-bartender mode:', mode, 'messages:', messages?.length ?? 0)
 
     if (!messages || !Array.isArray(messages)) {
@@ -211,7 +212,15 @@ serve(async (req) => {
     }
 
     const rawText: string = data.content?.[0]?.text ?? ''
-    const { message, quickReplies, recommendedRecipes } = parseResponse(rawText)
+    let { message, quickReplies, recommendedRecipes } = parseResponse(rawText)
+
+    const canMakeNames: string[] | null = body.canMakeNames ?? null
+    if (canMakeNames && recommendedRecipes.length > 0) {
+      const canMakeSet = new Set(canMakeNames.map((n: string) => n.toLowerCase()))
+      recommendedRecipes = recommendedRecipes.filter(name =>
+        canMakeSet.has(name.toLowerCase())
+      )
+    }
 
     return new Response(
       JSON.stringify({ message, quickReplies, recommendedRecipes }),

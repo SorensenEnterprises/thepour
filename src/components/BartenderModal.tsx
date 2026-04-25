@@ -940,9 +940,10 @@ interface Props {
   contextNote?: string;
   onContextNoteConsumed?: () => void;
   onSetQuantity?: (id: string, qty: QuantityLevel) => void;
+  canMakeNames?: string[];
 }
 
-export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode, unlockSuggestions = [], contextNote, onContextNoteConsumed, onSetQuantity }: Props) {
+export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode, unlockSuggestions = [], contextNote, onContextNoteConsumed, onSetQuantity, canMakeNames }: Props) {
   const { user } = useAuth();
   const [phase, setPhase]           = useState<Phase>(
     initialMode === 'im-out' ? 'im-out-where' :
@@ -1412,6 +1413,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
               onSetQuantity={barMode !== 'im-out' ? onSetQuantity : undefined}
               userId={user?.id ?? null}
               imOutContext={barMode === 'im-out' ? imOutContext : null}
+              canMakeNames={barMode === 'my-bar' ? (canMakeNames ?? null) : null}
             />
           </>
         )}

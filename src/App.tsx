@@ -138,6 +138,7 @@ function AppContent() {
           contextNote={lastMadeNote}
           onContextNoteConsumed={() => setLastMadeNote(undefined)}
           onSetQuantity={(id, qty) => setQuantity(id, qty)}
+          canMakeNames={matches.filter(m => m.canMake).map(m => m.recipe.name)}
         />
       )}
     </div>

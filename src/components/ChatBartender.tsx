@@ -46,6 +46,7 @@ interface Props {
   userId?: string | null;
   onClose?: () => void;
   imOutContext?: 'bar' | 'party' | null;
+  canMakeNames?: string[] | null;
 }
 
 function renderMarkdown(text: string): React.ReactElement {
@@ -149,7 +150,7 @@ export function ChatBartender({
   mode, inventory, checkedPantryIds, onGoToInventory,
   unlockSuggestions = [], recipes = [],
   contextNote, onContextNoteConsumed,
-  onSetQuantity, userId, onClose, imOutContext,
+  onSetQuantity, userId, onClose, imOutContext, canMakeNames,
 }: Props) {
   const { lightPreference, updateLightPreference } = useTasteProfile();
   const topUnlock    = unlockSuggestions[0];
@@ -276,6 +277,7 @@ export function ChatBartender({
           madeHouseSyrups,
           lightPreference: effectiveLightPref,
           imOutContext: mode === 'im-out' ? (imOutContext ?? null) : null,
+          canMakeNames: mode === 'my-bar' ? (canMakeNames ?? null) : null,
         },
       });
 
