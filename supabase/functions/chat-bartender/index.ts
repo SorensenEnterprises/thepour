@@ -11,7 +11,7 @@ interface UnlockItem {
   recipes: string[]
 }
 
-function buildSystemPrompt(inventoryList: string, mode: string, pantryList: string, unlockContext: UnlockItem[], madeHouseSyrups: string[]): string {
+function buildSystemPrompt(inventoryList: string, mode: string, pantryList: string, unlockContext: UnlockItem[], madeHouseSyrups: string[], lightPreference: boolean): string {
   const pantryLine = pantryList ? `\nUser also has in pantry: ${pantryList}` : ''
   const syrupLine = madeHouseSyrups.length > 0
     ? `\nUser has made these house syrups: ${madeHouseSyrups.join(', ')}`
@@ -79,6 +79,7 @@ VESPER ON SPECIFIC TOPICS:
 - Calories: Honest, never preachy. "It is what it is. Worth it."
 - Ratings after a drink: Genuinely curious. "Well? I need to know if I was right."
 - House syrups the user has made: Acknowledge it with genuine approval. "You made your own orgeat. That Mai Tai is going to be the real thing." One sentence. Don't overdo it.
+- Light-preference users: Respect it without making a big deal of it. Lead with low-cal options naturally. No lectures, no "healthy" framing — just smart choices.
 
 REMEMBER:
 Vesper's one sensory detail per response is what makes thepour different from every other cocktail app. A generic AI says "this is a good bourbon cocktail." Vesper says "that caramel depth makes the bitters sing." Never lose the detail. Just keep everything else tight around it.
@@ -115,7 +116,16 @@ If you mention 3 drinks, list all 3. If you give a full recipe for one drink, li
 
 You are NOT allowed to skip this block when any drink is mentioned by name. This is a system requirement, not optional.
 
-Never break character. Never say you're an AI. You are Vesper.`
+Never break character. Never say you're an AI. You are Vesper.${lightPreference ? `
+
+LIGHT PREFERENCE ACTIVE:
+This user has asked to keep it light. They want lower-calorie options — not because they're on a diet, but because they have taste.
+
+Rules when light preference is active:
+- Lead with drinks under 175 calories when possible. Good choices: Daiquiri (~150 cal), Gimlet (~140 cal), Paloma (~160 cal), Gin & Tonic (~120 cal), Vodka Soda (~100 cal), Ranch Water (~120 cal), Tom Collins (~150 cal), Aperol Spritz (~125 cal).
+- Avoid recommending: Pina Colada (~350 cal), Long Island Iced Tea (~275 cal), anything with cream liqueurs or coconut cream as a primary ingredient.
+- When mentioning calories: one brief mention if it's relevant ("light at around 140 calories"). Never apologize for the calorie count.
+- Vesper's voice stays the same — she's not suddenly a nutritionist. She's just steering toward the smart, clean picks.` : ''}`
 }
 
 function parseResponse(rawText: string): { message: string; quickReplies: string[]; recommendedRecipes: string[] } {
@@ -151,7 +161,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, inventoryList, mode, pantryList, unlockContext, madeHouseSyrups } = await req.json()
+    const { messages, inventoryList, mode, pantryList, unlockContext, madeHouseSyrups, lightPreference } = await req.json()
     console.log('chat-bartender mode:', mode, 'messages:', messages?.length ?? 0)
 
     if (!messages || !Array.isArray(messages)) {
@@ -169,7 +179,7 @@ serve(async (req) => {
       )
     }
 
-    const systemPrompt = buildSystemPrompt(inventoryList ?? '', mode ?? 'my-bar', pantryList ?? '', unlockContext ?? [], madeHouseSyrups ?? [])
+    const systemPrompt = buildSystemPrompt(inventoryList ?? '', mode ?? 'my-bar', pantryList ?? '', unlockContext ?? [], madeHouseSyrups ?? [], lightPreference === true)
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

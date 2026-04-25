@@ -8,6 +8,7 @@ import { IMadeThisModal } from './IMadeThisModal';
 import { DrinkSurvey } from './DrinkSurvey';
 import { decrementInventory } from '../utils/inventoryDecrement';
 import { useVesperVoice } from '../hooks/useVesperVoice';
+import { useTasteProfile } from '../hooks/useTasteProfile';
 import { houseSyrups } from '../data/houseSyrups';
 import './ChatBartender.css';
 
@@ -102,6 +103,7 @@ const QUICK_REPLIES_INITIAL = [
   'Light and refreshing',
   'Strong and stirred',
   "I'm feeling adventurous",
+  'Keep it light 🌿',
 ];
 
 function getOpeningMessage(
@@ -109,6 +111,7 @@ function getOpeningMessage(
   count: number,
   checkedPantryIds?: Set<string>,
   topUnlock?: UnlockSuggestion,
+  lightPreference?: boolean,
 ): string {
   if (mode === 'im-out') {
     return "Ooh, not a bad selection. Let's see what we can do with what's in front of you.";
@@ -118,6 +121,10 @@ function getOpeningMessage(
   }
   if (count === 0) {
     return "Okay, we need to talk. Your bar is empty and I'm concerned. Want to scan some bottles first, or should I show you what you're missing out on?";
+  }
+
+  if (lightPreference) {
+    return `Well, well. ${count} bottle${count !== 1 ? 's' : ''} and you want to keep it clean. I respect that. Fresh citrus helps — and honestly, less sugar means more spirit. Let's see what we can do.`;
   }
 
   let base: string;
@@ -141,8 +148,9 @@ export function ChatBartender({
   contextNote, onContextNoteConsumed,
   onSetQuantity, userId, onClose,
 }: Props) {
+  const { lightPreference, updateLightPreference } = useTasteProfile();
   const topUnlock    = unlockSuggestions[0];
-  const openingText  = getOpeningMessage(mode, inventory.length, checkedPantryIds, topUnlock);
+  const openingText  = getOpeningMessage(mode, inventory.length, checkedPantryIds, topUnlock, lightPreference);
   const openingId    = useRef(genId()).current;
 
   const recipeByName = useRef<Map<string, Recipe>>(new Map());
@@ -214,7 +222,7 @@ export function ChatBartender({
     .map(name => recipeByName.current.get(name.toLowerCase().trim()))
     .filter((r): r is Recipe => r !== undefined);
 
-  async function sendMessage(text: string) {
+  async function sendMessage(text: string, overrideLightPref?: boolean) {
     if (!text.trim() || typing) return;
 
     const userMsg: Message = { role: 'user', text: text.trim(), id: genId() };
@@ -253,6 +261,7 @@ export function ChatBartender({
             .map(s => s.name)
         : [];
 
+      const effectiveLightPref = overrideLightPref ?? lightPreference;
       const { data, error } = await supabase.functions.invoke('chat-bartender', {
         body: {
           messages: apiHistory.current,
@@ -261,6 +270,7 @@ export function ChatBartender({
           pantryList,
           unlockContext,
           madeHouseSyrups,
+          lightPreference: effectiveLightPref,
         },
       });
 
@@ -343,6 +353,11 @@ export function ChatBartender({
       }
       return;
     }
+    if (chip === 'Keep it light 🌿') {
+      updateLightPreference(true);
+      sendMessage(chip, true);
+      return;
+    }
     sendMessage(chip);
   }
 
@@ -381,6 +396,9 @@ export function ChatBartender({
       )}
 
       <div className="cb-header">
+        {lightPreference && (
+          <span className="cb-light-badge">🌿 Light mode</span>
+        )}
         <div className="cb-header-actions">
           <button
             className={`cb-voice-toggle${voiceEnabled ? ' cb-voice-toggle--on' : ' cb-voice-toggle--off'}`}

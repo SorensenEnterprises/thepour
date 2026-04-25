@@ -7,6 +7,7 @@ import { decrementInventory } from '../utils/inventoryDecrement';
 import { ResponsibleFooter } from '../components/ResponsibleFooter';
 import { Recipe, InventoryItem, QuantityLevel } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { calculateCalories } from '../utils/calorieUtils';
 
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
 type ReadyFilter  = 'all' | 'ready';
@@ -107,6 +108,13 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
   const [readyFilter,      setReadyFilter]      = useState<ReadyFilter>('all');
   const [spiritFilter,     setSpiritFilter]     = useState<SpiritFilter>('all');
   const [variationFilter,  setVariationFilter]  = useState<VariationFilter>('hide');
+  const [lightFilter,      setLightFilter]      = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem('vesper_taste_profile');
+      if (!raw) return false;
+      return JSON.parse(raw)?.lightPreference === true;
+    } catch { return false; }
+  });
   const [search,           setSearch]           = useState('');
   const [toasts,           setToasts]           = useState<Toast[]>([]);
   const [toastCounter,     setToastCounter]     = useState(0);
@@ -173,6 +181,7 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
       // Hide variations unless the user has toggled them on
       if (variationFilter === 'hide' && recipe.parentRecipeId) return false;
       if (readyFilter === 'ready' && !canMake) return false;
+      if (lightFilter && calculateCalories(recipe.ingredients) > 175) return false;
       if (category === 'cocktail' && spiritFilter !== 'all') {
         const tags = recipe.tags;
         if (spiritFilter === 'other') {
@@ -186,7 +195,7 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
       if (q && !recipe.name.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [categoryMatches, category, readyFilter, spiritFilter, variationFilter, search]);
+  }, [categoryMatches, category, readyFilter, spiritFilter, variationFilter, lightFilter, search]);
 
   const readyCount = categoryMatches.filter(m => m.canMake).length;
 
@@ -304,6 +313,12 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
               Ready ({readyCount})
             </button>
           </div>
+          <button
+            className={`filter-tab filter-tab--light${lightFilter ? ' active' : ''}`}
+            onClick={() => setLightFilter(v => !v)}
+          >
+            {lightFilter ? '🌿 Light (on)' : '🌿 Light'}
+          </button>
           {variationCount > 0 && (
             <button
               className={`filter-tab filter-tab--variations${variationFilter === 'show' ? ' active' : ''}`}

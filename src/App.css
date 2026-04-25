@@ -686,6 +686,17 @@ body {
   font-weight: 600;
 }
 
+.filter-tab--light {
+  border-style: dashed;
+}
+.filter-tab--light.active {
+  background: rgba(74, 190, 138, 0.12);
+  border-style: solid;
+  border-color: #4abe8a;
+  color: #4abe8a;
+  font-weight: 600;
+}
+
 /* ── Make It syrup link ── */
 .rc-make-it-link {
   background: none;
