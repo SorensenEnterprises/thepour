@@ -312,13 +312,13 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
             >
               Ready ({readyCount})
             </button>
+            <button
+              className={`filter-tab filter-tab--light${lightFilter ? ' active' : ''}`}
+              onClick={() => setLightFilter(v => !v)}
+            >
+              {lightFilter ? '🌿 Light (on)' : '🌿 Light'}
+            </button>
           </div>
-          <button
-            className={`filter-tab filter-tab--light${lightFilter ? ' active' : ''}`}
-            onClick={() => setLightFilter(v => !v)}
-          >
-            {lightFilter ? '🌿 Light (on)' : '🌿 Light'}
-          </button>
           {variationCount > 0 && (
             <button
               className={`filter-tab filter-tab--variations${variationFilter === 'show' ? ' active' : ''}`}
