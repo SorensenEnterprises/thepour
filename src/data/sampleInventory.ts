@@ -44,7 +44,7 @@ export const sampleInventory: InventoryItem[] = [
   { ingredientId: 'orgeat',             name: 'Orgeat Syrup',       category: 'syrup', quantity: 'out' },
 
   // ── Bitters ───────────────────────────────────────────────────────────────────
-  { ingredientId: 'angostura-bitters', name: 'Angostura Bitters', category: 'bitters', quantity: 'splash' },
+  { ingredientId: 'angostura-bitters', name: 'Angostura Bitters', category: 'bitters', quantity: 'out' },
 
   // ── Mixers & Juice ────────────────────────────────────────────────────────────
   { ingredientId: 'lime-juice',       name: 'Fresh Lime Juice',       category: 'mixer', quantity: 'full' },
