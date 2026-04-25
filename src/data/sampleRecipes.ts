@@ -9,6 +9,7 @@ import { craftCocktails } from './craftCocktails';
 import { energyDrinkCocktails } from './energyDrinkCocktails';
 import { newRecipes250 } from './newRecipes250';
 import { tikiRecipes } from './tikiRecipes';
+import { moreRecipes100 } from './moreRecipes100';
 
 export const sampleRecipes: Recipe[] = [
   // ── Existing 5 ──────────────────────────────────────────────────────────────
@@ -852,4 +853,5 @@ export const sampleRecipes: Recipe[] = [
   ...energyDrinkCocktails,
   ...newRecipes250,
   ...tikiRecipes,
+  ...moreRecipes100,
 ];

@@ -11,7 +11,7 @@ interface UnlockItem {
   recipes: string[]
 }
 
-function buildSystemPrompt(inventoryList: string, mode: string, pantryList: string, unlockContext: UnlockItem[], madeHouseSyrups: string[], lightPreference: boolean, imOutContext: string | null): string {
+function buildSystemPrompt(inventoryList: string, mode: string, pantryList: string, unlockContext: UnlockItem[], madeHouseSyrups: string[], lightPreference: boolean, imOutContext: string | null, makeableRecipes: string[]): string {
   const pantryLine = pantryList ? `\nUser also has in pantry: ${pantryList}` : ''
   const syrupLine = madeHouseSyrups.length > 0
     ? `\nUser has made these house syrups: ${madeHouseSyrups.join(', ')}`
@@ -24,7 +24,7 @@ function buildSystemPrompt(inventoryList: string, mode: string, pantryList: stri
       : `The user is out at a bar or restaurant. They may tell you what bottles are available.`
     : mode === 'explore'
     ? `The user wants to explore cocktails with no restriction on ingredients.`
-    : `CURRENT USER INVENTORY (in-stock bottles):\n${inventoryList || 'none'}${pantryLine}${syrupLine}\n\nHARD RULE — MY BAR MODE: You may ONLY recommend cocktails where the user has every required spirit and liqueur listed above. Do NOT recommend a drink if any primary alcohol ingredient is missing from their inventory. Do NOT say "you have everything" unless it is literally true. If a drink requires Sweet Vermouth and the user does not have Sweet Vermouth, you cannot recommend it — period. You may mention a drink they are close to only by saying "you're one bottle away from a [drink] — you'd just need [ingredient]." Never present a near-miss as a ready-to-make recommendation. If their bar is empty or too limited to recommend anything, say so warmly and suggest what one bottle would unlock.`
+    : `CURRENT USER INVENTORY (in-stock bottles):\n${inventoryList || 'none'}${pantryLine}${syrupLine}${makeableRecipes.length > 0 ? `\n\nCONFIRMED MAKEABLE RECIPES (${makeableRecipes.length} total — choose from this list):\n${makeableRecipes.join(', ')}` : ''}\n\nHARD RULE — MY BAR MODE: You may ONLY recommend cocktails that appear in the CONFIRMED MAKEABLE RECIPES list above. Every drink on that list has been verified against the user's exact inventory. Do not recommend anything outside this list. If the list is short or empty, say so warmly and pivot to what one bottle would unlock.`
 
   const unlockSection = (mode === 'my-bar' && unlockContext.length > 0)
     ? `\n\nTOP UNLOCK OPPORTUNITIES FOR THIS USER:\n${unlockContext.map((u, i) => {
@@ -172,8 +172,8 @@ serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { messages, inventoryList, mode, pantryList, unlockContext, madeHouseSyrups, lightPreference, imOutContext } = body
-    console.log('chat-bartender mode:', mode, 'messages:', messages?.length ?? 0)
+    const { messages, inventoryList, mode, pantryList, unlockContext, madeHouseSyrups, lightPreference, imOutContext, canMakeNames: makeableRecipes } = body
+    console.log('chat-bartender mode:', mode, 'messages:', messages?.length ?? 0, '| makeableRecipes:', (makeableRecipes as string[] | null)?.length ?? 'null')
 
     if (!messages || !Array.isArray(messages)) {
       return new Response(
@@ -190,7 +190,7 @@ serve(async (req) => {
       )
     }
 
-    const systemPrompt = buildSystemPrompt(inventoryList ?? '', mode ?? 'my-bar', pantryList ?? '', unlockContext ?? [], madeHouseSyrups ?? [], lightPreference === true, imOutContext ?? null)
+    const systemPrompt = buildSystemPrompt(inventoryList ?? '', mode ?? 'my-bar', pantryList ?? '', unlockContext ?? [], madeHouseSyrups ?? [], lightPreference === true, imOutContext ?? null, (makeableRecipes as string[] | null) ?? [])
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
