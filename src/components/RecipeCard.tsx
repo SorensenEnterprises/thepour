@@ -6,6 +6,7 @@ import { getRequiredEquipment } from '../utils/equipmentUtils';
 import { IMadeThisModal } from './IMadeThisModal';
 import { DrinkSurvey } from './DrinkSurvey';
 import { houseSyrups, SyrupRecipe } from '../data/houseSyrups';
+import { RecipeMatch } from '../utils/recipeUtils';
 
 export interface MadeThisResult {
   lowBottles:    string[];
@@ -24,19 +25,22 @@ interface Props {
   userId?:             string | null;
   checkedPantryIds?:   Set<string>;
   onTogglePantry?:     (itemId: string) => void;
+  variationMatches?:   RecipeMatch[];
 }
 
 export function RecipeCard({
   recipe, canMake, missingIngredients, splashWarnings,
   haveCount = 0, totalCount = 0, exploreMode = false,
-  onMadeThis, userId, checkedPantryIds, onTogglePantry,
+  onMadeThis, userId, checkedPantryIds, onTogglePantry, variationMatches,
 }: Props) {
-  const [expanded,     setExpanded]     = useState(false);
-  const [showModal,    setShowModal]    = useState(false);
-  const [showSurvey,   setShowSurvey]   = useState(false);
-  const [surveyDone,   setSurveyDone]   = useState(false);
-  const [syrupSheet,   setSyrupSheet]   = useState<{ syrup: SyrupRecipe; cocktailName: string } | null>(null);
-  const [syrupConfirm, setSyrupConfirm] = useState(false);
+  const [expanded,         setExpanded]         = useState(false);
+  const [showModal,        setShowModal]         = useState(false);
+  const [showSurvey,       setShowSurvey]        = useState(false);
+  const [surveyDone,       setSurveyDone]        = useState(false);
+  const [syrupSheet,       setSyrupSheet]        = useState<{ syrup: SyrupRecipe; cocktailName: string } | null>(null);
+  const [syrupConfirm,     setSyrupConfirm]      = useState(false);
+  const [varExpanded,      setVarExpanded]       = useState(false);
+  const [selectedVarId,    setSelectedVarId]     = useState<string | null>(null);
 
   // Map missing ingredient names → IDs by cross-referencing recipe.ingredients
   const missingWithIds = recipe.ingredients.filter(
@@ -87,6 +91,14 @@ export function RecipeCard({
             <span className={`badge ${badge.cls}`}>{badge.text}</span>
           </div>
           <p className="recipe-description">{recipe.description}</p>
+          {variationMatches && variationMatches.length > 0 && (
+            <button
+              className={`rc-variations-chip${varExpanded ? ' rc-variations-chip--open' : ''}`}
+              onClick={e => { e.stopPropagation(); setVarExpanded(v => !v); setSelectedVarId(null); }}
+            >
+              {variationMatches.length} variation{variationMatches.length !== 1 ? 's' : ''} →
+            </button>
+          )}
           <div className="recipe-meta">
             <span className="tag">{recipe.glassType} glass</span>
             <span className={`tag difficulty-${recipe.difficulty}`}>{recipe.difficulty}</span>
@@ -96,6 +108,52 @@ export function RecipeCard({
             <span className="tag recipe-calories">~{calories} cal</span>
           </div>
         </div>
+
+        {varExpanded && variationMatches && variationMatches.length > 0 && (
+          <div className="rc-variations-panel" onClick={e => e.stopPropagation()}>
+            <div className="rc-variations-list">
+              {variationMatches.map(vm => (
+                <button
+                  key={vm.recipe.id}
+                  className={`rc-variation-pill${vm.canMake ? ' rc-variation-pill--ready' : ''}${selectedVarId === vm.recipe.id ? ' rc-variation-pill--selected' : ''}`}
+                  onClick={() => setSelectedVarId(id => id === vm.recipe.id ? null : vm.recipe.id)}
+                >
+                  <span className="rc-variation-label">{vm.recipe.variationLabel ?? vm.recipe.name}</span>
+                  {vm.canMake && <span className="rc-variation-ready-dot" />}
+                </button>
+              ))}
+            </div>
+            {selectedVarId && (() => {
+              const vm = variationMatches.find(m => m.recipe.id === selectedVarId);
+              if (!vm) return null;
+              const vCalories = calculateCalories(vm.recipe.ingredients);
+              return (
+                <div className="rc-variation-detail">
+                  <h4 className="rc-variation-detail-name">{vm.recipe.name}</h4>
+                  <p className="rc-variation-detail-desc">{vm.recipe.description}</p>
+                  <div className="rc-variation-ingredients">
+                    {vm.recipe.ingredients.map(ing => (
+                      <div key={ing.ingredientId} className="rc-variation-ing">
+                        <span className="rc-variation-ing-amt">{ing.amount} {ing.unit}</span>
+                        <span>{ing.name}{ing.optional ? ' (optional)' : ''}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="rc-variation-instructions">
+                    {vm.recipe.instructions.map((step, i) => (
+                      <p key={i} className="rc-variation-step"><span className="rc-variation-step-n">{i + 1}.</span> {step}</p>
+                    ))}
+                  </div>
+                  {vm.recipe.garnish && <p className="rc-variation-garnish">Garnish: {vm.recipe.garnish}</p>}
+                  <p className="rc-variation-meta">~{vCalories} cal · {vm.recipe.glassType} glass · {vm.recipe.difficulty}</p>
+                  {!vm.canMake && vm.missingIngredients.length > 0 && (
+                    <p className="rc-variation-missing">Missing: {vm.missingIngredients.join(', ')}</p>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
         {expanded && (
           <div className="recipe-details">

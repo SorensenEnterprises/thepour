@@ -66,6 +66,7 @@ export const tikiRecipes: Recipe[] = [
     ],
     glassType: 'Double Old Fashioned', garnish: 'Spent lime shell, mint sprig, maraschino cherry',
     tags: ['tiki', 'classic', 'rum', 'citrus'], difficulty: 'medium',
+    parentRecipeId: '26', variationLabel: 'Original (Trader Vic 1944)',
   },
   {
     id: 'r704',
@@ -226,25 +227,6 @@ export const tikiRecipes: Recipe[] = [
 
   // ── Modern Tiki & Neo-Tiki ─────────────────────────────────────────────────
   {
-    id: 'r711',
-    name: 'Jungle Bird',
-    description: "The Campari tiki cocktail — invented at the Kuala Lumpur Hilton in 1978. Bitter, tropical, and impossible to stop drinking.",
-    ingredients: [
-      { ingredientId: 'rum-dark',       name: 'Dark Rum',         amount: 1.5,  unit: 'oz' },
-      { ingredientId: 'campari',        name: 'Campari',          amount: 0.75, unit: 'oz' },
-      { ingredientId: 'pineapple-juice',name: 'Pineapple Juice',  amount: 1.5,  unit: 'oz' },
-      { ingredientId: 'lime-juice',     name: 'Fresh Lime Juice', amount: 0.5,  unit: 'oz' },
-      { ingredientId: 'simple-syrup',   name: 'Simple Syrup',     amount: 0.5,  unit: 'oz' },
-    ],
-    instructions: [
-      'Combine all ingredients in a shaker with ice.',
-      'Shake well and strain into a tiki mug or rocks glass over ice.',
-      'Garnish with a pineapple wedge.',
-    ],
-    glassType: 'Tiki Mug', garnish: 'Pineapple wedge, cherry',
-    tags: ['tiki', 'modern', 'bitter', 'rum', 'tropical'], difficulty: 'easy',
-  },
-  {
     id: 'r712',
     name: 'Kingston Negroni',
     description: 'A tiki bartender\'s riff on the Negroni — rum replaces gin, Jamaican funk meets bitter Italian verve.',
@@ -261,6 +243,7 @@ export const tikiRecipes: Recipe[] = [
     ],
     glassType: 'Coupe', garnish: 'Orange twist',
     tags: ['tiki', 'modern', 'stirred', 'rum', 'bitter'], difficulty: 'easy',
+    parentRecipeId: '3', variationLabel: 'Kingston (Rum)',
   },
   {
     id: 'r713',
@@ -299,43 +282,25 @@ export const tikiRecipes: Recipe[] = [
     ],
     glassType: 'Coupe', garnish: 'None',
     tags: ['tiki', 'modern', 'daiquiri', 'rum', 'citrus'], difficulty: 'easy',
-  },
-  {
-    id: 'r715',
-    name: 'Banana Daiquiri (Frozen)',
-    description: 'The frozen tiki crowd-pleaser — ripe banana and rum blended into something cold, sweet, and unapologetically fun.',
-    ingredients: [
-      { ingredientId: 'rum-white',      name: 'White Rum',        amount: 2,    unit: 'oz' },
-      { ingredientId: 'banana-liqueur', name: 'Banana Liqueur',   amount: 0.5,  unit: 'oz' },
-      { ingredientId: 'lime-juice',     name: 'Fresh Lime Juice', amount: 0.75, unit: 'oz' },
-      { ingredientId: 'simple-syrup',   name: 'Simple Syrup',     amount: 0.5,  unit: 'oz' },
-    ],
-    instructions: [
-      'Combine all ingredients in a blender with 1 medium frozen banana and 1 cup ice.',
-      'Blend until completely smooth.',
-      'Pour into a chilled hurricane or goblet glass.',
-      'Garnish with a banana slice and cherry.',
-    ],
-    glassType: 'Hurricane', garnish: 'Banana slice, maraschino cherry',
-    tags: ['tiki', 'frozen', 'blended', 'rum', 'tropical'], difficulty: 'easy',
+    parentRecipeId: '4', variationLabel: 'Rhum Agricole',
   },
 
   // ── Beach Classics ─────────────────────────────────────────────────────────
   {
     id: 'r716',
     name: 'Painkiller',
-    description: 'The official drink of the BVI — coconut cream, OJ, and pineapple juice over Pusser\'s rum. The beach in a glass.',
+    description: 'The official drink of the BVI — dark rum, pineapple, OJ, and cream of coconut. The nutmeg on top is mandatory.',
     ingredients: [
-      { ingredientId: 'rum-dark',       name: 'Dark Rum (Pusser\'s)',amount: 2,  unit: 'oz' },
+      { ingredientId: 'rum-dark',       name: 'Dark Rum',         amount: 2,    unit: 'oz' },
       { ingredientId: 'pineapple-juice',name: 'Pineapple Juice',  amount: 4,    unit: 'oz' },
       { ingredientId: 'orange-juice',   name: 'Orange Juice',     amount: 1,    unit: 'oz' },
-      { ingredientId: 'coconut-cream',  name: 'Coconut Cream',    amount: 1,    unit: 'oz' },
+      { ingredientId: 'coconut-cream',  name: 'Cream of Coconut', amount: 1,    unit: 'oz' },
     ],
     instructions: [
       'Combine all ingredients in a shaker with ice.',
       'Shake vigorously.',
-      'Pour over ice in a tiki mug or large rocks glass.',
-      'Grate fresh nutmeg over the top.',
+      'Strain over ice in a tiki mug or rocks glass.',
+      'Grate fresh nutmeg generously on top. The nutmeg is not optional.',
     ],
     glassType: 'Tiki Mug', garnish: 'Freshly grated nutmeg, pineapple wedge',
     tags: ['tiki', 'tropical', 'beach', 'rum', 'coconut'], difficulty: 'easy',
@@ -354,25 +319,6 @@ export const tikiRecipes: Recipe[] = [
       'Blend until smooth and creamy.',
       'Pour into a chilled hurricane or goblet glass.',
       'Garnish with pineapple and a cherry.',
-    ],
-    glassType: 'Hurricane', garnish: 'Pineapple wedge, maraschino cherry, paper parasol',
-    tags: ['tiki', 'tropical', 'frozen', 'blended', 'rum', 'coconut'], difficulty: 'easy',
-  },
-  {
-    id: 'r718',
-    name: 'Blue Hawaiian',
-    description: 'The tropical showstopper — blue curaçao turns pineapple and coconut into something impossibly beautiful.',
-    ingredients: [
-      { ingredientId: 'rum-white',      name: 'White Rum',        amount: 1.5,  unit: 'oz' },
-      { ingredientId: 'blue-curacao',   name: 'Blue Curaçao',     amount: 1,    unit: 'oz' },
-      { ingredientId: 'coconut-cream',  name: 'Coconut Cream',    amount: 1,    unit: 'oz' },
-      { ingredientId: 'pineapple-juice',name: 'Pineapple Juice',  amount: 3,    unit: 'oz' },
-    ],
-    instructions: [
-      'Combine all ingredients in a blender with 1 cup of crushed ice.',
-      'Blend until smooth.',
-      'Pour into a hurricane glass.',
-      'Garnish and serve with a straw.',
     ],
     glassType: 'Hurricane', garnish: 'Pineapple wedge, maraschino cherry, paper parasol',
     tags: ['tiki', 'tropical', 'frozen', 'blended', 'rum', 'coconut'], difficulty: 'easy',
@@ -421,84 +367,7 @@ export const tikiRecipes: Recipe[] = [
     tags: ['tiki', 'tropical', 'frozen', 'blended', 'rum', 'coconut'], difficulty: 'easy',
   },
 
-  // ── Tiki Standards & Variations ───────────────────────────────────────────
-  {
-    id: 'r721',
-    name: 'Mai Tai (Modern Bar)',
-    description: 'The simplified modern version — one rum, lime, orgeat, and orange liqueur. Still excellent. Still essential.',
-    ingredients: [
-      { ingredientId: 'rum-aged',       name: 'Aged Rum',         amount: 2,    unit: 'oz' },
-      { ingredientId: 'orange-curacao', name: 'Orange Curaçao',   amount: 0.5,  unit: 'oz' },
-      { ingredientId: 'orgeat',         name: 'Orgeat',           amount: 0.5,  unit: 'oz' },
-      { ingredientId: 'lime-juice',     name: 'Fresh Lime Juice', amount: 0.75, unit: 'oz' },
-    ],
-    instructions: [
-      'Combine all ingredients in a shaker with crushed ice.',
-      'Shake and pour unstrained into a rocks glass.',
-      'Garnish with a spent lime shell and mint sprig.',
-    ],
-    glassType: 'Rocks', garnish: 'Spent lime shell, mint sprig',
-    tags: ['tiki', 'classic', 'rum', 'citrus'], difficulty: 'easy',
-  },
-  {
-    id: 'r722',
-    name: 'Dark \'n\' Stormy',
-    description: "Bermuda's national drink — Gosling's Black Seal rum on a ginger beer wave. Simple, perfect, non-negotiable.",
-    ingredients: [
-      { ingredientId: 'rum-dark',       name: 'Dark Rum (Gosling\'s)', amount: 2, unit: 'oz' },
-      { ingredientId: 'ginger-beer',    name: 'Ginger Beer',      amount: 4,    unit: 'oz' },
-      { ingredientId: 'lime-juice',     name: 'Fresh Lime Juice', amount: 0.5,  unit: 'oz' },
-    ],
-    instructions: [
-      'Fill a highball glass with ice.',
-      'Add lime juice and ginger beer.',
-      'Float dark rum on top.',
-      'Garnish with a lime wedge.',
-    ],
-    glassType: 'Highball', garnish: 'Lime wedge',
-    tags: ['tiki', 'tropical', 'rum', 'ginger', 'easy'], difficulty: 'easy',
-  },
-  {
-    id: 'r723',
-    name: 'Suffering Bastard',
-    description: "Cairo's Shepheard's Hotel, 1942 — gin, rum, ginger beer, and bitters to cure a hangover. Doctor's orders.",
-    ingredients: [
-      { ingredientId: 'rum-dark',       name: 'Dark Rum',         amount: 1,    unit: 'oz' },
-      { ingredientId: 'gin',            name: 'Gin',              amount: 1,    unit: 'oz' },
-      { ingredientId: 'ginger-beer',    name: 'Ginger Beer',      amount: 4,    unit: 'oz' },
-      { ingredientId: 'lime-juice',     name: 'Fresh Lime Juice', amount: 0.5,  unit: 'oz' },
-      { ingredientId: 'angostura-bitters',name:'Angostura Bitters',amount:2,   unit: 'dashes' },
-    ],
-    instructions: [
-      'Fill a tall glass or tiki mug with ice.',
-      'Add rum, gin, lime juice, and bitters.',
-      'Top with ginger beer and stir gently.',
-      'Garnish with a mint sprig and lime wheel.',
-    ],
-    glassType: 'Tiki Mug', garnish: 'Mint sprig, lime wheel',
-    tags: ['tiki', 'classic', 'rum', 'gin', 'ginger'], difficulty: 'easy',
-  },
-  {
-    id: 'r724',
-    name: 'Planter\'s Punch',
-    description: 'The classic Caribbean punch formula — one sour, two sweet, three strong, four weak. Math you can drink.',
-    ingredients: [
-      { ingredientId: 'rum-dark',       name: 'Dark Rum',         amount: 3,    unit: 'oz' },
-      { ingredientId: 'lime-juice',     name: 'Fresh Lime Juice', amount: 1,    unit: 'oz' },
-      { ingredientId: 'simple-syrup',   name: 'Simple Syrup',     amount: 2,    unit: 'oz' },
-      { ingredientId: 'soda-water',     name: 'Soda Water',       amount: 4,    unit: 'oz' },
-      { ingredientId: 'angostura-bitters',name:'Angostura Bitters',amount:3,   unit: 'dashes' },
-      { ingredientId: 'grenadine',      name: 'Grenadine',        amount: 0.25, unit: 'oz' },
-    ],
-    instructions: [
-      'Combine rum, lime juice, simple syrup, and grenadine in a shaker with ice.',
-      'Shake and strain into a tall glass over ice.',
-      'Top with soda water and stir gently.',
-      'Add bitters and garnish.',
-    ],
-    glassType: 'Highball', garnish: 'Lime wheel, orange slice, cherry, mint sprig',
-    tags: ['tiki', 'classic', 'tropical', 'rum', 'punch'], difficulty: 'easy',
-  },
+  // ── Rhum Agricole Feature Drinks ──────────────────────────────────────────
   {
     id: 'r725',
     name: 'Ti\' Punch',
@@ -518,27 +387,9 @@ export const tikiRecipes: Recipe[] = [
     tags: ['tiki', 'classic', 'rum', 'french-caribbean', 'simple'], difficulty: 'easy',
   },
   {
-    id: 'r726',
-    name: 'Daiquiri (Classic)',
-    description: "Hemingway's daily habit, perfected — rum, lime, sugar. Three ingredients. No blender needed.",
-    ingredients: [
-      { ingredientId: 'rum-white',      name: 'White Rum',        amount: 2,    unit: 'oz' },
-      { ingredientId: 'lime-juice',     name: 'Fresh Lime Juice', amount: 0.75, unit: 'oz' },
-      { ingredientId: 'simple-syrup',   name: 'Simple Syrup',     amount: 0.75, unit: 'oz' },
-    ],
-    instructions: [
-      'Combine all ingredients in a shaker with ice.',
-      'Shake vigorously until very cold.',
-      'Double strain into a chilled coupe.',
-      'No garnish required. Just drink it while cold.',
-    ],
-    glassType: 'Coupe', garnish: 'None (optional: lime wheel)',
-    tags: ['tiki', 'classic', 'rum', 'citrus', 'sour'], difficulty: 'easy',
-  },
-  {
     id: 'r727',
     name: 'Frozen Daiquiri',
-    description: "El Floridita's famous blended version — what Hemingway actually drank, blended smooth with extra rum.",
+    description: "El Floridita's famous blended version — what Hemingway actually drank, blended smooth with maraschino.",
     ingredients: [
       { ingredientId: 'rum-white',      name: 'White Rum',        amount: 2,    unit: 'oz' },
       { ingredientId: 'lime-juice',     name: 'Fresh Lime Juice', amount: 1,    unit: 'oz' },
@@ -553,65 +404,8 @@ export const tikiRecipes: Recipe[] = [
     ],
     glassType: 'Coupe', garnish: 'Maraschino cherry',
     tags: ['tiki', 'classic', 'frozen', 'blended', 'rum', 'citrus'], difficulty: 'easy',
+    parentRecipeId: '4', variationLabel: 'Frozen',
   },
-  {
-    id: 'r728',
-    name: 'Hemingway Daiquiri',
-    description: 'Double rum, half the sugar, grapefruit and maraschino — created for a diabetic who loved drinking. The numbers make sense.',
-    ingredients: [
-      { ingredientId: 'rum-white',      name: 'White Rum',        amount: 2,    unit: 'oz' },
-      { ingredientId: 'grapefruit-juice',name:'Fresh Grapefruit Juice', amount:1, unit:'oz'},
-      { ingredientId: 'lime-juice',     name: 'Fresh Lime Juice', amount: 0.5,  unit: 'oz' },
-      { ingredientId: 'maraschino-liqueur',name:'Maraschino Liqueur',amount:0.25,unit:'oz'},
-    ],
-    instructions: [
-      'Combine all ingredients in a shaker with ice.',
-      'Shake vigorously.',
-      'Double strain into a chilled coupe.',
-      'Optional: serve frozen — blend with 1 cup ice.',
-    ],
-    glassType: 'Coupe', garnish: 'Maraschino cherry',
-    tags: ['tiki', 'classic', 'rum', 'citrus', 'sour'], difficulty: 'easy',
-  },
-  {
-    id: 'r729',
-    name: 'Strawberry Daiquiri (Frozen)',
-    description: 'The crowd favorite that bartenders secretly love making — ripe strawberries blended with rum and lime into something irresistible.',
-    ingredients: [
-      { ingredientId: 'rum-white',      name: 'White Rum',        amount: 2,    unit: 'oz' },
-      { ingredientId: 'lime-juice',     name: 'Fresh Lime Juice', amount: 0.75, unit: 'oz' },
-      { ingredientId: 'simple-syrup',   name: 'Simple Syrup',     amount: 0.75, unit: 'oz' },
-    ],
-    instructions: [
-      'Blend rum, lime juice, simple syrup, and 6–8 fresh or frozen strawberries with 1 cup ice.',
-      'Blend until completely smooth.',
-      'Pour into a chilled hurricane or goblet glass.',
-      'Garnish with a strawberry on the rim.',
-    ],
-    glassType: 'Hurricane', garnish: 'Fresh strawberry, lime wheel',
-    tags: ['tiki', 'frozen', 'blended', 'rum', 'fruity'], difficulty: 'easy',
-  },
-  {
-    id: 'r730',
-    name: 'Mango Colada',
-    description: 'A tropical upgrade to the piña colada — mango takes coconut somewhere richer, sweeter, more dangerous.',
-    ingredients: [
-      { ingredientId: 'rum-white',      name: 'White Rum',        amount: 1.5,  unit: 'oz' },
-      { ingredientId: 'coconut-cream',  name: 'Coconut Cream',    amount: 1,    unit: 'oz' },
-      { ingredientId: 'mango-juice',    name: 'Mango Juice',      amount: 3,    unit: 'oz' },
-      { ingredientId: 'lime-juice',     name: 'Fresh Lime Juice', amount: 0.5,  unit: 'oz' },
-    ],
-    instructions: [
-      'Combine all ingredients in a blender with 1 cup of crushed ice.',
-      'Blend until smooth and creamy.',
-      'Pour into a hurricane or goblet glass.',
-      'Garnish with a mango slice and mint.',
-    ],
-    glassType: 'Hurricane', garnish: 'Mango slice, mint sprig',
-    tags: ['tiki', 'tropical', 'frozen', 'blended', 'rum', 'coconut'], difficulty: 'easy',
-  },
-
-  // ── Rhum Agricole Feature Drinks ──────────────────────────────────────────
   {
     id: 'r731',
     name: 'Rhum Agricole Sour',
@@ -670,6 +464,7 @@ export const tikiRecipes: Recipe[] = [
     ],
     glassType: 'Coupe', garnish: 'Lime wheel',
     tags: ['tiki', 'classic', 'rum', 'citrus', 'daiquiri'], difficulty: 'easy',
+    parentRecipeId: '4', variationLabel: 'Bermuda (Falernum)',
   },
 
   // ── Tiki Punches & Shared Drinks ──────────────────────────────────────────
@@ -693,7 +488,7 @@ export const tikiRecipes: Recipe[] = [
       'Serve over ice in individual cups or ladle into tiki mugs.',
       'Garnish each pour with pineapple and mint.',
     ],
-    glassType: 'Punch Bowl', garnish: 'Pineapple chunks, mint, cherries, paper parasols — the works',
+    glassType: 'Punch Bowl', garnish: 'Pineapple chunks, mint, cherries, paper parasols',
     tags: ['tiki', 'punch', 'shared', 'batch', 'rum', 'tropical'], difficulty: 'easy',
   },
   {
@@ -718,7 +513,7 @@ export const tikiRecipes: Recipe[] = [
     tags: ['tiki', 'classic', 'rum', 'citrus', 'grog'], difficulty: 'easy',
   },
 
-  // ── Simple Tiki (Easy Builders) ────────────────────────────────────────────
+  // ── Simple Tiki ────────────────────────────────────────────────────────────
   {
     id: 'r736',
     name: 'Orgeat Sour',
@@ -812,7 +607,7 @@ export const tikiRecipes: Recipe[] = [
     tags: ['tiki', 'sour', 'rum', 'citrus', 'classic'], difficulty: 'easy',
   },
 
-  // ── Punch Variations & Extended Tiki ──────────────────────────────────────
+  // ── Tiki Variations & Extended ─────────────────────────────────────────────
   {
     id: 'r741',
     name: 'Beachcomber',
@@ -832,6 +627,7 @@ export const tikiRecipes: Recipe[] = [
     ],
     glassType: 'Coupe', garnish: 'Lime wheel',
     tags: ['tiki', 'classic', 'rum', 'citrus', 'daiquiri'], difficulty: 'easy',
+    parentRecipeId: '4', variationLabel: 'Beachcomber',
   },
   {
     id: 'r742',
@@ -888,9 +684,9 @@ export const tikiRecipes: Recipe[] = [
       'Combine all except soda in a shaker with crushed ice.',
       'Shake and pour unstrained into a tall glass.',
       'Top with soda water.',
-      'Garnish with a backscratcher (traditional) and mint.',
+      'Garnish with mint.',
     ],
-    glassType: 'Highball', garnish: 'Mint bouquet, cherry, bamboo backscratcher',
+    glassType: 'Highball', garnish: 'Mint bouquet, cherry',
     tags: ['tiki', 'classic', 'tropical', 'rum', 'bourbon'], difficulty: 'easy',
   },
   {
@@ -911,6 +707,7 @@ export const tikiRecipes: Recipe[] = [
     ],
     glassType: 'Coupe', garnish: 'Cucumber ribbon',
     tags: ['tiki', 'modern', 'rum', 'citrus', 'elegant'], difficulty: 'medium',
+    parentRecipeId: '4', variationLabel: 'Elderflower & Cucumber',
   },
   {
     id: 'r746',
@@ -949,6 +746,7 @@ export const tikiRecipes: Recipe[] = [
     ],
     glassType: 'Rocks', garnish: 'Orange twist, toasted coconut flakes',
     tags: ['tiki', 'modern', 'rum', 'bitter', 'stirred'], difficulty: 'easy',
+    parentRecipeId: '3', variationLabel: 'Coconut (Rum)',
   },
   {
     id: 'r748',
@@ -1106,7 +904,7 @@ export const tikiRecipes: Recipe[] = [
   {
     id: 'r756',
     name: 'Volcano Bowl',
-    description: 'The showstopping communal tiki presentation — a bowl of booze with a lit 151 volcano in the center. Handle carefully.',
+    description: 'The showstopping communal tiki presentation — a bowl of booze with a lit 151 volcano in the center.',
     ingredients: [
       { ingredientId: 'rum-white',      name: 'White Rum',        amount: 2,    unit: 'oz' },
       { ingredientId: 'rum-dark',       name: 'Dark Rum',         amount: 2,    unit: 'oz' },
@@ -1129,7 +927,7 @@ export const tikiRecipes: Recipe[] = [
   {
     id: 'r757',
     name: 'Tiki Tower',
-    description: 'A dramatic stacked tiki build — three rums layered with juice and ice in a tall vessel. Looks like effort. Tastes like vacation.',
+    description: 'A dramatic stacked tiki build — three rums layered with juice and ice in a tall vessel.',
     ingredients: [
       { ingredientId: 'rum-white',      name: 'White Rum (bottom)', amount: 1,  unit: 'oz' },
       { ingredientId: 'rum-aged',       name: 'Gold Rum (middle)', amount: 1,   unit: 'oz' },
@@ -1168,6 +966,7 @@ export const tikiRecipes: Recipe[] = [
     ],
     glassType: 'Rocks', garnish: 'Orange twist, maraschino cherry',
     tags: ['tiki', 'stirred', 'rum', 'old-fashioned', 'classic'], difficulty: 'easy',
+    parentRecipeId: '1', variationLabel: 'Rum (Tiki)',
   },
   {
     id: 'r759',

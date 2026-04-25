@@ -72,27 +72,6 @@ export const cocktailsVol2: Recipe[] = [
     difficulty: 'easy',
   },
   {
-    id: '154',
-    name: 'Painkiller',
-    description: 'Pusser\'s rum, pineapple, orange, and coconut cream — Caribbean sunshine in a glass.',
-    ingredients: [
-      { ingredientId: 'rum-dark', name: 'Dark Rum', amount: 2, unit: 'oz' },
-      { ingredientId: 'pineapple-juice', name: 'Pineapple Juice', amount: 4, unit: 'oz' },
-      { ingredientId: 'orange-juice', name: 'Orange Juice', amount: 1, unit: 'oz' },
-      { ingredientId: 'coconut-cream', name: 'Cream of Coconut', amount: 1, unit: 'oz' },
-    ],
-    instructions: [
-      'Combine all ingredients in a shaker with ice.',
-      'Shake vigorously until well combined.',
-      'Pour over a large ice cube in a rocks or tiki glass.',
-      'Grate fresh nutmeg over the top.',
-    ],
-    glassType: 'Tiki',
-    garnish: 'Fresh nutmeg, pineapple wedge',
-    tags: ['rum', 'tiki', 'tropical', 'creamy'],
-    difficulty: 'easy',
-  },
-  {
     id: '155',
     name: 'Jungle Bird',
     description: 'Campari meets rum in this bittersweet tiki masterpiece from the Kuala Lumpur Hilton.',
@@ -178,6 +157,7 @@ export const cocktailsVol2: Recipe[] = [
     garnish: 'Orange peel',
     tags: ['mezcal', 'smoky', 'stirred', 'bitter', 'low-abv'],
     difficulty: 'easy',
+    parentRecipeId: '3', variationLabel: 'Mezcal (Smoky)',
   },
   {
     id: '159',
@@ -199,6 +179,7 @@ export const cocktailsVol2: Recipe[] = [
     garnish: 'Flamed orange peel',
     tags: ['tequila', 'mezcal', 'smoky', 'stirred', 'spirit-forward'],
     difficulty: 'medium',
+    parentRecipeId: '1', variationLabel: 'Oaxacan',
   },
   {
     id: '160',
@@ -684,6 +665,7 @@ export const cocktailsVol2: Recipe[] = [
     garnish: 'Fresh cranberries, lime wheel',
     tags: ['vodka', 'holiday', 'seasonal', 'refreshing', 'easy'],
     difficulty: 'easy',
+    parentRecipeId: '19', variationLabel: 'Cranberry',
   },
   {
     id: '184',
@@ -1154,26 +1136,6 @@ export const cocktailsVol2: Recipe[] = [
     difficulty: 'medium',
   },
   {
-    id: '206',
-    name: 'Dark \'n\' Stormy',
-    description: 'Dark Gosling\'s rum floated on ginger beer — Bermuda\'s signature in a glass.',
-    ingredients: [
-      { ingredientId: 'rum-dark', name: 'Dark Rum', amount: 2, unit: 'oz' },
-      { ingredientId: 'ginger-beer', name: 'Ginger Beer', amount: 4, unit: 'oz' },
-      { ingredientId: 'lime-juice', name: 'Fresh Lime Juice', amount: 0.5, unit: 'oz' },
-    ],
-    instructions: [
-      'Fill a highball glass with ice.',
-      'Add lime juice, then pour ginger beer.',
-      'Float dark rum on top by pouring over the back of a spoon.',
-      'Garnish with a lime wedge.',
-    ],
-    glassType: 'Highball',
-    garnish: 'Lime wedge',
-    tags: ['rum', 'classic', 'tropical', 'easy'],
-    difficulty: 'easy',
-  },
-  {
     id: '207',
     name: 'Clover Club',
     description: 'A pre-Prohibition Philadelphia classic — gin, raspberry, lemon, and egg white.',
@@ -1509,6 +1471,7 @@ export const cocktailsVol2: Recipe[] = [
     garnish: 'Lime wheel, candied ginger',
     tags: ['mezcal', 'smoky', 'easy', 'refreshing'],
     difficulty: 'easy',
+    parentRecipeId: '19', variationLabel: 'Mezcal',
   },
   {
     id: '223',
@@ -1611,26 +1574,6 @@ export const cocktailsVol2: Recipe[] = [
     glassType: 'Coupe',
     garnish: 'Fresh sage leaf',
     tags: ['brandy', 'seasonal', 'autumn', 'shaken', 'herbal'],
-    difficulty: 'easy',
-  },
-  {
-    id: '228',
-    name: 'Moscow Mule',
-    description: 'Vodka, ginger beer, and lime in a copper mug — the cocktail that made vodka famous.',
-    ingredients: [
-      { ingredientId: 'vodka', name: 'Vodka', amount: 2, unit: 'oz' },
-      { ingredientId: 'lime-juice', name: 'Fresh Lime Juice', amount: 0.5, unit: 'oz' },
-      { ingredientId: 'ginger-beer', name: 'Ginger Beer', amount: 4, unit: 'oz' },
-    ],
-    instructions: [
-      'Fill a copper mug with crushed ice.',
-      'Add vodka and lime juice.',
-      'Top with ginger beer and stir briefly.',
-      'Garnish with a lime wheel and mint sprig.',
-    ],
-    glassType: 'Copper Mug',
-    garnish: 'Lime wheel, mint sprig',
-    tags: ['vodka', 'classic', 'easy', 'refreshing'],
     difficulty: 'easy',
   },
   {

@@ -544,6 +544,148 @@ body {
 
 .splash-alert strong { color: var(--accent); }
 
+/* ── Variations chip & panel ── */
+.rc-variations-chip {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(74, 187, 196, 0.10);
+  border: 1px solid rgba(74, 187, 196, 0.30);
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin: 4px 0 6px;
+  transition: background 0.15s, border-color 0.15s;
+  letter-spacing: 0.01em;
+}
+.rc-variations-chip:hover,
+.rc-variations-chip--open {
+  background: rgba(74, 187, 196, 0.18);
+  border-color: var(--teal);
+}
+
+.rc-variations-panel {
+  border-top: 1px solid var(--border);
+  padding: 10px 16px 12px;
+  background: rgba(74, 187, 196, 0.03);
+}
+
+.rc-variations-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 0;
+}
+
+.rc-variation-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.rc-variation-pill:hover { border-color: var(--teal); color: var(--text-primary); }
+.rc-variation-pill--ready { border-color: rgba(74, 187, 196, 0.4); color: var(--teal); }
+.rc-variation-pill--selected {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #091a1c;
+  font-weight: 600;
+}
+.rc-variation-ready-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.rc-variation-detail {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.rc-variation-detail-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+.rc-variation-detail-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+.rc-variation-ingredients {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+.rc-variation-ing {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.rc-variation-ing-amt {
+  color: var(--text-muted);
+  min-width: 50px;
+  flex-shrink: 0;
+}
+.rc-variation-instructions {
+  margin-bottom: 8px;
+}
+.rc-variation-step {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0 0 4px;
+  line-height: 1.4;
+}
+.rc-variation-step-n {
+  color: var(--teal);
+  font-weight: 600;
+  margin-right: 3px;
+}
+.rc-variation-garnish {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 4px 0;
+}
+.rc-variation-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+}
+.rc-variation-missing {
+  font-size: 11px;
+  color: var(--accent);
+  margin: 6px 0 0;
+}
+
+.filter-tab--variations {
+  border-style: dashed;
+}
+.filter-tab--variations.active {
+  background: rgba(74, 187, 196, 0.15);
+  border-style: solid;
+  border-color: var(--teal);
+  color: var(--teal);
+  font-weight: 600;
+}
+
 /* ── Make It syrup link ── */
 .rc-make-it-link {
   background: none;

@@ -32,6 +32,7 @@ export const sampleRecipes: Recipe[] = [
     garnish: 'Orange peel',
     tags: ['whiskey', 'classic', 'stirred'],
     difficulty: 'easy',
+    variations: ['r758', '159'],
   },
   {
     id: '2',
@@ -51,6 +52,7 @@ export const sampleRecipes: Recipe[] = [
     garnish: 'Salt rim, lime wheel',
     tags: ['tequila', 'classic', 'shaken', 'citrus'],
     difficulty: 'easy',
+    variations: ['17', '85'],
   },
   {
     id: '3',
@@ -71,6 +73,7 @@ export const sampleRecipes: Recipe[] = [
     garnish: 'Orange peel',
     tags: ['gin', 'classic', 'stirred', 'bitter'],
     difficulty: 'easy',
+    variations: ['158', 'r712', 'r747'],
   },
   {
     id: '4',
@@ -88,6 +91,7 @@ export const sampleRecipes: Recipe[] = [
     glassType: 'Coupe',
     tags: ['rum', 'classic', 'shaken', 'citrus'],
     difficulty: 'easy',
+    variations: ['122', '123', '124', 'r727', 'r714', 'r733', 'r741', 'r745'],
   },
   {
     id: '5',
@@ -359,6 +363,7 @@ export const sampleRecipes: Recipe[] = [
     garnish: 'Lime wheel',
     tags: ['tequila', 'modern-classic', 'shaken', 'citrus'],
     difficulty: 'easy',
+    parentRecipeId: '2', variationLabel: "Tommy's (Agave)",
   },
   {
     id: '18',
@@ -401,6 +406,7 @@ export const sampleRecipes: Recipe[] = [
     garnish: 'Lime wedge, mint sprig',
     tags: ['vodka', 'classic', 'highball', 'built'],
     difficulty: 'easy',
+    variations: ['147', '148', '183', '222'],
   },
   {
     id: '20',
@@ -545,6 +551,7 @@ export const sampleRecipes: Recipe[] = [
     garnish: 'Mint sprig, lime shell',
     tags: ['rum', 'classic', 'tiki', 'shaken', 'citrus'],
     difficulty: 'medium',
+    variations: ['r703'],
   },
 
   // ── Wine & Sparkling ─────────────────────────────────────────────────────────

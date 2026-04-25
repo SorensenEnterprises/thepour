@@ -493,6 +493,7 @@ export const extendedRecipes: Recipe[] = [
     garnish: 'Jalapeño slice, salt or tajín rim',
     tags: ['tequila', 'spicy', 'citrus', 'shaken'],
     difficulty: 'easy',
+    parentRecipeId: '2', variationLabel: 'Spicy',
   },
   {
     id: '86',
@@ -684,26 +685,6 @@ export const extendedRecipes: Recipe[] = [
     glassType: 'Hurricane',
     garnish: 'Pineapple slice, cherry',
     tags: ['rum', 'tiki', 'tropical', 'blended', 'fruity'],
-    difficulty: 'easy',
-  },
-  {
-    id: '95',
-    name: 'Dark and Stormy',
-    description: 'Dark rum and ginger beer over ice — Bermuda\'s national drink.',
-    ingredients: [
-      { ingredientId: 'rum-dark', name: "Gosling's Black Seal Rum", amount: 2, unit: 'oz' },
-      { ingredientId: 'ginger-beer', name: 'Ginger Beer', amount: 4, unit: 'oz' },
-      { ingredientId: 'lime-juice', name: 'Fresh Lime Juice', amount: 0.5, unit: 'oz' },
-    ],
-    instructions: [
-      'Fill a highball glass with ice.',
-      'Add lime juice.',
-      'Pour ginger beer.',
-      'Float dark rum on top by pouring over the back of a spoon.',
-    ],
-    glassType: 'Highball',
-    garnish: 'Lime wedge',
-    tags: ['rum', 'classic', 'effervescent', 'spicy'],
     difficulty: 'easy',
   },
   // ── Vodka ─────────────────────────────────────────────────────────────────────
@@ -1220,26 +1201,6 @@ export const extendedRecipes: Recipe[] = [
     difficulty: 'easy',
   },
   {
-    id: '121',
-    name: 'Daiquiri',
-    description: 'Rum, lime, and sugar — the perfect cocktail in its simplest form.',
-    ingredients: [
-      { ingredientId: 'rum-white', name: 'White Rum', amount: 2, unit: 'oz' },
-      { ingredientId: 'lime-juice', name: 'Fresh Lime Juice', amount: 0.75, unit: 'oz' },
-      { ingredientId: 'simple-syrup', name: 'Simple Syrup', amount: 0.5, unit: 'oz' },
-    ],
-    instructions: [
-      'Combine all ingredients in a shaker with ice.',
-      'Shake vigorously until very cold.',
-      'Double strain into a chilled coupe.',
-      'Garnish with a lime wheel.',
-    ],
-    glassType: 'Coupe',
-    garnish: 'Lime wheel',
-    tags: ['rum', 'classic', 'citrus', 'shaken'],
-    difficulty: 'easy',
-  },
-  {
     id: '122',
     name: 'Hemingway Daiquiri',
     description: 'White rum, lime, grapefruit, and maraschino — Papa\'s own double-frozen version.',
@@ -1257,6 +1218,7 @@ export const extendedRecipes: Recipe[] = [
     glassType: 'Coupe',
     tags: ['rum', 'classic', 'citrus', 'shaken'],
     difficulty: 'easy',
+    parentRecipeId: '4', variationLabel: 'Hemingway (Grapefruit)',
   },
   {
     id: '123',
@@ -1278,6 +1240,7 @@ export const extendedRecipes: Recipe[] = [
     garnish: 'Banana slice',
     tags: ['rum', 'classic', 'tropical', 'fruity', 'shaken'],
     difficulty: 'easy',
+    parentRecipeId: '4', variationLabel: 'Banana',
   },
   {
     id: '124',
@@ -1298,6 +1261,7 @@ export const extendedRecipes: Recipe[] = [
     garnish: 'Fresh strawberry',
     tags: ['rum', 'classic', 'tropical', 'fruity', 'blended'],
     difficulty: 'easy',
+    parentRecipeId: '4', variationLabel: 'Strawberry',
   },
   {
     id: '125',
@@ -1317,28 +1281,6 @@ export const extendedRecipes: Recipe[] = [
     garnish: 'Pineapple wedge, cherry',
     tags: ['rum', 'classic', 'tropical', 'creamy', 'blended'],
     difficulty: 'easy',
-  },
-  {
-    id: '126',
-    name: 'Mai Tai',
-    description: 'Rum, orange curaçao, lime, and orgeat — Trader Vic\'s greatest creation.',
-    ingredients: [
-      { ingredientId: 'rum-dark', name: 'Aged Jamaican Rum', amount: 1, unit: 'oz' },
-      { ingredientId: 'rum-white', name: 'Martinique Rhum Agricole', amount: 1, unit: 'oz' },
-      { ingredientId: 'triple-sec', name: 'Orange Curaçao', amount: 0.5, unit: 'oz' },
-      { ingredientId: 'lime-juice', name: 'Fresh Lime Juice', amount: 0.75, unit: 'oz' },
-      { ingredientId: 'orgeat', name: 'Orgeat', amount: 0.5, unit: 'oz' },
-    ],
-    instructions: [
-      'Combine all ingredients in a shaker with ice.',
-      'Shake until well chilled.',
-      'Strain into a rocks glass or tiki mug over crushed ice.',
-      'Garnish with a spent lime shell, mint, and cherry.',
-    ],
-    glassType: 'Rocks',
-    garnish: 'Mint sprig, lime shell, cherry',
-    tags: ['rum', 'classic', 'tiki', 'tropical', 'shaken'],
-    difficulty: 'medium',
   },
   {
     id: '127',
@@ -1758,6 +1700,7 @@ export const extendedRecipes: Recipe[] = [
     garnish: 'Lime wheel, candied ginger',
     tags: ['whiskey', 'bourbon', 'modern-classic', 'citrus', 'spicy', 'effervescent'],
     difficulty: 'easy',
+    parentRecipeId: '19', variationLabel: 'Kentucky (Bourbon)',
   },
   {
     id: '148',
@@ -1778,6 +1721,7 @@ export const extendedRecipes: Recipe[] = [
     garnish: 'Lime wedge, jalapeño slice',
     tags: ['tequila', 'modern-classic', 'citrus', 'spicy', 'effervescent'],
     difficulty: 'easy',
+    parentRecipeId: '19', variationLabel: 'Tequila',
   },
   {
     id: '149',

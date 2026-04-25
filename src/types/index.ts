@@ -96,6 +96,9 @@ export interface Recipe {
   garnish?: string;
   tags: string[];
   difficulty: 'easy' | 'medium' | 'hard';
+  parentRecipeId?: string;
+  variationLabel?: string;
+  variations?: string[];
 }
 
 export type BottleSize = 50 | 375 | 750 | 1000 | 1750;

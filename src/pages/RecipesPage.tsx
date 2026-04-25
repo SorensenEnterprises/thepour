@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
 type ReadyFilter  = 'all' | 'ready';
 type SpiritFilter = 'all' | 'whiskey' | 'gin' | 'tequila' | 'vodka' | 'rum' | 'other';
+type VariationFilter = 'hide' | 'show';
 
 const SPIRIT_FILTERS: { value: SpiritFilter; label: string }[] = [
   { value: 'all',     label: 'All' },
@@ -102,12 +103,13 @@ function RecipeSection({ label, countColor, matches, open, onToggle, onRenderCar
 export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuantity, onRecipeMade, checkedPantryIds, onTogglePantry }: Props) {
   const { user } = useAuth();
 
-  const [category,      setCategory]      = useState<DrinkCategory>('cocktail');
-  const [readyFilter,   setReadyFilter]   = useState<ReadyFilter>('all');
-  const [spiritFilter,  setSpiritFilter]  = useState<SpiritFilter>('all');
-  const [search,        setSearch]        = useState('');
-  const [toasts,        setToasts]        = useState<Toast[]>([]);
-  const [toastCounter,  setToastCounter]  = useState(0);
+  const [category,         setCategory]         = useState<DrinkCategory>('cocktail');
+  const [readyFilter,      setReadyFilter]      = useState<ReadyFilter>('all');
+  const [spiritFilter,     setSpiritFilter]     = useState<SpiritFilter>('all');
+  const [variationFilter,  setVariationFilter]  = useState<VariationFilter>('hide');
+  const [search,           setSearch]           = useState('');
+  const [toasts,           setToasts]           = useState<Toast[]>([]);
+  const [toastCounter,     setToastCounter]     = useState(0);
 
   // Recipe section open state — ready starts open, others collapsed
   const [recipeSections, setRecipeSections] = useState<Record<RecipeSectionKey, boolean>>({
@@ -160,9 +162,16 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
     return matches.filter(({ recipe }) => recipe.tags.includes(tag));
   }, [matches, category]);
 
+  // Count all variations across all matches (for the subtitle)
+  const variationCount = useMemo(() =>
+    categoryMatches.filter(({ recipe }) => !!recipe.parentRecipeId).length,
+  [categoryMatches]);
+
   const displayed = useMemo(() => {
     const q = search.trim().toLowerCase();
     return categoryMatches.filter(({ recipe, canMake }) => {
+      // Hide variations unless the user has toggled them on
+      if (variationFilter === 'hide' && recipe.parentRecipeId) return false;
       if (readyFilter === 'ready' && !canMake) return false;
       if (category === 'cocktail' && spiritFilter !== 'all') {
         const tags = recipe.tags;
@@ -177,7 +186,7 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
       if (q && !recipe.name.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [categoryMatches, category, readyFilter, spiritFilter, search]);
+  }, [categoryMatches, category, readyFilter, spiritFilter, variationFilter, search]);
 
   const readyCount = categoryMatches.filter(m => m.canMake).length;
 
@@ -195,8 +204,17 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
     shot:         'Shot Recipes',
   };
 
+  const matchesById = useMemo(() => {
+    const map = new Map<string, RecipeMatch>();
+    matches.forEach(m => map.set(m.recipe.id, m));
+    return map;
+  }, [matches]);
+
   function renderCard(m: RecipeMatch) {
     const { recipe, canMake, missingIngredients, splashWarnings, haveCount, totalCount } = m;
+    const variationMatches = recipe.variations
+      ?.map(id => matchesById.get(id))
+      .filter((vm): vm is RecipeMatch => !!vm);
     return (
       <RecipeCard
         key={recipe.id}
@@ -211,6 +229,7 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
         userId={user?.id ?? null}
         checkedPantryIds={checkedPantryIds}
         onTogglePantry={onTogglePantry}
+        variationMatches={variationMatches}
       />
     );
   }
@@ -232,7 +251,8 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
 
         <h2>{PAGE_TITLES[category]}</h2>
         <p className="page-subtitle">
-          {`${readyCount} of ${categoryMatches.length} recipes ready with your current bar`}
+          {`${readyCount} of ${categoryMatches.length - variationCount} recipes ready`}
+          {variationCount > 0 && ` + ${variationCount} variation${variationCount !== 1 ? 's' : ''}`}
         </p>
 
         <div className="recipes-search-row">
@@ -284,6 +304,14 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
               Ready ({readyCount})
             </button>
           </div>
+          {variationCount > 0 && (
+            <button
+              className={`filter-tab filter-tab--variations${variationFilter === 'show' ? ' active' : ''}`}
+              onClick={() => setVariationFilter(v => v === 'hide' ? 'show' : 'hide')}
+            >
+              {variationFilter === 'show' ? `Hide variations` : `Show variations (${variationCount})`}
+            </button>
+          )}
         </div>
       </div>
 
