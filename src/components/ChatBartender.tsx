@@ -98,14 +98,16 @@ function renderMarkdown(text: string): React.ReactElement {
   return <>{elements}</>;
 }
 
-const QUICK_REPLIES_INITIAL = [
-  'Surprise me 🎲',
-  'Something classic',
-  'Light and refreshing',
-  'Strong and stirred',
-  "I'm feeling adventurous",
-  'Keep it light 🌿',
-];
+function getInitialQuickReplies(lightPref: boolean): string[] {
+  return [
+    'Surprise me 🎲',
+    'Something classic',
+    'Light and refreshing',
+    'Strong and stirred',
+    "I'm feeling adventurous",
+    lightPref ? 'All options 🍸' : 'Keep it light 🌿',
+  ];
+}
 
 function getOpeningMessage(
   mode: BarMode,
@@ -176,7 +178,8 @@ export function ChatBartender({
   const [messages, setMessages] = useState<Message[]>([
     { role: 'bartender', text: openingText, id: openingId },
   ]);
-  const [quickReplies, setQuickReplies] = useState<string[]>(QUICK_REPLIES_INITIAL);
+  const [quickReplies, setQuickReplies] = useState<string[]>(() => getInitialQuickReplies(lightPreference));
+  const [lightOffToast, setLightOffToast] = useState(false);
   const [input, setInput]   = useState('');
   const [typing, setTyping] = useState(false);
 
@@ -360,6 +363,11 @@ export function ChatBartender({
       sendMessage(chip, true);
       return;
     }
+    if (chip === 'All options 🍸') {
+      updateLightPreference(false);
+      sendMessage(chip, false);
+      return;
+    }
     sendMessage(chip);
   }
 
@@ -399,7 +407,21 @@ export function ChatBartender({
 
       <div className="cb-header">
         {lightPreference && (
-          <span className="cb-light-badge">🌿 Light mode</span>
+          <button
+            className="cb-light-badge cb-light-badge--btn"
+            onClick={() => {
+              updateLightPreference(false);
+              setLightOffToast(true);
+              setTimeout(() => setLightOffToast(false), 2500);
+            }}
+            aria-label="Turn off light mode"
+            title="Tap to turn off light mode"
+          >
+            🌿 Light mode <span className="cb-light-badge-x">×</span>
+          </button>
+        )}
+        {lightOffToast && (
+          <span className="cb-light-off-toast">Light mode off</span>
         )}
         <div className="cb-header-actions">
           <button
