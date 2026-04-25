@@ -18,7 +18,7 @@ type Spirit        = 'brown' | 'clear' | 'agave'  | 'any';
 type Style         = 'classic' | 'adventurous';
 type LightPref     = 'light-pref' | 'no-pref';
 type Strength      = 'light'   | 'balanced' | 'bold';
-type Phase         = 'mode-pick' | 'im-out-where' | 'scan-prompt' | 'chat' | 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
+type Phase         = 'im-out-where' | 'scan-prompt' | 'chat' | 'category-pick' | 'question' | 'shaking' | 'reveal' | 'recipe';
 type ImOutContext  = 'bar' | 'party' | null;
 type BarMode       = 'my-bar' | 'im-out' | 'explore';
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
@@ -945,9 +945,7 @@ interface Props {
 export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode, unlockSuggestions = [], contextNote, onContextNoteConsumed, onSetQuantity, canMakeNames }: Props) {
   const { user } = useAuth();
   const [phase, setPhase]           = useState<Phase>(
-    initialMode === 'im-out' ? 'im-out-where' :
-    initialMode === 'my-bar' || initialMode === 'explore' ? 'chat' :
-    'mode-pick'
+    initialMode === 'im-out' ? 'im-out-where' : 'chat'
   );
   const [barMode, setBarMode]       = useState<BarMode>(initialMode ?? 'my-bar');
   const [imOutContext, setImOutContext] = useState<ImOutContext>(null);
@@ -1055,13 +1053,6 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
     'orange-juice', 'cranberry-juice', 'grenadine', 'angostura-bitters', 'ginger-beer',
   ];
 
-  function handleModePick(mode: BarMode) {
-    setBarMode(mode);
-    setAnimKey(k => k + 1);
-    if (mode === 'im-out') setPhase('im-out-where');
-    else setPhase('chat');
-  }
-
   function handleWhereSelect(context: ImOutContext) {
     setImOutContext(context);
     if (context === 'bar') {
@@ -1125,7 +1116,6 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
     if (fadeFnRef.current) clearInterval(fadeFnRef.current);
     const audio = audioRef.current;
     if (audio) { audio.volume = 0.3; if (audio.paused) audio.play().catch(() => {}); }
-    setBarMode('my-bar');
     setSessionInStockIds(new Set());
     setCategory(null);
     setStep(0);
@@ -1136,7 +1126,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
     setShowSurvey(false);
     setSurveyDone(false);
     setShowPhotoScan(false);
-    setPhase('mode-pick');
+    setPhase('chat');
   }
 
   function handleGoToInventory() {
@@ -1332,37 +1322,6 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
               <rect x="25" y="21"  width="3" height="32"  rx="1.5" fill="rgba(255,255,255,0.32)" />
             </svg>
             <p className="bm-shaker-line">"{shakerLine}"</p>
-          </div>
-        )}
-
-        {/* ── Mode pick ── */}
-        {phase === 'mode-pick' && (
-          <div className="bm-question-wrap" key="mode">
-            <p className="bm-voice">"Here's the thing — I work best when I know what you've got."</p>
-            <h2 className="bm-question">What are we working with?</h2>
-            <div className="bm-mode-options">
-              <button className="bm-mode-option bm-mode-option--mybar" onClick={() => handleModePick('my-bar')}>
-                <span className="bm-mode-icon">🏠</span>
-                <div className="bm-mode-text">
-                  <span className="bm-mode-label">My Bar</span>
-                  <span className="bm-mode-sub">Only recommend what I can make tonight</span>
-                </div>
-              </button>
-              <button className="bm-mode-option bm-mode-option--imout" onClick={() => handleModePick('im-out')}>
-                <span className="bm-mode-icon">🍸</span>
-                <div className="bm-mode-text">
-                  <span className="bm-mode-label">I'm Out</span>
-                  <span className="bm-mode-sub">Scan what's in front of you</span>
-                </div>
-              </button>
-              <button className="bm-mode-option bm-mode-option--explore" onClick={() => handleModePick('explore')}>
-                <span className="bm-mode-icon">🔍</span>
-                <div className="bm-mode-text">
-                  <span className="bm-mode-label">Explore</span>
-                  <span className="bm-mode-sub">Show me anything — I'll grab what I need</span>
-                </div>
-              </button>
-            </div>
           </div>
         )}
 

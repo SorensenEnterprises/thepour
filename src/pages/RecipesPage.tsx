@@ -46,13 +46,15 @@ interface Toast {
 }
 
 interface Props {
-  matches:           RecipeMatch[];
-  unlockSuggestions: UnlockSuggestion[];
-  inventory:         InventoryItem[];
-  onSetQuantity:     (ingredientId: string, qty: QuantityLevel) => void;
-  onRecipeMade?:     (recipeName: string, count: number) => void;
-  checkedPantryIds?: Set<string>;
-  onTogglePantry?:   (itemId: string) => void;
+  matches:             RecipeMatch[];
+  unlockSuggestions:   UnlockSuggestion[];
+  inventory:           InventoryItem[];
+  onSetQuantity:       (ingredientId: string, qty: QuantityLevel) => void;
+  onRecipeMade?:       (recipeName: string, count: number) => void;
+  checkedPantryIds?:   Set<string>;
+  onTogglePantry?:     (itemId: string) => void;
+  recipeMode?:         'my-bar' | 'explore';
+  onRecipeModeChange?: (mode: 'my-bar' | 'explore') => void;
 }
 
 // ── Collapsible recipe section ────────────────────────────────────────────────
@@ -101,7 +103,7 @@ function RecipeSection({ label, countColor, matches, open, onToggle, onRenderCar
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuantity, onRecipeMade, checkedPantryIds, onTogglePantry }: Props) {
+export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuantity, onRecipeMade, checkedPantryIds, onTogglePantry, recipeMode = 'my-bar', onRecipeModeChange }: Props) {
   const { user } = useAuth();
 
   const [category,         setCategory]         = useState<DrinkCategory>('cocktail');
@@ -180,7 +182,7 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
     return categoryMatches.filter(({ recipe, canMake }) => {
       // Hide variations unless the user has toggled them on
       if (variationFilter === 'hide' && recipe.parentRecipeId) return false;
-      if (readyFilter === 'ready' && !canMake) return false;
+      if (recipeMode !== 'explore' && readyFilter === 'ready' && !canMake) return false;
       if (lightFilter && calculateCalories(recipe.ingredients) > 175) return false;
       if (category === 'cocktail' && spiritFilter !== 'all') {
         const tags = recipe.tags;
@@ -195,12 +197,12 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
       if (q && !recipe.name.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [categoryMatches, category, readyFilter, spiritFilter, variationFilter, lightFilter, search]);
+  }, [categoryMatches, category, readyFilter, spiritFilter, variationFilter, lightFilter, search, recipeMode]);
 
   const readyCount = categoryMatches.filter(m => m.canMake).length;
 
   // Whether to show collapsible sections vs flat list
-  const useSections = spiritFilter === 'all' && readyFilter === 'all' && !search.trim();
+  const useSections = recipeMode !== 'explore' && spiritFilter === 'all' && readyFilter === 'all' && !search.trim();
 
   const sectionReady   = useMemo(() => displayed.filter(m => m.canMake).sort((a, b) => a.recipe.name.localeCompare(b.recipe.name)), [displayed]);
   const sectionAlmost  = useMemo(() => displayed.filter(m => !m.canMake && m.missingIngredients.length === 1).sort((a, b) => a.recipe.name.localeCompare(b.recipe.name)), [displayed]);
@@ -233,7 +235,7 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
         splashWarnings={splashWarnings}
         haveCount={haveCount}
         totalCount={totalCount}
-        exploreMode={false}
+        exploreMode={recipeMode === 'explore'}
         onMadeThis={count => handleMadeThis(recipe, count)}
         userId={user?.id ?? null}
         checkedPantryIds={checkedPantryIds}
@@ -246,6 +248,22 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
   return (
     <div className="page">
       <div className="page-header">
+        {onRecipeModeChange && (
+          <div className="recipe-mode-toggle">
+            <button
+              className={`recipe-mode-btn${recipeMode === 'my-bar' ? ' active' : ''}`}
+              onClick={() => onRecipeModeChange('my-bar')}
+            >
+              🏠 My Bar
+            </button>
+            <button
+              className={`recipe-mode-btn${recipeMode === 'explore' ? ' active' : ''}`}
+              onClick={() => onRecipeModeChange('explore')}
+            >
+              🔍 Explore
+            </button>
+          </div>
+        )}
         <div className="category-toggle">
           {(['cocktail', 'mocktail', 'dirty-soda', 'shot'] as DrinkCategory[]).map(cat => (
             <button
@@ -260,7 +278,9 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
 
         <h2>{PAGE_TITLES[category]}</h2>
         <p className="page-subtitle">
-          {`${readyCount} of ${categoryMatches.length - variationCount} recipes ready`}
+          {recipeMode === 'explore'
+            ? `Exploring all ${categoryMatches.length - variationCount} recipes`
+            : `${readyCount} of ${categoryMatches.length - variationCount} recipes ready`}
           {variationCount > 0 && ` + ${variationCount} variation${variationCount !== 1 ? 's' : ''}`}
         </p>
 

@@ -22,6 +22,7 @@ function AppContent() {
   const [pendingView, setPendingView] = useState<'recipes' | 'inventory'>('recipes');
   const [bartenderOpen, setBartenderOpen] = useState(false);
   const [bartenderInitialMode, setBartenderInitialMode] = useState<'my-bar' | 'im-out' | 'explore'>('my-bar');
+  const [recipeMode, setRecipeMode] = useState<'my-bar' | 'explore'>('my-bar');
   const [lastMadeNote, setLastMadeNote] = useState<string | undefined>(undefined);
 
   const {
@@ -92,6 +93,8 @@ function AppContent() {
               }}
               checkedPantryIds={checkedPantryIds}
               onTogglePantry={togglePantry}
+              recipeMode={recipeMode}
+              onRecipeModeChange={setRecipeMode}
             />
         ) : (
           <InventoryPage
@@ -120,7 +123,7 @@ function AppContent() {
         </button>
         <button
           className="bartender-fab"
-          onClick={() => { setBartenderInitialMode('my-bar'); setBartenderOpen(true); }}
+          onClick={() => { setBartenderInitialMode(recipeMode); setBartenderOpen(true); }}
         >
           🍸 Ask Vesper
         </button>

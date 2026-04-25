@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
-const VOICE_ID = 'uhYnkYTBc711oAY590Ea'
+const VOICE_ID = '6fZce9LFNG3iEITDfqZZ'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
