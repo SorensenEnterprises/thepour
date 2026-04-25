@@ -1,11 +1,22 @@
 import { useState, useRef, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 
-export const useVesperVoice = () => {
+interface VesperVoiceCallbacks {
+  onVoiceStart?: () => void
+  onVoiceEnd?:   () => void
+}
+
+export const useVesperVoice = (callbacks?: VesperVoiceCallbacks) => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [playingId, setPlayingId] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Keep callback refs so the memoised speak/stop always see the latest versions
+  const onVoiceStartRef = useRef(callbacks?.onVoiceStart)
+  const onVoiceEndRef   = useRef(callbacks?.onVoiceEnd)
+  onVoiceStartRef.current = callbacks?.onVoiceStart
+  onVoiceEndRef.current   = callbacks?.onVoiceEnd
 
   const speak = useCallback(async (text: string, id?: string) => {
     console.log('Vesper voice speak called with:', text?.substring(0, 50))
@@ -30,9 +41,23 @@ export const useVesperVoice = () => {
       const audio = new Audio(audioSrc)
       audioRef.current = audio
 
-      audio.onplay = () => { setIsPlaying(true); setPlayingId(id ?? null) }
-      audio.onended = () => { setIsPlaying(false); setPlayingId(null); audioRef.current = null }
-      audio.onerror = () => { setIsPlaying(false); setPlayingId(null); audioRef.current = null }
+      audio.onplay = () => {
+        setIsPlaying(true)
+        setPlayingId(id ?? null)
+        onVoiceStartRef.current?.()
+      }
+      audio.onended = () => {
+        setIsPlaying(false)
+        setPlayingId(null)
+        audioRef.current = null
+        onVoiceEndRef.current?.()
+      }
+      audio.onerror = () => {
+        setIsPlaying(false)
+        setPlayingId(null)
+        audioRef.current = null
+        onVoiceEndRef.current?.()
+      }
 
       await audio.play()
     } catch (err) {
@@ -50,6 +75,7 @@ export const useVesperVoice = () => {
       audioRef.current = null
       setIsPlaying(false)
       setPlayingId(null)
+      onVoiceEndRef.current?.()
     }
   }, [])
 

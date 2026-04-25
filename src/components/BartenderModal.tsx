@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { DrinkSurvey } from './DrinkSurvey';
 import { ThePourLogo } from './ThePourLogo';
@@ -967,6 +967,37 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
   const revealTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const audioRef          = useRef<HTMLAudioElement | null>(null);
   const fadeFnRef         = useRef<ReturnType<typeof setInterval> | null>(null);
+  const duckFnRef         = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const duckMusic = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || audio.paused) return;
+    if (duckFnRef.current) clearInterval(duckFnRef.current);
+    const start = audio.volume;
+    const target = 0.06; // 20% of normal 0.3
+    const steps = 15;
+    let step = 0;
+    duckFnRef.current = setInterval(() => {
+      step++;
+      audio.volume = Math.max(0, start + (target - start) * (step / steps));
+      if (step >= steps) clearInterval(duckFnRef.current!);
+    }, 300 / steps);
+  }, []);
+
+  const unduckMusic = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (duckFnRef.current) clearInterval(duckFnRef.current);
+    const start = audio.volume;
+    const target = 0.3;
+    const steps = 30;
+    let step = 0;
+    duckFnRef.current = setInterval(() => {
+      step++;
+      audio.volume = Math.min(0.3, start + (target - start) * (step / steps));
+      if (step >= steps) clearInterval(duckFnRef.current!);
+    }, 1000 / steps);
+  }, []);
 
   function cancelPendingTimer() {
     if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
@@ -1411,6 +1442,8 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
               userId={user?.id ?? null}
               imOutContext={barMode === 'im-out' ? imOutContext : null}
               canMakeNames={barMode === 'my-bar' ? (canMakeNames ?? null) : null}
+              onVoiceDuck={duckMusic}
+              onVoiceUnduck={unduckMusic}
             />
           </>
         )}

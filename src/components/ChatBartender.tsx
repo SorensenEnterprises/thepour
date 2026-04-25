@@ -47,6 +47,8 @@ interface Props {
   onClose?: () => void;
   imOutContext?: 'bar' | 'party' | null;
   canMakeNames?: string[] | null;
+  onVoiceDuck?:   () => void;
+  onVoiceUnduck?: () => void;
 }
 
 function renderMarkdown(text: string): React.ReactElement {
@@ -151,6 +153,7 @@ export function ChatBartender({
   unlockSuggestions = [], recipes = [],
   contextNote, onContextNoteConsumed,
   onSetQuantity, userId, onClose, imOutContext, canMakeNames,
+  onVoiceDuck, onVoiceUnduck,
 }: Props) {
   const { lightPreference, updateLightPreference } = useTasteProfile();
   const topUnlock    = unlockSuggestions[0];
@@ -172,7 +175,10 @@ export function ChatBartender({
     return found;
   }
 
-  const { speak, stop, isLoading: voiceLoading, playingId } = useVesperVoice();
+  const { speak, stop, isLoading: voiceLoading, playingId } = useVesperVoice({
+    onVoiceStart: onVoiceDuck,
+    onVoiceEnd:   onVoiceUnduck,
+  });
   const [voiceEnabled,  setVoiceEnabled]  = useState(() => getVoicePref(LS_VOICE_ENABLED));
   const [voiceAutoplay] = useState(() => getVoicePref(LS_VOICE_AUTOPLAY));
 
