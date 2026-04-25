@@ -8,6 +8,7 @@ import { shotsVol2 } from './shotsVol2';
 import { craftCocktails } from './craftCocktails';
 import { energyDrinkCocktails } from './energyDrinkCocktails';
 import { newRecipes250 } from './newRecipes250';
+import { tikiRecipes } from './tikiRecipes';
 
 export const sampleRecipes: Recipe[] = [
   // ── Existing 5 ──────────────────────────────────────────────────────────────
@@ -843,4 +844,5 @@ export const sampleRecipes: Recipe[] = [
   ...craftCocktails,
   ...energyDrinkCocktails,
   ...newRecipes250,
+  ...tikiRecipes,
 ];

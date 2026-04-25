@@ -44,6 +44,7 @@ const RECIPE_CANONICAL: Record<string, string> = {
   'rum-dark':          'RUM_DARK',
   'rum-aged':          'RUM_AGED',
   'rum-overproof':     'RUM_OVERPROOF',
+  'rhum-agricole':     'RHUM_AGRICOLE',
 
   // Other spirits
   'absinthe':          'ABSINTHE',
@@ -55,6 +56,7 @@ const RECIPE_CANONICAL: Record<string, string> = {
   // Orange liqueurs
   'triple-sec':        'TRIPLE_SEC',
   'blue-curacao':      'BLUE_CURACAO',
+  'orange-curacao':    'TRIPLE_SEC',
 
   // Coffee / nut liqueurs
   'coffee-liqueur':    'COFFEE_LIQUEUR',
@@ -359,6 +361,7 @@ const RESOLVER_RULES: Array<[RegExp, string[]]> = [
   [/overproof rum|rum.*151|151.*rum/i,                    ['RUM_OVERPROOF', 'RUM']],
   [/rum.*coffee|coffee.*rum/i,                            ['COFFEE_LIQUEUR', 'RUM']],
   [/dark rum|black rum|blackwell|myers.*rum/i,            ['RUM_DARK', 'RUM_AGED', 'RUM']],
+  [/rhum agricole|agricole|martinique rum|clement|neisson|depaz|la favorite/i, ['RHUM_AGRICOLE', 'RUM_AGED', 'RUM']],
   [/aged rum|gold rum|amber rum|appleton|barbancourt|diplomatico|original dark rum/i, ['RUM_AGED', 'RUM_DARK', 'RUM']],
   [/white rum|silver rum|light rum|blanco rum|bacardi|brugal|havana/i, ['RUM_WHITE', 'RUM']],
   [/\brum\b/i,                                            ['RUM']],
@@ -617,6 +620,7 @@ const SATISFYING_TYPES: Record<string, string[]> = {
   'RUM_DARK':       ['RUM_DARK', 'RUM_AGED', 'RUM'],
   'RUM_AGED':       ['RUM_AGED', 'RUM_DARK', 'RUM'],
   'RUM_OVERPROOF':  ['RUM_OVERPROOF', 'RUM'],
+  'RHUM_AGRICOLE':  ['RHUM_AGRICOLE', 'RUM_AGED', 'RUM'],
 
   // Other base spirits
   'GIN':            ['GIN'],
