@@ -221,12 +221,17 @@ serve(async (req) => {
     let { message, quickReplies, recommendedRecipes } = parseResponse(rawText)
 
     const canMakeNames: string[] | null = body.canMakeNames ?? null
+    console.log('[canMake] canMakeNames length:', canMakeNames?.length ?? 'null', '| recommendedRecipes before filter:', JSON.stringify(recommendedRecipes))
     if (canMakeNames && recommendedRecipes.length > 0) {
       const canMakeSet = new Set(canMakeNames.map((n: string) => n.toLowerCase()))
       recommendedRecipes = recommendedRecipes.filter(name =>
         canMakeSet.has(name.toLowerCase())
       )
     }
+    console.log('[canMake] recommendedRecipes after filter:', JSON.stringify(recommendedRecipes))
+
+    // Deduplicate recipe names
+    recommendedRecipes = [...new Set(recommendedRecipes)]
 
     return new Response(
       JSON.stringify({ message, quickReplies, recommendedRecipes }),

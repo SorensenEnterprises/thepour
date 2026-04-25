@@ -273,6 +273,7 @@ export function ChatBartender({
         : [];
 
       const effectiveLightPref = overrideLightPref ?? lightPreference;
+      console.log('[canMake] mode:', mode, '| canMakeNames being sent:', mode === 'my-bar' ? (canMakeNames?.length ?? 'null (prop not provided)') : 'not sent (explore/im-out)');
       const { data, error } = await supabase.functions.invoke('chat-bartender', {
         body: {
           messages: apiHistory.current,
@@ -448,9 +449,10 @@ export function ChatBartender({
 
       <div className="cb-messages">
         {messages.map((msg, i) => {
-          const cards = msg.recommendedRecipes
-            ?.map(name => recipeByName.current.get(name.toLowerCase().trim()))
-            .filter((r): r is Recipe => r !== undefined) ?? [];
+          const uniqueRecipes = Array.from(new Set(msg.recommendedRecipes ?? []));
+          const cards = uniqueRecipes
+            .map(name => recipeByName.current.get(name.toLowerCase().trim()))
+            .filter((r): r is Recipe => r !== undefined);
           const isThisPlaying = playingId === msg.id;
 
           return (
