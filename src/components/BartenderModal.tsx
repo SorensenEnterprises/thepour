@@ -9,7 +9,6 @@ import { RecognizedBottle, bottleToIngredientIds } from '../lib/bottleRecognitio
 import { InventoryItem, QuantityLevel } from '../types';
 import { UnlockSuggestion } from '../utils/unlockCalculator';
 import { sampleRecipes } from '../data/sampleRecipes';
-import shakerImg from '../assets/shaker.png';
 import './BartenderModal.css';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -1339,7 +1338,6 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
         {/* ── Where are you? (I'm Out entry) ── */}
         {phase === 'im-out-where' && (
           <div className="bm-question-wrap" key="im-out-where">
-            <img src={shakerImg} alt="Cocktail shaker" className="bm-shaker-img bm-shaker-img--lg" />
             <p className="bm-voice">"First things first."</p>
             <h2 className="bm-question">Where are you?</h2>
             <p className="bm-where-subtitle">I'll adjust what I assume is available.</p>
@@ -1369,7 +1367,6 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
             <p className="bm-voice">"Tell me what you're working with."</p>
             <h2 className="bm-question">Point your camera at the bottles in front of you</h2>
             <div className="bm-scan-prompt-area">
-              <img src={shakerImg} alt="Cocktail shaker" className="bm-shaker-img bm-shaker-img--sm" />
               <button className="bm-scan-btn" onClick={() => setShowPhotoScan(true)}>
                 📷 Scan Bottles
               </button>
