@@ -262,21 +262,24 @@ export function useInventory(userId?: string) {
   const addItem = useCallback(async (item: InventoryItem) => {
     const uid = userIdRef.current;
 
-    if (!uid || !supabaseConfigured) {
-      setInventory(prev => [...prev, item]);
-      return;
-    }
+    // Optimistic update — immediately visible to recipe match useMemo
+    setInventory(prev => [...prev, item]);
+
+    if (!uid || !supabaseConfigured) return;
 
     const { id: newId, error: err } = await dbSave(uid, item);
     if (err) {
+      // Roll back the optimistic addition
+      setInventory(prev => prev.filter(i => i.ingredientId !== item.ingredientId));
       setError('Couldn\'t save bottle — please try again.');
       return;
     }
-    // Store the DB-assigned id so future edits/deletes can find the row
-    const saved: InventoryItem = newId
-      ? { ...item, id: newId, ingredientId: newId }
-      : item;
-    setInventory(prev => [...prev, saved]);
+    // Backfill the DB-assigned UUID so future edits/deletes can find the row
+    if (newId && newId !== item.ingredientId) {
+      setInventory(prev => prev.map(i =>
+        i.ingredientId === item.ingredientId ? { ...i, id: newId, ingredientId: newId } : i
+      ));
+    }
   }, []);
 
   // ── editItem ───────────────────────────────────────────────────────────────
