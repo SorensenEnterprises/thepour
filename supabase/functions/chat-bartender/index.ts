@@ -24,7 +24,7 @@ function buildSystemPrompt(inventoryList: string, mode: string, pantryList: stri
       : `The user is out at a bar or restaurant. They may tell you what bottles are available.`
     : mode === 'explore'
     ? `The user wants to explore cocktails with no restriction on ingredients.`
-    : `CURRENT USER INVENTORY (in-stock bottles):\n${inventoryList || 'none'}${pantryLine}${syrupLine}\n\nFor My Bar mode, only recommend drinks the user can make with what they have. If their bar is empty, gently encourage them to stock it.`
+    : `CURRENT USER INVENTORY (in-stock bottles):\n${inventoryList || 'none'}${pantryLine}${syrupLine}\n\nHARD RULE — MY BAR MODE: You may ONLY recommend cocktails where the user has every required spirit and liqueur listed above. Do NOT recommend a drink if any primary alcohol ingredient is missing from their inventory. Do NOT say "you have everything" unless it is literally true. If a drink requires Sweet Vermouth and the user does not have Sweet Vermouth, you cannot recommend it — period. You may mention a drink they are close to only by saying "you're one bottle away from a [drink] — you'd just need [ingredient]." Never present a near-miss as a ready-to-make recommendation. If their bar is empty or too limited to recommend anything, say so warmly and suggest what one bottle would unlock.`
 
   const unlockSection = (mode === 'my-bar' && unlockContext.length > 0)
     ? `\n\nTOP UNLOCK OPPORTUNITIES FOR THIS USER:\n${unlockContext.map((u, i) => {
