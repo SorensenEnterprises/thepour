@@ -76,6 +76,25 @@
   flex-shrink: 0;
 }
 
+/* "Top 10" shortcut */
+.sl-top10-btn {
+  background: rgba(74, 187, 196, 0.08);
+  border: 1px solid var(--border-light);
+  color: var(--teal);
+  padding: 5px 11px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.sl-top10-btn:hover {
+  background: rgba(74, 187, 196, 0.16);
+  border-color: var(--teal);
+}
+
+/* Edit / Done button */
 .sl-edit-btn {
   background: none;
   border: 1px solid var(--border-light);
@@ -94,6 +113,7 @@
   color: var(--teal);
 }
 
+/* Reset list (edit mode) */
 .sl-reset-btn {
   background: none;
   border: 1px solid rgba(200, 120, 100, 0.3);
@@ -103,7 +123,7 @@
   font-size: 0.75rem;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s;
 }
 .sl-reset-btn:hover { background: rgba(200, 100, 80, 0.1); }
 
@@ -127,6 +147,11 @@
   padding: 8px 0;
 }
 
+/* Extra bottom padding so last item clears the sticky footer */
+.sl-list--has-footer {
+  padding-bottom: 80px;
+}
+
 .sl-empty {
   color: var(--text-muted);
   text-align: center;
@@ -140,15 +165,12 @@
   transition: background 0.15s;
 }
 
-.sl-item--edit:hover { background: rgba(255, 255, 255, 0.02); }
+/* Selected / highlighted state */
+.sl-item--selected {
+  background: rgba(74, 187, 196, 0.07);
+}
 
-.sl-item--cart {
-  opacity: 0.5;
-}
-.sl-item--cart .sl-item-name {
-  text-decoration: line-through;
-  color: var(--text-muted);
-}
+.sl-item--edit:hover { background: rgba(255, 255, 255, 0.02); }
 
 .sl-item-row {
   display: flex;
@@ -174,17 +196,14 @@
   flex-shrink: 0;
   transition: border-color 0.15s, background 0.15s;
 }
+.sl-checkbox:hover { border-color: var(--teal); }
 .sl-checkbox--checked {
   border-color: var(--teal);
-  background: rgba(74, 187, 196, 0.15);
+  background: rgba(74, 187, 196, 0.2);
 }
-.sl-checkbox:hover { border-color: var(--teal); }
 
 /* ── Item body ── */
-.sl-item-body {
-  flex: 1;
-  min-width: 0;
-}
+.sl-item-body { flex: 1; min-width: 0; }
 
 .sl-item-name {
   display: block;
@@ -196,6 +215,8 @@
   text-overflow: ellipsis;
   margin-bottom: 4px;
 }
+
+.sl-item--selected .sl-item-name { color: var(--text-primary); }
 
 .sl-item-meta {
   display: flex;
@@ -294,59 +315,51 @@
 }
 .sl-show-more:hover { background: rgba(74, 187, 196, 0.06); }
 
-/* ── In my cart section ── */
-.sl-cart-header {
+/* ── Sticky export footer ── */
+.sl-export-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px 8px;
-  border-top: 1px solid var(--border);
-  background: var(--surface-0);
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-light);
+  background: var(--surface-2);
+  flex-shrink: 0;
+  animation: sl-footer-in 0.18s ease;
 }
 
-.sl-cart-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+@keyframes sl-footer-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.sl-export-count {
+  font-size: 0.78rem;
   color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.sl-clear-cart-btn {
-  background: none;
-  border: 1px solid var(--border-light);
-  color: var(--text-secondary);
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 0.72rem;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-.sl-clear-cart-btn:hover { background: var(--surface-3); color: var(--text-primary); }
-
-/* ── Export bar ── */
-.sl-export-bar {
+.sl-export-actions {
   display: flex;
   gap: 8px;
-  padding: 14px 16px;
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
+  flex: 1;
 }
 
 .sl-export-btn {
   flex: 1;
-  background: var(--surface-2);
+  background: var(--surface-3);
   border: 1px solid var(--border-light);
   color: var(--text-secondary);
-  padding: 10px 6px;
+  padding: 9px 6px;
   border-radius: 10px;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
 }
 .sl-export-btn:hover {
-  background: var(--surface-3);
+  background: var(--surface-1);
   color: var(--text-primary);
   border-color: var(--teal);
 }
