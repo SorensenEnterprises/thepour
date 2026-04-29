@@ -119,7 +119,7 @@ function toTitleCase(s: string): string {
   return s.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }
 
-function getDisplayName(canonicalType: string): string {
+export function getDisplayName(canonicalType: string): string {
   return DISPLAY_NAMES[canonicalType] ?? toTitleCase(canonicalType.replace(/_/g, ' '));
 }
 
@@ -153,6 +153,10 @@ const PANTRY_CANONICAL = new Set([
   'ESPRESSO', 'COFFEE', 'COLD_BREW', 'HOT_SAUCE', 'WORCESTERSHIRE', 'HORSERADISH',
   'PICKLE_BRINE', 'MINT', 'BASIL', 'CUCUMBER',
 ]);
+
+export function getIngredientCategory(canonicalType: string): UnlockSuggestion['ingredientCategory'] {
+  return getCategory(canonicalType);
+}
 
 function getCategory(canonicalType: string): UnlockSuggestion['ingredientCategory'] {
   if (SPIRIT_CANONICAL.has(canonicalType)) return 'spirit';

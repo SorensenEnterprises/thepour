@@ -940,9 +940,10 @@ interface Props {
   onContextNoteConsumed?: () => void;
   onSetQuantity?: (id: string, qty: QuantityLevel) => void;
   canMakeNames?: string[];
+  onOpenShoppingList?: () => void;
 }
 
-export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode, unlockSuggestions = [], contextNote, onContextNoteConsumed, onSetQuantity, canMakeNames }: Props) {
+export function BartenderModal({ onClose, inStockIds = new Set(), inventory = [], checkedPantryIds = new Set(), onGoToInventory, initialMode, unlockSuggestions = [], contextNote, onContextNoteConsumed, onSetQuantity, canMakeNames, onOpenShoppingList }: Props) {
   const { user } = useAuth();
   const [phase, setPhase]           = useState<Phase>(
     initialMode === 'im-out' ? 'im-out-where' : 'chat'
@@ -1403,6 +1404,7 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
               canMakeNames={barMode === 'my-bar' ? (canMakeNames ?? null) : null}
               onVoiceDuck={duckMusic}
               onVoiceUnduck={unduckMusic}
+              onOpenShoppingList={onOpenShoppingList}
             />
           </>
         )}

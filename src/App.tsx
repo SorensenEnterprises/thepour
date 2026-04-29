@@ -2,12 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NavBar } from './components/NavBar';
 import { BartenderModal } from './components/BartenderModal';
+import { ShoppingList } from './components/ShoppingList';
 import { RecipesPage } from './pages/RecipesPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { LandingPage } from './pages/LandingPage';
 import { AuthPage } from './pages/AuthPage';
 import { useInventory } from './hooks/useInventory';
 import { usePantry } from './hooks/usePantry';
+import { useShoppingList } from './hooks/useShoppingList';
 import { sampleRecipes } from './data/sampleRecipes';
 import { matchRecipesToInventory } from './utils/recipeUtils';
 import { calculateUnlocks } from './utils/unlockCalculator';
@@ -22,6 +24,7 @@ function AppContent() {
   const [pendingView, setPendingView] = useState<'recipes' | 'inventory'>('recipes');
   const [bartenderOpen, setBartenderOpen] = useState(false);
   const [bartenderInitialMode, setBartenderInitialMode] = useState<'my-bar' | 'im-out' | 'explore'>('my-bar');
+  const [shoppingListOpen, setShoppingListOpen] = useState(false);
   const [recipeMode, setRecipeMode] = useState<'my-bar' | 'explore'>('my-bar');
   const [lastMadeNote, setLastMadeNote] = useState<string | undefined>(undefined);
 
@@ -42,6 +45,8 @@ function AppContent() {
     () => calculateUnlocks(sampleRecipes, inventory, checkedPantryIds),
     [inventory, checkedPantryIds]
   );
+
+  const shoppingItems = useShoppingList(matches);
 
   if (loading) {
     return (
@@ -80,6 +85,7 @@ function AppContent() {
         onHome={() => setView('landing')}
         onSignIn={() => setView('auth')}
         onSignOut={() => setView('auth')}
+        onOpenShoppingList={() => setShoppingListOpen(true)}
       />
       <main className="main-content">
         {view === 'recipes' ? (
@@ -95,6 +101,7 @@ function AppContent() {
               onTogglePantry={togglePantry}
               recipeMode={recipeMode}
               onRecipeModeChange={setRecipeMode}
+              onOpenShoppingList={() => setShoppingListOpen(true)}
             />
         ) : (
           <InventoryPage
@@ -142,6 +149,14 @@ function AppContent() {
           onContextNoteConsumed={() => setLastMadeNote(undefined)}
           onSetQuantity={(id, qty) => setQuantity(id, qty)}
           canMakeNames={matches.filter(m => m.canMake).map(m => m.recipe.name)}
+          onOpenShoppingList={() => { setBartenderOpen(false); setShoppingListOpen(true); }}
+        />
+      )}
+
+      {shoppingListOpen && (
+        <ShoppingList
+          items={shoppingItems}
+          onClose={() => setShoppingListOpen(false)}
         />
       )}
     </div>

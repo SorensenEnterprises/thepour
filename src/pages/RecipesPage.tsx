@@ -55,6 +55,7 @@ interface Props {
   onTogglePantry?:     (itemId: string) => void;
   recipeMode?:         'my-bar' | 'explore';
   onRecipeModeChange?: (mode: 'my-bar' | 'explore') => void;
+  onOpenShoppingList?: () => void;
 }
 
 // ── Collapsible recipe section ────────────────────────────────────────────────
@@ -103,7 +104,7 @@ function RecipeSection({ label, countColor, matches, open, onToggle, onRenderCar
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuantity, onRecipeMade, checkedPantryIds, onTogglePantry, recipeMode = 'my-bar', onRecipeModeChange }: Props) {
+export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuantity, onRecipeMade, checkedPantryIds, onTogglePantry, recipeMode = 'my-bar', onRecipeModeChange, onOpenShoppingList }: Props) {
   const { user } = useAuth();
 
   const [category,         setCategory]         = useState<DrinkCategory>('cocktail');
@@ -277,12 +278,19 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
         </div>
 
         <h2>{PAGE_TITLES[category]}</h2>
-        <p className="page-subtitle">
-          {recipeMode === 'explore'
-            ? `Exploring all ${categoryMatches.length - variationCount} recipes`
-            : `${readyCount} of ${categoryMatches.length - variationCount} recipes ready`}
-          {variationCount > 0 && ` + ${variationCount} variation${variationCount !== 1 ? 's' : ''}`}
-        </p>
+        <div className="rp-subtitle-row">
+          <p className="page-subtitle">
+            {recipeMode === 'explore'
+              ? `Exploring all ${categoryMatches.length - variationCount} recipes`
+              : `${readyCount} of ${categoryMatches.length - variationCount} recipes ready`}
+            {variationCount > 0 && ` + ${variationCount} variation${variationCount !== 1 ? 's' : ''}`}
+          </p>
+          {recipeMode === 'my-bar' && onOpenShoppingList && (
+            <button className="rp-buy-btn" onClick={onOpenShoppingList}>
+              🛒 What to buy
+            </button>
+          )}
+        </div>
 
         <div className="recipes-search-row">
           <div className="search-wrap">

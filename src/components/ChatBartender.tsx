@@ -49,6 +49,7 @@ interface Props {
   canMakeNames?: string[] | null;
   onVoiceDuck?:   () => void;
   onVoiceUnduck?: () => void;
+  onOpenShoppingList?: () => void;
 }
 
 function renderMarkdown(text: string): React.ReactElement {
@@ -153,7 +154,7 @@ export function ChatBartender({
   unlockSuggestions = [], recipes = [],
   contextNote, onContextNoteConsumed,
   onSetQuantity, userId, onClose, imOutContext, canMakeNames,
-  onVoiceDuck, onVoiceUnduck,
+  onVoiceDuck, onVoiceUnduck, onOpenShoppingList,
 }: Props) {
   const { lightPreference, updateLightPreference } = useTasteProfile();
   const topUnlock    = unlockSuggestions[0];
@@ -375,6 +376,10 @@ export function ChatBartender({
     if (chip === 'All options 🍸') {
       updateLightPreference(false);
       sendMessage(chip, false);
+      return;
+    }
+    if (chip === 'See your full shopping list' && onOpenShoppingList) {
+      onOpenShoppingList();
       return;
     }
     sendMessage(chip);

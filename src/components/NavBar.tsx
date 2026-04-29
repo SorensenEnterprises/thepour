@@ -8,9 +8,10 @@ interface Props {
   onHome: () => void;
   onSignIn?: () => void;
   onSignOut?: () => void;
+  onOpenShoppingList?: () => void;
 }
 
-export function NavBar({ activePage, onNavigate, onHome, onSignIn, onSignOut }: Props) {
+export function NavBar({ activePage, onNavigate, onHome, onSignIn, onSignOut, onOpenShoppingList }: Props) {
   const { user, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -47,6 +48,16 @@ export function NavBar({ activePage, onNavigate, onHome, onSignIn, onSignOut }: 
         >
           My Bar
         </button>
+        {onOpenShoppingList && (
+          <button
+            className="nav-link nav-link--cart"
+            onClick={onOpenShoppingList}
+            aria-label="Shopping list"
+            title="What to buy next"
+          >
+            🛒
+          </button>
+        )}
 
         {/* Account indicator */}
         {user ? (

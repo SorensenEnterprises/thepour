@@ -161,6 +161,11 @@ body {
 
 .nav-menu-signout:hover { color: #c87070; }
 
+.nav-link--cart {
+  font-size: 1rem;
+  padding: 4px 8px;
+}
+
 .nav-signin-link {
   background: none;
   border: 1px solid var(--border-teal);
@@ -314,7 +319,34 @@ body {
 .page-subtitle {
   color: var(--text-muted);
   font-size: 14px;
+  margin-bottom: 0;
+}
+
+.rp-subtitle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 18px;
+}
+
+.rp-buy-btn {
+  background: var(--surface-2);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.rp-buy-btn:hover {
+  background: var(--surface-3);
+  color: var(--text-primary);
+  border-color: var(--teal);
 }
 
 /* ── Search ── */
