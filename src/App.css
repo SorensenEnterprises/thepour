@@ -164,6 +164,8 @@ body {
 .nav-link--cart {
   font-size: 1rem;
   padding: 4px 8px;
+  color: var(--text-primary);
+  opacity: 1;
 }
 
 .nav-signin-link {
@@ -333,7 +335,7 @@ body {
 .rp-buy-btn {
   background: var(--surface-2);
   border: 1px solid var(--border-light);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   padding: 5px 12px;
   border-radius: 10px;
   font-size: 0.78rem;
