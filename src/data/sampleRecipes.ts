@@ -11,6 +11,7 @@ import { newRecipes250 } from './newRecipes250';
 import { tikiRecipes } from './tikiRecipes';
 import { moreRecipes100 } from './moreRecipes100';
 import { recipesVol3 } from './recipesVol3';
+import { recipesVol3b } from './recipesVol3b';
 
 export const sampleRecipes: Recipe[] = [
   // ── Existing 5 ──────────────────────────────────────────────────────────────
@@ -856,4 +857,5 @@ export const sampleRecipes: Recipe[] = [
   ...tikiRecipes,
   ...moreRecipes100,
   ...recipesVol3,
+  ...recipesVol3b,
 ];
