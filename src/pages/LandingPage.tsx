@@ -170,7 +170,7 @@ function VesperChatDemo() {
       <div className="lp-chat-messages">
         {stage >= 1 && (
           <div className="lp-chat-bubble lp-chat-bubble--user lp-chat-in">
-            Surprise me. Something I haven't tried.
+            Something impressive for guests.
           </div>
         )}
         {stage === 2 && (
@@ -182,9 +182,9 @@ function VesperChatDemo() {
         )}
         {stage >= 3 && (
           <div className="lp-chat-bubble lp-chat-bubble--vesper lp-chat-in">
-            You've got the bottles for a <strong>Paper Plane</strong>.{' '}
-            Equal parts bourbon, Aperol, Campari, lemon.{' '}
-            It tastes like someone dared a classic to evolve. Make it.
+            <strong>Paper Plane.</strong> Equal parts everything —
+            bourbon, Aperol, Campari, lemon. It sounds simple until your
+            guests ask what's in it and you watch their faces. Make four.
           </div>
         )}
         {stage >= 4 && (
