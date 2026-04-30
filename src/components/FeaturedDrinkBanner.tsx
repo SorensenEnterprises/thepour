@@ -6,9 +6,10 @@ interface Props {
   featured: FeaturedDrink;
   isReady: boolean;
   onMakeThis: (drinkName: string) => void;
+  onAddToShoppingList?: () => void;
 }
 
-export function FeaturedDrinkBanner({ featured, isReady, onMakeThis }: Props) {
+export function FeaturedDrinkBanner({ featured, isReady, onMakeThis, onAddToShoppingList }: Props) {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
@@ -47,7 +48,14 @@ export function FeaturedDrinkBanner({ featured, isReady, onMakeThis }: Props) {
             >
               Make This →
             </button>
-            {isReady && <span className="fdb-ready">Ready ✓</span>}
+            {isReady
+              ? <span className="fdb-ready">Ready ✓</span>
+              : onAddToShoppingList && (
+                  <button className="fdb-shopping-btn" onClick={onAddToShoppingList}>
+                    + Shopping List
+                  </button>
+                )
+            }
           </div>
         </div>
         <button

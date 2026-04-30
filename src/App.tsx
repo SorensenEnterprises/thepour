@@ -25,6 +25,8 @@ function AppContent() {
   const [bartenderOpen, setBartenderOpen] = useState(false);
   const [bartenderInitialMode, setBartenderInitialMode] = useState<'my-bar' | 'im-out' | 'explore'>('my-bar');
   const [shoppingListOpen, setShoppingListOpen] = useState(false);
+  const [shoppingListPreChecked, setShoppingListPreChecked] = useState<Set<string> | undefined>(undefined);
+  const [shoppingListNote, setShoppingListNote] = useState<string | undefined>(undefined);
   const [recipeMode, setRecipeMode] = useState<'my-bar' | 'explore'>('my-bar');
   const [lastMadeNote, setLastMadeNote] = useState<string | undefined>(undefined);
 
@@ -47,6 +49,22 @@ function AppContent() {
   );
 
   const shoppingItems = useShoppingList(matches);
+
+  function openShoppingListForFeatured(missingNames: string[]) {
+    const lower = missingNames.map(n => n.toLowerCase());
+    const preChecked = new Set(
+      shoppingItems
+        .filter(item => lower.some(n =>
+          item.name.toLowerCase() === n ||
+          n.includes(item.name.toLowerCase()) ||
+          item.name.toLowerCase().includes(n)
+        ))
+        .map(item => item.ingredientId)
+    );
+    setShoppingListPreChecked(preChecked);
+    setShoppingListNote("For this weekend's featured drink.");
+    setShoppingListOpen(true);
+  }
 
   if (loading) {
     return (
@@ -101,7 +119,8 @@ function AppContent() {
               onTogglePantry={togglePantry}
               recipeMode={recipeMode}
               onRecipeModeChange={setRecipeMode}
-              onOpenShoppingList={() => setShoppingListOpen(true)}
+              onOpenShoppingList={() => { setShoppingListPreChecked(undefined); setShoppingListNote(undefined); setShoppingListOpen(true); }}
+              onOpenShoppingListForFeatured={openShoppingListForFeatured}
             />
         ) : (
           <InventoryPage
@@ -156,7 +175,9 @@ function AppContent() {
       {shoppingListOpen && (
         <ShoppingList
           items={shoppingItems}
-          onClose={() => setShoppingListOpen(false)}
+          onClose={() => { setShoppingListOpen(false); setShoppingListPreChecked(undefined); setShoppingListNote(undefined); }}
+          initialCheckedIds={shoppingListPreChecked}
+          note={shoppingListNote}
         />
       )}
     </div>

@@ -69,6 +69,13 @@
   margin: 0;
 }
 
+.sl-note {
+  font-size: 0.72rem;
+  color: #c9a84c;
+  margin: 4px 0 0;
+  font-style: italic;
+}
+
 .sl-header-actions {
   display: flex;
   align-items: center;

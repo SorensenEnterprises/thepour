@@ -95,6 +95,24 @@
   color: var(--teal);
 }
 
+.fdb-shopping-btn {
+  background: none;
+  border: 1px solid rgba(201,168,76,0.3);
+  color: rgba(201,168,76,0.75);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.fdb-shopping-btn:hover {
+  background: rgba(201,168,76,0.08);
+  border-color: rgba(201,168,76,0.55);
+  color: #c9a84c;
+}
+
 .fdb-dismiss {
   background: none;
   border: none;

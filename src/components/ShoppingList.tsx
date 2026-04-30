@@ -7,6 +7,8 @@ const DEFAULT_VISIBLE = 20;
 interface Props {
   items: ShoppingItem[];
   onClose: () => void;
+  initialCheckedIds?: Set<string>;
+  note?: string;
 }
 
 function buildExportText(selected: ShoppingItem[]): string {
@@ -39,9 +41,11 @@ function buildExportText(selected: ShoppingItem[]): string {
   return lines.join('\n');
 }
 
-export function ShoppingList({ items, onClose }: Props) {
+export function ShoppingList({ items, onClose, initialCheckedIds, note }: Props) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [checkedIds,  setCheckedIds]  = useState<Set<string>>(new Set());
+  const [checkedIds,  setCheckedIds]  = useState<Set<string>>(
+    () => initialCheckedIds ? new Set(Array.from(initialCheckedIds)) : new Set()
+  );
   const [hiddenIds,   setHiddenIds]   = useState<Set<string>>(new Set());
   const [showAll,     setShowAll]     = useState(false);
   const [editMode,    setEditMode]    = useState(false);
@@ -120,6 +124,7 @@ export function ShoppingList({ items, onClose }: Props) {
           <div className="sl-header-text">
             <h2 className="sl-title">What to buy next</h2>
             <p className="sl-subtitle">Based on your current bar</p>
+            {note && <p className="sl-note">{note}</p>}
           </div>
           <div className="sl-header-actions">
             {editMode ? (

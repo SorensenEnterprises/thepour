@@ -55,9 +55,10 @@ interface Props {
   onRecipeMade?:       (recipeName: string, count: number) => void;
   checkedPantryIds?:   Set<string>;
   onTogglePantry?:     (itemId: string) => void;
-  recipeMode?:         'my-bar' | 'explore';
-  onRecipeModeChange?: (mode: 'my-bar' | 'explore') => void;
-  onOpenShoppingList?: () => void;
+  recipeMode?:                    'my-bar' | 'explore';
+  onRecipeModeChange?:            (mode: 'my-bar' | 'explore') => void;
+  onOpenShoppingList?:            () => void;
+  onOpenShoppingListForFeatured?: (missingNames: string[]) => void;
 }
 
 // ── Collapsible recipe section ────────────────────────────────────────────────
@@ -106,7 +107,7 @@ function RecipeSection({ label, countColor, matches, open, onToggle, onRenderCar
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuantity, onRecipeMade, checkedPantryIds, onTogglePantry, recipeMode = 'my-bar', onRecipeModeChange, onOpenShoppingList }: Props) {
+export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuantity, onRecipeMade, checkedPantryIds, onTogglePantry, recipeMode = 'my-bar', onRecipeModeChange, onOpenShoppingList, onOpenShoppingListForFeatured }: Props) {
   const { user } = useAuth();
 
   const [category,         setCategory]         = useState<DrinkCategory>('cocktail');
@@ -380,6 +381,11 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
           featured={featuredDrink}
           isReady={featuredMatch?.canMake ?? false}
           onMakeThis={handleFeaturedMakeThis}
+          onAddToShoppingList={
+            !featuredMatch?.canMake && onOpenShoppingListForFeatured && featuredMatch
+              ? () => onOpenShoppingListForFeatured(featuredMatch.missingIngredients)
+              : undefined
+          }
         />
       )}
 
