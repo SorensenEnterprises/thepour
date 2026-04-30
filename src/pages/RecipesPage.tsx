@@ -126,7 +126,7 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
   const [toastCounter,     setToastCounter]     = useState(0);
 
   const { featuredDrink } = useFeaturedDrink();
-  const isWeekend = useMemo(() => { const d = new Date().getDay(); return d === 5 || d === 6 || d === 0; }, []);
+  const isWeekend = useMemo(() => { const d = new Date().getDay(); return d >= 4 || d === 0; }, []);
   const featuredMatch = useMemo(
     () => featuredDrink ? matches.find(m => m.recipe.name.toLowerCase() === featuredDrink.drink_name.toLowerCase()) : undefined,
     [featuredDrink, matches],
