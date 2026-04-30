@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { BartenderModal } from '../components/BartenderModal';
 import { ResponsibleFooter } from '../components/ResponsibleFooter';
 import { ThePourLogo } from '../components/ThePourLogo';
+import { useFeaturedDrink, FeaturedDrink } from '../hooks/useFeaturedDrink';
 import './LandingPage.css';
 
 interface Props {
@@ -129,6 +130,64 @@ function SignupForm({ btnLabel, id }: SignupFormProps) {
   );
 }
 
+function FeaturedSection({ featured, onEnter }: { featured: FeaturedDrink; onEnter: () => void }) {
+  const teaserParts = featured.recipe_teaser ? featured.recipe_teaser.split('·').map(s => s.trim()) : [];
+
+  return (
+    <section className="lp-featured-section">
+      <div className="lp-featured-glow" />
+      <div className="lp-featured-inner">
+
+        {/* Left — editorial copy */}
+        <div className="lp-featured-copy">
+          {featured.occasion && (
+            <p className="lp-featured-occasion">{featured.occasion}</p>
+          )}
+          <h2 className="lp-featured-title">{featured.drink_name}</h2>
+          <p className="lp-featured-desc">{featured.vesper_description}</p>
+          {featured.recipe_teaser && (
+            <p className="lp-featured-teaser">{featured.recipe_teaser}</p>
+          )}
+          <button className="lp-featured-cta" onClick={onEnter}>
+            Make This in thepour →
+          </button>
+          {featured.sponsor_name && (
+            <p className="lp-featured-sponsor">
+              Featured in partnership with{' '}
+              {featured.sponsor_url
+                ? <a href={featured.sponsor_url} target="_blank" rel="noopener noreferrer">{featured.sponsor_name}</a>
+                : featured.sponsor_name}
+            </p>
+          )}
+        </div>
+
+        {/* Right — styled recipe card */}
+        <div className="lp-featured-card-wrap">
+          <div className="lp-featured-card">
+            <div className="lp-featured-card-header">
+              <span className="lp-featured-card-label">This Weekend</span>
+              <span className="lp-featured-card-badge">Ready to Make</span>
+            </div>
+            <div className="lp-featured-card-name">{featured.drink_name}</div>
+            {teaserParts.length > 0 && (
+              <div className="lp-featured-card-ingredients">
+                {teaserParts.map((part, i) => (
+                  <span key={i} className="lp-featured-card-ing">{part}</span>
+                ))}
+              </div>
+            )}
+            <button className="lp-featured-card-btn" onClick={onEnter}>
+              See Recipe →
+            </button>
+            <div className="lp-featured-card-glow" />
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
+}
+
 function VesperChatDemo() {
   const [stage, setStage] = useState(0);
   const mountedRef = useRef(true);
@@ -203,6 +262,7 @@ function VesperChatDemo() {
 
 export function LandingPage({ onEnter, onEnterView }: Props) {
   const [bartenderOpen, setBartenderOpen] = useState(false);
+  const { featuredDrink } = useFeaturedDrink();
 
   return (
     <div className="lp">
@@ -250,6 +310,13 @@ export function LandingPage({ onEnter, onEnterView }: Props) {
           <VesperChatDemo />
         </div>
       </section>
+
+      {featuredDrink && (
+        <>
+          <div className="lp-divider" />
+          <FeaturedSection featured={featuredDrink} onEnter={onEnter} />
+        </>
+      )}
 
       <div className="lp-divider" />
 

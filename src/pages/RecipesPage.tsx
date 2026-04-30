@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { RecipeCard, MadeThisResult } from '../components/RecipeCard';
 import { OneIngredientAway } from '../components/OneIngredientAway';
+import { FeaturedDrinkBanner } from '../components/FeaturedDrinkBanner';
 import { RecipeMatch } from '../utils/recipeUtils';
 import { UnlockSuggestion } from '../utils/unlockCalculator';
 import { decrementInventory } from '../utils/inventoryDecrement';
@@ -8,6 +9,7 @@ import { ResponsibleFooter } from '../components/ResponsibleFooter';
 import { Recipe, InventoryItem, QuantityLevel } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { calculateCalories } from '../utils/calorieUtils';
+import { useFeaturedDrink } from '../hooks/useFeaturedDrink';
 
 type DrinkCategory = 'cocktail' | 'mocktail' | 'dirty-soda' | 'shot';
 type ReadyFilter  = 'all' | 'ready';
@@ -121,6 +123,21 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
   const [search,           setSearch]           = useState('');
   const [toasts,           setToasts]           = useState<Toast[]>([]);
   const [toastCounter,     setToastCounter]     = useState(0);
+
+  const { featuredDrink } = useFeaturedDrink();
+  const isWeekend = useMemo(() => { const d = new Date().getDay(); return d === 5 || d === 6 || d === 0; }, []);
+  const featuredMatch = useMemo(
+    () => featuredDrink ? matches.find(m => m.recipe.name.toLowerCase() === featuredDrink.drink_name.toLowerCase()) : undefined,
+    [featuredDrink, matches],
+  );
+
+  function handleFeaturedMakeThis(drinkName: string) {
+    setCategory('cocktail');
+    setSpiritFilter('all');
+    setReadyFilter('all');
+    setSearch(drinkName);
+    setTimeout(() => document.querySelector<HTMLElement>('.rp-sections, .recipe-list')?.scrollIntoView({ behavior: 'smooth' }), 50);
+  }
 
   // Recipe section open state — ready starts open, others collapsed
   const [recipeSections, setRecipeSections] = useState<Record<RecipeSectionKey, boolean>>({
@@ -357,6 +374,14 @@ export function RecipesPage({ matches, unlockSuggestions, inventory, onSetQuanti
           )}
         </div>
       </div>
+
+      {featuredDrink && isWeekend && (
+        <FeaturedDrinkBanner
+          featured={featuredDrink}
+          isReady={featuredMatch?.canMake ?? false}
+          onMakeThis={handleFeaturedMakeThis}
+        />
+      )}
 
       <OneIngredientAway suggestions={unlockSuggestions} />
 
