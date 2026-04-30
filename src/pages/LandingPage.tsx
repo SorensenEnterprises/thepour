@@ -302,7 +302,7 @@ export function LandingPage({ onEnter, onEnterView }: Props) {
             <button className="lp-bartender-btn" onClick={() => setBartenderOpen(true)}>
               🍸 Ask Vesper
             </button>
-            <span className="lp-bartender-hint">Not sure what to make? Let us decide.</span>
+            <span className="lp-bartender-hint">Not sure what to make? Ask Vesper.</span>
           </div>
           <p className="lp-hero-meta">
             <button onClick={onEnter}>Or try the app now →</button>

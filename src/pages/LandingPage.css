@@ -722,11 +722,11 @@
 .lp-featured-intro {
   font-family: 'Fraunces', serif;
   font-style: italic;
-  font-size: 18px;
-  color: var(--cream-dim);
+  font-size: 17px;
+  color: var(--teal);
   margin-bottom: 14px;
   line-height: 1.4;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .lp-featured-occasion {
