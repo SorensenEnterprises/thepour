@@ -300,7 +300,7 @@ export function LandingPage({ onEnter, onEnterView }: Props) {
           <SignupForm btnLabel="Get Early Access" id="hero-signup" />
           <div className="lp-bartender-row">
             <button className="lp-bartender-btn" onClick={() => setBartenderOpen(true)}>
-              🍸 Ask Your Bartender
+              🍸 Ask Vesper
             </button>
             <span className="lp-bartender-hint">Not sure what to make? Let us decide.</span>
           </div>
