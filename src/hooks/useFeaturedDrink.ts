@@ -8,6 +8,7 @@ export interface FeaturedDrink {
   drink_name: string;
   vesper_description: string;
   occasion: string | null;
+  vesper_intro: string | null;
   recipe_teaser: string | null;
   sponsor_name: string | null;
   sponsor_url: string | null;

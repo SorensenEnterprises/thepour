@@ -140,8 +140,12 @@ function FeaturedSection({ featured, onEnter }: { featured: FeaturedDrink; onEnt
 
         {/* Left — editorial copy */}
         <div className="lp-featured-copy">
+          <p className="lp-featured-section-label">What Vesper's Pouring</p>
           {featured.occasion && (
             <p className="lp-featured-occasion">{featured.occasion}</p>
+          )}
+          {featured.vesper_intro && (
+            <p className="lp-featured-intro">"{featured.vesper_intro}"</p>
           )}
           <h2 className="lp-featured-title">{featured.drink_name}</h2>
           <p className="lp-featured-desc">{featured.vesper_description}</p>
@@ -165,7 +169,7 @@ function FeaturedSection({ featured, onEnter }: { featured: FeaturedDrink; onEnt
         <div className="lp-featured-card-wrap">
           <div className="lp-featured-card">
             <div className="lp-featured-card-header">
-              <span className="lp-featured-card-label">This Weekend</span>
+              <span className="lp-featured-card-label">What Vesper's Pouring</span>
               <span className="lp-featured-card-badge">Ready to Make</span>
             </div>
             <div className="lp-featured-card-name">{featured.drink_name}</div>
