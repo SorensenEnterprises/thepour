@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BartenderModal } from '../components/BartenderModal';
 import { ResponsibleFooter } from '../components/ResponsibleFooter';
 import { ThePourLogo } from '../components/ThePourLogo';
@@ -8,12 +8,6 @@ interface Props {
   onEnter: () => void;
   onEnterView: (view: 'inventory' | 'recipes') => void;
 }
-
-const MOCK_CARDS = [
-  { name: 'Negroni',      desc: 'Gin · Campari · Sweet Vermouth', badge: 'Ready',       cls: 'ready' },
-  { name: 'Old Fashioned',desc: 'Bourbon · Bitters · Simple Syrup', badge: 'Low on stock', cls: 'warn' },
-  { name: 'French 75',    desc: 'Gin · Lemon · Champagne',        badge: 'Missing 1',   cls: 'miss' },
-];
 
 const INVENTORY_PREVIEW = [
   { name: 'Hendrick\'s Gin',    badge: 'Full',   cls: 'full' },
@@ -135,6 +129,78 @@ function SignupForm({ btnLabel, id }: SignupFormProps) {
   );
 }
 
+function VesperChatDemo() {
+  const [stage, setStage] = useState(0);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    function schedule(fn: () => void, delay: number) {
+      const t = setTimeout(() => { if (mountedRef.current) fn(); }, delay);
+      timers.push(t);
+    }
+
+    function startSequence() {
+      schedule(() => setStage(1), 400);
+      schedule(() => setStage(2), 1100);
+      schedule(() => setStage(3), 3100);
+      schedule(() => setStage(4), 4500);
+      schedule(() => { setStage(0); schedule(startSequence, 700); }, 13500);
+    }
+
+    startSequence();
+
+    return () => {
+      mountedRef.current = false;
+      timers.forEach(clearTimeout);
+    };
+  }, []);
+
+  return (
+    <div className="lp-chat-demo">
+      <div className="lp-chat-header">
+        <div className="lp-chat-avatar">V</div>
+        <div className="lp-chat-header-info">
+          <div className="lp-chat-name">Vesper</div>
+          <div className="lp-chat-online">● Your bartender</div>
+        </div>
+      </div>
+      <div className="lp-chat-messages">
+        {stage >= 1 && (
+          <div className="lp-chat-bubble lp-chat-bubble--user lp-chat-in">
+            Surprise me. Something I haven't tried.
+          </div>
+        )}
+        {stage === 2 && (
+          <div className="lp-chat-bubble lp-chat-bubble--vesper lp-chat-in">
+            <div className="lp-chat-typing">
+              <span /><span /><span />
+            </div>
+          </div>
+        )}
+        {stage >= 3 && (
+          <div className="lp-chat-bubble lp-chat-bubble--vesper lp-chat-in">
+            You've got the bottles for a <strong>Paper Plane</strong>.{' '}
+            Equal parts bourbon, Aperol, Campari, lemon.{' '}
+            It tastes like someone dared a classic to evolve. Make it.
+          </div>
+        )}
+        {stage >= 4 && (
+          <div className="lp-chat-card lp-chat-in">
+            <div className="lp-chat-card-body">
+              <div className="lp-chat-card-name">Paper Plane</div>
+              <div className="lp-chat-card-meta">Bourbon · Aperol · Campari · Lemon</div>
+            </div>
+            <span className="lp-chat-card-badge">Ready ✓</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function LandingPage({ onEnter, onEnterView }: Props) {
   const [bartenderOpen, setBartenderOpen] = useState(false);
 
@@ -157,12 +223,12 @@ export function LandingPage({ onEnter, onEnterView }: Props) {
             Now in early access
           </div>
           <h1 className="lp-hero-headline">
-            Your bar.<br />
-            <em>Smarter</em> every pour.
+            Meet Vesper.<br />
+            Your bartender <em>knows</em> your bar.
           </h1>
           <p className="lp-hero-sub">
-            Track what's in your home bar, discover what you can make right now,
-            and get recipe suggestions that actually match your bottles.
+            Not a search box. Not a filter. A bartender with opinions, taste,
+            and a direct line to your inventory.
           </p>
           <p className="lp-hero-tagline">
             Cocktails. Mocktails. Dirty Sodas. Every drink, one app.
@@ -179,28 +245,9 @@ export function LandingPage({ onEnter, onEnterView }: Props) {
           </p>
         </div>
 
-        {/* ── Phone Mockup ── */}
+        {/* ── Animated Vesper Chat ── */}
         <div className="lp-phone-wrap">
-          <div className="lp-phone">
-            <div className="lp-phone-notch" />
-            <div className="lp-phone-screen">
-              <div className="lp-phone-top">
-                <span className="lp-phone-title">thepour.</span>
-                <span className="lp-phone-tag">3 ready</span>
-              </div>
-              {MOCK_CARDS.map(card => (
-                <div key={card.name} className={`lp-mock-card lp-mock-card--${card.cls}`}>
-                  <div className="lp-mock-card-row">
-                    <span className="lp-mock-card-name">{card.name}</span>
-                    <span className={`lp-mock-card-badge lp-mock-card-badge--${card.cls}`}>
-                      {card.badge}
-                    </span>
-                  </div>
-                  <div className="lp-mock-card-desc">{card.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <VesperChatDemo />
         </div>
       </section>
 
@@ -240,6 +287,47 @@ export function LandingPage({ onEnter, onEnterView }: Props) {
             </p>
             <span className="lp-step-cta">See what's ready →</span>
           </button>
+        </div>
+      </section>
+
+      <div className="lp-divider" />
+
+      {/* ── Vesper Section ── */}
+      <section className="lp-vesper-section">
+        <div className="lp-vesper-glow" />
+        <div className="lp-vesper-inner">
+          <p className="lp-section-label" style={{ color: 'var(--teal)' }}>Your Bartender</p>
+          <h2 className="lp-vesper-headline">
+            Vesper doesn't just find recipes.<br />
+            <em>She decides.</em>
+          </h2>
+          <div className="lp-vesper-columns">
+            <div className="lp-vesper-col">
+              <div className="lp-vesper-col-title">She knows your bar</div>
+              <p className="lp-vesper-col-desc">
+                Every recommendation is based on exactly what you have. No missing ingredients. No guessing.
+              </p>
+            </div>
+            <div className="lp-vesper-col">
+              <div className="lp-vesper-col-title">She has opinions</div>
+              <p className="lp-vesper-col-desc">
+                Ask for something unique and she won't say Gin &amp; Tonic. She'll find something worth making.
+              </p>
+            </div>
+            <div className="lp-vesper-col">
+              <div className="lp-vesper-col-title">She speaks your language</div>
+              <p className="lp-vesper-col-desc">
+                Not a list of results. A real recommendation with a reason.
+              </p>
+            </div>
+          </div>
+          <div className="lp-vesper-quote">
+            <div className="lp-vesper-quote-mark">"</div>
+            <p className="lp-vesper-quote-text">
+              You're one bottle away from a Sazerac — all you need is Absinthe. Tonight though, make a Blood and Sand. You have everything, and it tastes like a drink from a better era that somehow still feels dangerous.
+            </p>
+            <div className="lp-vesper-quote-attr">— Vesper, thepour.ai</div>
+          </div>
         </div>
       </section>
 
@@ -288,9 +376,9 @@ export function LandingPage({ onEnter, onEnterView }: Props) {
           {/* Regular — recipes */}
           <div className="lp-bento-card">
             <span className="lp-bento-icon">🍹</span>
-            <div className="lp-bento-title">Cocktails, Mocktails & Dirty Sodas</div>
+            <div className="lp-bento-title">Cocktails, Mocktails &amp; Dirty Sodas</div>
             <p className="lp-bento-desc">
-              200+ recipes across four categories — classic cocktails, shots, zero-proof mocktails, and viral dirty sodas. Something for everyone.
+              600+ recipes across four categories — classic cocktails, shots, zero-proof mocktails, and viral dirty sodas. Something for everyone.
             </p>
             <div className="lp-bento-glow" />
           </div>
@@ -298,7 +386,7 @@ export function LandingPage({ onEnter, onEnterView }: Props) {
           {/* Regular — search */}
           <div className="lp-bento-card">
             <span className="lp-bento-icon">🔍</span>
-            <div className="lp-bento-title">Search & filter by spirit</div>
+            <div className="lp-bento-title">Search &amp; filter by spirit</div>
             <p className="lp-bento-desc">
               Find recipes by name or filter by spirit type — Whiskey, Gin, Rum, Tequila, Vodka — all composable.
             </p>
