@@ -254,12 +254,14 @@ function VesperChatDemo() {
 export function LandingPage({ onEnter, onEnterView }: Props) {
   const [bartenderOpen, setBartenderOpen] = useState(false);
   const { featuredDrink } = useFeaturedDrink();
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const topPadding = isStandalone ? 54 : 0;
 
   return (
     <div className="lp">
 
       {/* ── Nav ── */}
-      <nav className="lp-nav">
+      <nav className="lp-nav" style={{ paddingTop: `${topPadding}px`, height: `calc(66px + ${topPadding}px)` }}>
         <div className="lp-nav-brand">
           <ThePourLogo glassSize={24} fontSize={20} />
         </div>
