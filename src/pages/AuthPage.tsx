@@ -12,6 +12,8 @@ type Mode = 'signin' | 'signup';
 
 export function AuthPage({ onEntered }: Props) {
   const { signIn, signUp, continueAsGuest } = useAuth();
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const statusBarHeight = isStandalone ? 54 : 0;
 
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
@@ -57,7 +59,7 @@ export function AuthPage({ onEntered }: Props) {
 
   if (status === 'verify') {
     return (
-      <div className="auth-wrap">
+      <div className="auth-wrap" style={{ paddingTop: `${statusBarHeight + 24}px` }}>
         <div className="auth-card">
           <div className="auth-verify-icon">✉</div>
           <h2 className="auth-title">Check your email</h2>
@@ -78,7 +80,7 @@ export function AuthPage({ onEntered }: Props) {
   }
 
   return (
-    <div className="auth-wrap">
+    <div className="auth-wrap" style={{ paddingTop: `${statusBarHeight + 24}px` }}>
       <div className="auth-card">
         {/* Brand */}
         <div className="auth-brand">
