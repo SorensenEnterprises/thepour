@@ -1158,12 +1158,15 @@ export function BartenderModal({ onClose, inStockIds = new Set(), inventory = []
   const currentQuestions = getQuestions(category);
   const q = currentQuestions[step];
 
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const topPadding = isStandalone ? 54 : 0;
+
   return (
     <div className="bm-overlay" onClick={e => { if (e.target === e.currentTarget) handleClose(); }}>
-      <div className="bm-topbar-logo" aria-label="thepour.">
+      <div className="bm-topbar-logo" aria-label="thepour." style={{ top: `${topPadding + 26}px` }}>
         <ThePourLogo glassSize={20} fontSize={15} />
       </div>
-      <button className="bm-close" onClick={handleClose} aria-label="Close">×</button>
+      <button className="bm-close" onClick={handleClose} aria-label="Close" style={{ top: `${topPadding + 24}px` }}>×</button>
 
       {/* ── Background glass illustrations ── */}
       <div className="bm-bg-art" aria-hidden="true">
