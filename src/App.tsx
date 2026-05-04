@@ -97,6 +97,8 @@ function AppContent() {
   // Main app shell
   return (
     <div className="app">
+      {/* Covers the iOS status bar zone in PWA standalone mode */}
+      <div className="pwa-status-bar-spacer" />
       <NavBar
         activePage={view as 'recipes' | 'inventory'}
         onNavigate={setView}

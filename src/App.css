@@ -29,8 +29,30 @@ body {
   min-height: 100vh;
 }
 
+/* ── PWA Status Bar Spacer ─────────────────────────────────────────────────
+   Fixed div that sits above the navbar and covers the iOS status bar zone.
+   In PWA standalone mode (black-translucent) the viewport extends behind the
+   status bar; this spacer fills that gap with the app background color.
+   env(safe-area-inset-top) resolves to 0 in browser mode, so it is a no-op
+   outside of home-screen PWA installs. ─────────────────────────────────── */
+.pwa-status-bar-spacer {
+  height: env(safe-area-inset-top);
+  background: #091a1c;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
 /* ── App Shell ── */
-.app { display: flex; flex-direction: column; min-height: 100vh; }
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* Push the entire app shell below the fixed status-bar spacer on PWA */
+  padding-top: env(safe-area-inset-top);
+}
 
 .main-content {
   max-width: 780px;
@@ -44,14 +66,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* Horizontal padding absorbs safe-area insets for landscape notch/Dynamic Island */
-  padding: env(safe-area-inset-top) calc(28px + env(safe-area-inset-right)) 0 calc(28px + env(safe-area-inset-left));
-  /* Height grows to include the status-bar safe zone on notch/Dynamic Island iPhones */
-  height: calc(62px + env(safe-area-inset-top));
+  /* Horizontal insets handle landscape notch/Dynamic Island */
+  padding: 0 calc(28px + env(safe-area-inset-right)) 0 calc(28px + env(safe-area-inset-left));
+  height: 62px;
   background: var(--surface-0);
   border-bottom: 1px solid var(--border-teal);
   position: sticky;
-  top: 0;
+  /* Stick below the fixed status-bar spacer, not behind the status bar */
+  top: env(safe-area-inset-top);
   z-index: 10;
   box-shadow: 0 2px 20px rgba(0,0,0,0.5);
 }
