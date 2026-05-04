@@ -52,6 +52,11 @@
     <!-- iPad Pro 12.9" -->
     <link rel="apple-touch-startup-image" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" href="%PUBLIC_URL%/splash/splash-2048x2732.png" />
 
+    <!-- PWA render: set background immediately so there is no color flash between
+         the iOS splash screen dismissing and the first React paint. #091a1c matches
+         --surface-0 in App.css. Inline so it applies before any external stylesheet. -->
+    <style>html, body, #root { background: #091a1c; }</style>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />

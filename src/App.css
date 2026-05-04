@@ -44,8 +44,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 28px;
-  height: 62px;
+  /* Horizontal padding absorbs safe-area insets for landscape notch/Dynamic Island */
+  padding: env(safe-area-inset-top) calc(28px + env(safe-area-inset-right)) 0 calc(28px + env(safe-area-inset-left));
+  /* Height grows to include the status-bar safe zone on notch/Dynamic Island iPhones */
+  height: calc(62px + env(safe-area-inset-top));
   background: var(--surface-0);
   border-bottom: 1px solid var(--border-teal);
   position: sticky;
