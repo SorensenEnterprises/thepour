@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   background: var(--surface-0);
-  padding: 24px;
+  padding: calc(env(safe-area-inset-top) + 24px) 24px 24px;
 }
 
 /* ── Card ── */
