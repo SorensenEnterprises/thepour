@@ -209,6 +209,18 @@
   margin: 0;
 }
 
+.lp-signup-social-proof {
+  font-size: 13px;
+  color: var(--cream-muted, #a89880);
+  margin: 0 0 10px;
+}
+
+.lp-signup-disclaimer {
+  font-size: 12px;
+  color: var(--cream-muted, #a89880);
+  margin: 8px 0 0;
+}
+
 .lp-bartender-row {
   display: flex;
   align-items: center;

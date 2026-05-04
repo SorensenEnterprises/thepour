@@ -90,6 +90,7 @@ function SignupForm({ btnLabel, id }: SignupFormProps) {
 
   return (
     <form className="lp-signup" onSubmit={handleSubmit} id={id}>
+      <p className="lp-signup-social-proof">Join home bartenders already on the list.</p>
       <div className="lp-signup-fields">
         <input
           className="lp-signup-input"
@@ -108,6 +109,7 @@ function SignupForm({ btnLabel, id }: SignupFormProps) {
       >
         {status === 'loading' ? 'Sending…' : btnLabel}
       </button>
+      <p className="lp-signup-disclaimer">No spam. Just Vesper's weekly pick and early access to the app.</p>
       {status === 'error' && (
         <p className="lp-signup-error">Something went wrong. Please try again.</p>
       )}
@@ -282,7 +284,7 @@ export function LandingPage({ onEnter, onEnterView }: Props) {
           <p className="lp-hero-tagline">
             Cocktails. Mocktails. Dirty Sodas. Every drink, one app.
           </p>
-          <SignupForm btnLabel="Get Early Access" id="hero-signup" />
+          <SignupForm btnLabel="Get Early Access — It's Free" id="hero-signup" />
           <div className="lp-bartender-row">
             <button className="lp-bartender-btn" onClick={() => setBartenderOpen(true)}>
               🍸 Ask Vesper
@@ -478,7 +480,6 @@ export function LandingPage({ onEnter, onEnterView }: Props) {
           <div className="lp-cta-signup">
             <SignupForm btnLabel="Join the list" id="cta-signup" />
           </div>
-          <p className="lp-cta-meta">No spam. Unsubscribe any time.</p>
         </div>
       </section>
 
