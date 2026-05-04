@@ -216,7 +216,7 @@
 @media (max-width: 480px) {
   .auth-wrap {
     padding: 12px;
-    padding-top: 24px;
+    padding-top: calc(env(safe-area-inset-top) + 24px);
     justify-content: flex-start;
     align-items: stretch;
   }
