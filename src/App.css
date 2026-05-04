@@ -37,7 +37,7 @@ body {
    outside of home-screen PWA installs. ─────────────────────────────────── */
 .pwa-status-bar-spacer {
   height: env(safe-area-inset-top);
-  background: #091a1c;
+  background: red !important; /* DEBUG — remove after confirming */
   position: fixed;
   top: 0;
   left: 0;
