@@ -20,7 +20,7 @@ const INVENTORY_PREVIEW = [
 const KLAVIYO_PUBLIC_KEY = 'XXQwsC';
 const KLAVIYO_LIST_ID    = 'TQut8s';
 
-async function submitToKlaviyo(email: string, zip: string): Promise<void> {
+async function submitToKlaviyo(email: string): Promise<void> {
   const res = await fetch(
     `https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_PUBLIC_KEY}`,
     {
@@ -36,10 +36,7 @@ async function submitToKlaviyo(email: string, zip: string): Promise<void> {
             profile: {
               data: {
                 type: 'profile',
-                attributes: {
-                  email,
-                  properties: { zip_code: zip },
-                },
+                attributes: { email },
               },
             },
           },
@@ -67,18 +64,16 @@ interface SignupFormProps {
 
 function SignupForm({ btnLabel, id }: SignupFormProps) {
   const [email,  setEmail]  = useState('');
-  const [zip,    setZip]    = useState('');
   const [status, setStatus] = useState<SignupStatus>('idle');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !zip) return;
+    if (!email) return;
     setStatus('loading');
     try {
-      await submitToKlaviyo(email.trim(), zip.trim());
+      await submitToKlaviyo(email.trim());
       setStatus('success');
       setEmail('');
-      setZip('');
     } catch {
       setStatus('error');
     }
@@ -102,16 +97,6 @@ function SignupForm({ btnLabel, id }: SignupFormProps) {
           placeholder="Enter your email"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          required
-          disabled={status === 'loading'}
-        />
-        <input
-          className="lp-signup-input lp-signup-zip"
-          type="text"
-          placeholder="ZIP code"
-          value={zip}
-          onChange={e => setZip(e.target.value.replace(/\D/g, '').slice(0, 5))}
-          maxLength={5}
           required
           disabled={status === 'loading'}
         />
