@@ -14,6 +14,8 @@ interface Props {
 export function NavBar({ activePage, onNavigate, onHome, onSignIn, onSignOut, onOpenShoppingList }: Props) {
   const { user, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const topPadding = isStandalone ? 54 : 0;
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -30,7 +32,7 @@ export function NavBar({ activePage, onNavigate, onHome, onSignIn, onSignOut, on
   const initial = user?.email?.[0].toUpperCase() ?? '?';
 
   return (
-    <nav className="navbar">
+    <nav className="navbar" style={{ paddingTop: `${topPadding}px`, height: `calc(62px + ${topPadding}px)`, top: `${topPadding}px` }}>
       <button className="navbar-brand navbar-home" onClick={onHome}>
         <ThePourLogo glassSize={22} fontSize={17} />
       </button>
