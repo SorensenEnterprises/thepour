@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   background: var(--surface-0);
-  padding: calc(env(safe-area-inset-top) + 24px) 24px 24px;
+  padding: 24px 24px 24px;
 }
 
 /* ── Card ── */
@@ -216,7 +216,6 @@
 @media (max-width: 480px) {
   .auth-wrap {
     padding: 12px;
-    padding-top: calc(env(safe-area-inset-top) + 24px);
     justify-content: flex-start;
     align-items: stretch;
   }
